@@ -3,6 +3,7 @@ const webpack = require('webpack');
 const { resolve } = require('path');
 const { readFileSync } = require('fs');
 const SentryCliPlugin = require('@sentry/webpack-plugin');
+const nsWebpack = require('nativescript-dev-webpack');
 // const NsVueTemplateCompiler = require('nativescript-vue-template-compiler');
 // returns a new object with the values at each key mapped using mapFn(value)
 
@@ -93,19 +94,15 @@ module.exports = env => {
         //         }
         //     )
         // );
+        const dist = resolve(projectRoot, nsWebpack.getAppPath(platform, projectRoot));
         config.plugins.push(
             new SentryCliPlugin({
                 release: appVersion,
-                // stripPrefix:['~', 'demovue', 'app', '/demovue/app/'],
                 urlPrefix:'app:///',
-                // debug:true,
                 rewrite:true,
-                // dryRun:true,
-                // ext:['map'],
                 dist:buildNumber,
-                include: platform === 'android'? 'platforms/android/app/src/main/assets/app/' : 'platforms/ios/demovue/app/',
-                // ignoreFile: '.gitignore',
-                ignore: ['node_modules', 'build', 'hooks','webpack.config.js'],
+                ignore:['tns-java-classes'],
+                include: dist,
                 configFile: '.sentryclirc'
             })
         );
