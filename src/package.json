@@ -1,0 +1,31 @@
+{
+    "name": "nativescript-akylas-sentry",
+    "version": "1.0.1",
+    "main": "./bugsnag.js",
+    "typings": "./bugsnag.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Akylas/nativescript-akylas-sentry.git"
+    },
+    "nativescript": {
+        "platforms": {
+            "android": "5.3.1",
+            "ios": "5.3.1"
+        }
+    },
+    "keywords": [
+        "NativeScript",
+        "JavaScript",
+        "Android",
+        "iOS"
+    ],
+    "author": {
+        "name": "Martin Guillon",
+        "email": "martin@akylas.fr"
+    },
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/Akylas/nativescript-akylas-sentry/issues"
+    },
+    "homepage": "https://github.com/Akylas/nativescript-akylas-sentry#readme"
+}

@@ -1,0 +1,41 @@
+{
+    "description": "NativeScript Bugsnag Demo",
+    "license": "SEE LICENSE IN LICENSE.md",
+    "readme": "README.md",
+    "repository": "http://www.github.com/Akylas/nativescript-akylas-sentry.git",
+    "nativescript": {
+        "id": "org.nativescript.demovuesentry",
+        "tns-android": {
+            "version": "6.3.1"
+        },
+        "tns-ios": {
+            "version": "6.3.0"
+        }
+    },
+    "dependencies": {
+        "@sentry/browser": "^5.11.1",
+        "@sentry/core": "^5.11.1",
+        "@sentry/integrations": "^5.11.1",
+        "@sentry/types": "^5.11.0",
+        "@sentry/utils": "^5.11.1",
+        "@sentry/wizard": "^1.0.2",
+        "@nativescript/core": "^6.3.2",
+        "nativescript-akylas-vue": "2.5.0-alpha.9",
+        "nativescript-akylas-sentry": "file:../plugin",
+        "nativescript-extendedinfo": "^1.0.7"
+    },
+    "devDependencies": {
+        "@sentry/webpack-plugin": "^1.9.3",
+        "nativescript-akylas-webpack-template": "1.0.13",
+        "nativescript-dev-webpack": "1.4.1",
+        "semver": "7.1.1",
+        "source-map": "0.6.1",
+        "tns-platform-declarations": "^6.3.2",
+        "typescript": "^3.7.5",
+        "vue": "^2.6.11",
+        "vue-property-decorator": "^8.3.0",
+        "webpack": "^4.41.5",
+        "webpack-cli": "^3.3.10"
+    },
+    "scripts": {}
+}

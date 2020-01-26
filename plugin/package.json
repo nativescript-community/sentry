@@ -1,0 +1,40 @@
+{
+    "name": "nativescript-akylas-sentry",
+    "version": "1.0.15",
+    "main": "./index.js",
+    "typings": "./index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Akylas/nativescript-akylas-sentry.git"
+    },
+    "nativescript": {
+        "platforms": {
+            "android": "6.1.0",
+            "ios": "6.1.0"
+        }
+    },
+    "keywords": [
+        "NativeScript",
+        "JavaScript",
+        "Android",
+        "iOS"
+    ],
+    "author": {
+        "name": "Martin Guillon",
+        "email": "martin@akylas.fr"
+    },
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/Akylas/nativescript-akylas-sentry/issues"
+    },
+    "homepage": "https://github.com/Akylas/nativescript-akylas-sentry#readme",
+    "dependencies": {
+        "@sentry/browser": "^5.11.1",
+        "@sentry/core": "^5.11.1",
+        "@sentry/integrations": "^5.11.1",
+        "@sentry/types": "^5.11.0",
+        "@sentry/utils": "^5.11.1",
+        "@sentry/wizard": "^1.0.2",
+        "stacktrace-parser": "0.1.8"
+    }
+}
