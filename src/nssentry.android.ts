@@ -340,21 +340,20 @@ export namespace NSSentry {
             sentryClient.addShouldSendEventCallback(
                 new io.sentry.event.helper.ShouldSendEventCallback({
                     shouldSend(event: io.sentry.event.Event) {
-                        console.log('shouldSend', event.getSentryInterfaces());
                         // We don't want to send events that are from ExceptionsManagerModule.
                         // Because we sent it already from raven.
-                        if (event.getSentryInterfaces().containsKey(io.sentry.event.interfaces.ExceptionInterface.EXCEPTION_INTERFACE)) {
-                            const exceptionInterface = event.getSentryInterfaces().get(io.sentry.event.interfaces.ExceptionInterface.EXCEPTION_INTERFACE);
-                            if (
-                                exceptionInterface
-                                    .getExceptions()
-                                    .getFirst()
-                                    .getExceptionClassName()
-                                    .contains('JavascriptException')
-                            ) {
-                                return false;
-                            }
-                        }
+                        // if (event.getSentryInterfaces().containsKey(io.sentry.event.interfaces.ExceptionInterface.EXCEPTION_INTERFACE)) {
+                        //     const exceptionInterface = event.getSentryInterfaces().get(io.sentry.event.interfaces.ExceptionInterface.EXCEPTION_INTERFACE);
+                        //     if (
+                        //         exceptionInterface
+                        //             .getExceptions()
+                        //             .getFirst()
+                        //             .getExceptionClassName()
+                        //             .contains('JavascriptException')
+                        //     ) {
+                        //         return false;
+                        //     }
+                        // }
                         return true;
                     }
                 })

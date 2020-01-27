@@ -14,11 +14,9 @@ export namespace NSSentry {
     }
     export function sendEvent(event: Event): Promise<Response> {
         return new Promise((resolve, reject) => {
-            console.log('sendEvent');
             const jsonData = NSString.stringWithString(JSON.stringify(event)).dataUsingEncoding(NSUTF8StringEncoding);
             const sentryEvent = SentryEvent.alloc().initWithJSON(jsonData);
             SentryClient.sharedClient.sendEventWithCompletionHandler(sentryEvent, function(error) {
-                console.log('sendEventWithCompletionHandler', error);
                 if (error) {
                     reject(error);
                 } else {
@@ -34,16 +32,16 @@ export namespace NSSentry {
         return new Promise(resolve => {
             const client = SentryClient.alloc().initWithDsnDidFailWithError(dsnString);
             // client.shouldSendEvent = (event: SentryEvent) => true;
-            client.beforeSerializeEvent = (e: SentryEvent) => {
-                console.log('beforeSerializeEvent3', e.exceptions,  e.exceptions && e.exceptions.count > 0 && toJsObject(e.exceptions.objectAtIndex(0).serialize()), e.stacktrace);
-                const stacktrace = e.stacktrace;
-                if (stacktrace) {
-                    const frames = stacktrace.frames;
-                    frames.enumerateObjectsUsingBlock(p => {
-                        console.log('frame', p.fileName);
-                    });
-                }
-            };
+            // client.beforeSerializeEvent = (e: SentryEvent) => {
+            //     console.log('beforeSerializeEvent3', e.exceptions,  e.exceptions && e.exceptions.count > 0 && toJsObject(e.exceptions.objectAtIndex(0).serialize()), e.stacktrace);
+            //     const stacktrace = e.stacktrace;
+            //     if (stacktrace) {
+            //         const frames = stacktrace.frames;
+            //         frames.enumerateObjectsUsingBlock(p => {
+            //             console.log('frame', p.fileName);
+            //         });
+            //     }
+            // };
             SentryClient.sharedClient = client;
             if (!!options.enableNativeCrashHandling) {
                 SentryClient.sharedClient.startCrashHandlerWithError();

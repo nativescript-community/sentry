@@ -52,7 +52,6 @@ export class NativescriptErrorHandlers implements Integration {
      */
     private _handleUnhandledRejections(): void {
         if (this._options.onunhandledrejection) {
-            console.log('registering for uncaughtErrorEvent');
             application.on(application.uncaughtErrorEvent, this.globalHanderEvent, this);
             // const tracking = require('promise/setimmediate/rejection-tracking');
             // tracking.disable();
@@ -90,7 +89,6 @@ export class NativescriptErrorHandlers implements Integration {
         //     }
         //     handlingFatal = true;
         // }
-        console.log('globalHander catched', error);
 
         getCurrentHub().withScope(scope => {
             if (isFatal) {
@@ -124,10 +122,8 @@ export class NativescriptErrorHandlers implements Integration {
     private _handleOnError(): void {
         if (this._options.onerror) {
             // let handlingFatal = false;
-            console.log('registering for discardedErrorEvent');
             application.on(application.discardedErrorEvent, this.globalHanderEvent, this);
 
-            console.log('setErrorHandler');
             trace.setErrorHandler({
                 handlerError: this.globalHander
             });
