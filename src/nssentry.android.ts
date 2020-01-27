@@ -157,7 +157,6 @@ export namespace NSSentry {
 
             let eventBuilder: io.sentry.event.EventBuilder;
             if (event.event_id) {
-                // .replace(/\p{XDigit}{8})(\p{XDigit}{4})(\p{XDigit}{4})(\p{XDigit}{4})(\p{XDigit}+)/, '$1-$2-$3-$4-$5')
                 const eventId = event.event_id.replace(/([0-9a-z]{8})([0-9a-z]{4})([0-9a-z]{4})([0-9a-z]{4})([0-9a-z]+)/, '$1-$2-$3-$4-$5');
                 eventBuilder = new io.sentry.event.EventBuilder(java.util.UUID.fromString(eventId)).withLevel(eventLevel(event));
             } else {
