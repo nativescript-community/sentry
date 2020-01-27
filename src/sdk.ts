@@ -38,15 +38,21 @@ export function init(
             new RewriteFrames({
                 iteratee: (frame: StackFrame) => {
                     if (frame.filename) {
-                        frame.filename = frame.filename
+                        let filename = (frame.filename = frame.filename
                             .replace(/^file\:\/\//, '')
                             .replace(/^address at /, '')
-                            .replace(/^.*\/[^\.]+(\.app|CodePush|.*(?=\/))/, '');
+                            .replace(/^.*\/[^\.]+(\.app|CodePush|.*(?=\/))/, ''));
 
-                        const appPrefix = 'app://';
-                        console.log('RewriteFrames', frame.filename);
+                        // const appPrefix = 'app://';
+                        const appPrefix = options.appPrefix || '';
+                        if (appPrefix.endsWith('//') && !appPrefix.endsWith('///')) {
+                            filename = frame.filename.indexOf('/') === 0 ? `${appPrefix}${frame.filename}` : `${appPrefix}/${frame.filename}`;
+                        } else {
+                            filename = frame.filename.indexOf('/') === 0 ? `${appPrefix}${frame.filename.slice(1)}` : `${appPrefix}${frame.filename}`;
+                        }
+                        console.log('RewriteFrames', frame.filename, appPrefix, filename);
+                        frame.filename = filename;
                         // We always want to have a tripple slash
-                        frame.filename = frame.filename.indexOf('/') === 0 ? `${appPrefix}${frame.filename}` : `${appPrefix}/${frame.filename}`;
                     }
                     return frame;
                 }

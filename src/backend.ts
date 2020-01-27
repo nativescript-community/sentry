@@ -34,6 +34,10 @@ export interface NativescriptOptions extends BrowserOptions {
 
     /** Should the native nagger alert be shown or not. */
     enableNativeNagger?: boolean;
+    /**
+     * Optional prefix to add while rewriting frames
+     */
+    appPrefix?: string;
 }
 
 /** The Sentry Nativescript SDK Backend. */
