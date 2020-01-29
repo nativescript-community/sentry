@@ -50,7 +50,6 @@ export function init(
                         } else {
                             filename = frame.filename.indexOf('/') === 0 ? `${appPrefix}${frame.filename.slice(1)}` : `${appPrefix}${frame.filename}`;
                         }
-                        console.log('RewriteFrames', frame.filename, appPrefix, filename);
                         frame.filename = filename;
                         // We always want to have a tripple slash
                     }
