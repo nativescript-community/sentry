@@ -29,12 +29,12 @@
     },
     "homepage": "https://github.com/Akylas/nativescript-akylas-sentry#readme",
     "dependencies": {
-        "@sentry/browser": "^5.11.1",
-        "@sentry/core": "^5.11.1",
-        "@sentry/integrations": "^5.11.1",
-        "@sentry/types": "^5.11.0",
-        "@sentry/utils": "^5.11.1",
-        "@sentry/wizard": "^1.0.2",
-        "stacktrace-parser": "0.1.8"
+        "@sentry/browser": "^5.15.4",
+        "@sentry/core": "^5.15.4",
+        "@sentry/integrations": "^5.15.4",
+        "@sentry/types": "^5.15.4",
+        "@sentry/utils": "^5.15.4",
+        "@sentry/wizard": "^1.1.1",
+        "stacktrace-parser": "0.1.9"
     }
 }
