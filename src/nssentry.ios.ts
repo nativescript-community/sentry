@@ -65,6 +65,9 @@ export namespace NSSentry {
     export function crash() {
         SentryClient.sharedClient.crash();
     }
+    export function flush(timeout: number) {
+        // SentryClient.sharedClient.flush(timeout);
+    }
     function toJsObject(objCObj) {
         if (objCObj === null || typeof objCObj !== 'object') {
             return objCObj;
