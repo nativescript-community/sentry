@@ -1,5 +1,6 @@
 import { getCurrentHub } from '@sentry/core';
 import { Integration, Severity } from '@sentry/types';
+import { NSSentry } from '../nssentry';
 import { logger } from '@sentry/utils';
 
 import { NativescriptClient } from '../client';
@@ -8,9 +9,9 @@ import * as application from '@nativescript/core/application';
 import * as trace from '@nativescript/core/trace';
 
 /** NativescriptErrorHandlers Options */
-interface NativescriptErrorHandlersOptions {
-    onerror: boolean;
-    onunhandledrejection: boolean;
+export interface NativescriptErrorHandlersOptions {
+    traceErrorHandler?: boolean;
+    uncaughtErrors?: boolean;
 }
 
 declare const global: any;
@@ -33,8 +34,8 @@ export class NativescriptErrorHandlers implements Integration {
     /** Constructor */
     public constructor(options?: NativescriptErrorHandlersOptions) {
         this._options = {
-            onerror: true,
-            onunhandledrejection: true,
+            traceErrorHandler: false,
+            uncaughtErrors: false,
             ...options
         };
     }
@@ -51,7 +52,7 @@ export class NativescriptErrorHandlers implements Integration {
      * Handle Promises
      */
     private _handleUnhandledRejections(): void {
-        if (this._options.onunhandledrejection) {
+        if (this._options.uncaughtErrors) {
             application.on(application.uncaughtErrorEvent, this.globalHanderEvent, this);
             // const tracking = require('promise/setimmediate/rejection-tracking');
             // tracking.disable();
@@ -97,13 +98,19 @@ export class NativescriptErrorHandlers implements Integration {
             getCurrentHub().captureException(error, {
                 originalException: error
             });
+            // const timeout = client.getOptions().shutdownTimeout || 2000;
+            // NSSentry.flush(timeout);
+            // getCurrentHub()
+            //     .getClient()
+            //     .flush(2000);
         });
 
         const client = getCurrentHub().getClient<NativescriptClient>();
         // If in dev, we call the default handler anyway and hope the error will be sent
         // Just for a better dev experience
         if (client) {
-            (client.flush(client.getOptions().shutdownTimeout || 2000) as any)
+            const timeout = client.getOptions().shutdownTimeout || 2000;
+            (client.flush(timeout) as Promise<any>)
                 .then(() => {
                     // defaultHandler(error, isFatal);
                 })
@@ -120,7 +127,7 @@ export class NativescriptErrorHandlers implements Integration {
      * Handle erros
      */
     private _handleOnError(): void {
-        if (this._options.onerror) {
+        if (this._options.traceErrorHandler) {
             // let handlingFatal = false;
             application.on(application.discardedErrorEvent, this.globalHanderEvent, this);
 

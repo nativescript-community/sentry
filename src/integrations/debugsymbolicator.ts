@@ -33,7 +33,7 @@ type NativescriptError = Error & {
 //   ...
 // };
 
-function parseErrorStack(e: NativescriptError): StackFrame[] {
+export function parseErrorStack(e: NativescriptError): StackFrame[] {
     if (!e || !e.stack) {
         return [];
     }
@@ -46,6 +46,29 @@ function parseErrorStack(e: NativescriptError): StackFrame[] {
             column: frame.column != null ? frame.column - 1 : null
         }));
     }
+}
+
+/**
+ * Converts NativescriptFrames to frames in the Sentry format
+ * @param frames NativescriptFrame[]
+ */
+export function convertNativescriptFramesToSentryFrames(frames: NativescriptFrame[]): StackFrame[] {
+    // Below you will find lines marked with :HACK to prevent showing errors in the sentry ui
+    // But since this is a debug only feature: This is Fine (TM)
+    return frames.map(
+        (frame: NativescriptFrame): StackFrame => {
+            const inApp = (frame.file && !frame.file.includes('node_modules')) || (!!frame.column && !!frame.lineNumber);
+            // const inApp =true;
+            return {
+                colno: frame.column,
+                filename: frame.file,
+                function: frame.methodName,
+                in_app: inApp,
+                lineno: inApp ? frame.lineNumber : undefined, // :HACK
+                platform: inApp ? 'javascript' : 'node' // :HACK
+            };
+        }
+    );
 }
 /** Tries to symbolicate the JS stack trace on the device. */
 export class DebugSymbolicator implements Integration {
@@ -67,7 +90,6 @@ export class DebugSymbolicator implements Integration {
             if (!self || hint === undefined || hint.originalException === undefined) {
                 return event;
             }
-
             const error: NativescriptError = hint.originalException as any;
 
             // const parseErrorStack = require('react-native/Libraries/Core/Devtools/parseErrorStack');
@@ -84,7 +106,7 @@ export class DebugSymbolicator implements Integration {
             //     await self._symbolicate(event, stack);
             // }
             // if (reactError.jsEngine === 'hermes') {
-            const convertedFrames = this._convertNativescriptFramesToSentryFrames(stack as any);
+            const convertedFrames = convertNativescriptFramesToSentryFrames(stack as any);
             this._replaceFramesInEvent(event, convertedFrames);
             // }
 
@@ -112,29 +134,6 @@ export class DebugSymbolicator implements Integration {
         } catch (error) {
             logger.warn(`Unable to symbolicate stack trace: ${error.message}`);
         }
-    }
-
-    /**
-     * Converts NativescriptFrames to frames in the Sentry format
-     * @param frames NativescriptFrame[]
-     */
-    private _convertNativescriptFramesToSentryFrames(frames: NativescriptFrame[]): StackFrame[] {
-        // Below you will find lines marked with :HACK to prevent showing errors in the sentry ui
-        // But since this is a debug only feature: This is Fine (TM)
-        return frames.map(
-            (frame: NativescriptFrame): StackFrame => {
-                const inApp = (frame.file && !frame.file.includes('node_modules')) || (!!frame.column && !!frame.lineNumber);
-                // const inApp =true;
-                return {
-                    colno: frame.column,
-                    filename: frame.file,
-                    function: frame.methodName,
-                    in_app: inApp,
-                    lineno: inApp ? frame.lineNumber : undefined, // :HACK
-                    platform: inApp ? 'javascript' : 'node' // :HACK
-                };
-            }
-        );
     }
 
     /**

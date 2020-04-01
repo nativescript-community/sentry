@@ -33,11 +33,14 @@ export interface NativescriptOptions extends BrowserOptions {
     shutdownTimeout?: number;
 
     /** Should the native nagger alert be shown or not. */
-    enableNativeNagger?: boolean;
+    // enableNativeNagger?: boolean;
     /**
      * Optional prefix to add while rewriting frames
      */
     appPrefix?: string;
+
+    traceErrorHandler?: boolean;
+    uncaughtErrors?: boolean;
 }
 
 /** The Sentry Nativescript SDK Backend. */

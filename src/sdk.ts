@@ -13,6 +13,9 @@ const IGNORED_DEFAULT_INTEGRATIONS = [
     'TryCatch' // We don't need this
 ];
 
+export let rewriteFrameIntegration: {
+    _iteratee: (frame: StackFrame) => StackFrame;
+};
 /**
  * Inits the SDK
  */
@@ -24,8 +27,30 @@ export function init(
 ): void {
     // tslint:disable: strict-comparisons
     if (options.defaultIntegrations === undefined) {
+        rewriteFrameIntegration = new RewriteFrames({
+            iteratee: (frame: StackFrame) => {
+                if (frame.filename) {
+                    let filename = (frame.filename = frame.filename
+                        .replace(/^file\:\/\//, '')
+                        .replace(/^address at /, '')
+                        .replace(/^.*\/[^\.]+(\.app|CodePush|.*(?=\/))/, ''));
+
+                    // const appPrefix = 'app://';
+                    const appPrefix = options.appPrefix || '';
+                    if (appPrefix.endsWith('//') && !appPrefix.endsWith('///')) {
+                        filename = frame.filename.indexOf('/') === 0 ? `${appPrefix}${frame.filename}` : `${appPrefix}/${frame.filename}`;
+                    } else {
+                        filename = frame.filename.indexOf('/') === 0 ? `${appPrefix}${frame.filename.slice(1)}` : `${appPrefix}${frame.filename}`;
+                    }
+
+                    frame.filename = filename;
+                    // We always want to have a tripple slash
+                }
+                return frame;
+            }
+        }) as any;
         options.defaultIntegrations = [
-            new NativescriptErrorHandlers(),
+            new NativescriptErrorHandlers(options),
             new Release(),
             ...defaultIntegrations.filter(i => !IGNORED_DEFAULT_INTEGRATIONS.includes(i.name)),
             new Integrations.Breadcrumbs({
@@ -34,28 +59,8 @@ export function init(
                 dom: false,
                 fetch: false
             }),
-            new DebugSymbolicator(),
-            new RewriteFrames({
-                iteratee: (frame: StackFrame) => {
-                    if (frame.filename) {
-                        let filename = (frame.filename = frame.filename
-                            .replace(/^file\:\/\//, '')
-                            .replace(/^address at /, '')
-                            .replace(/^.*\/[^\.]+(\.app|CodePush|.*(?=\/))/, ''));
-
-                        // const appPrefix = 'app://';
-                        const appPrefix = options.appPrefix || '';
-                        if (appPrefix.endsWith('//') && !appPrefix.endsWith('///')) {
-                            filename = frame.filename.indexOf('/') === 0 ? `${appPrefix}${frame.filename}` : `${appPrefix}/${frame.filename}`;
-                        } else {
-                            filename = frame.filename.indexOf('/') === 0 ? `${appPrefix}${frame.filename.slice(1)}` : `${appPrefix}${frame.filename}`;
-                        }
-                        frame.filename = filename;
-                        // We always want to have a tripple slash
-                    }
-                    return frame;
-                }
-            }),
+            // new DebugSymbolicator(),
+            rewriteFrameIntegration as any,
             new DeviceContext()
         ];
     }
@@ -65,9 +70,9 @@ export function init(
     if (options.enableNativeCrashHandling === undefined) {
         options.enableNativeCrashHandling = true;
     }
-    if (options.enableNativeNagger === undefined) {
-        options.enableNativeNagger = true;
-    }
+    // if (options.enableNativeNagger === undefined) {
+    //     options.enableNativeNagger = true;
+    // }
     initAndBind(NativescriptClient, options);
 }
 

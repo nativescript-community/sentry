@@ -24,7 +24,6 @@ export class NativescriptClient extends BaseClient<NativescriptBackend, Nativesc
      * @inheritDoc
      */
     protected _prepareEvent(event: Event, scope?: Scope, hint?: EventHint): SyncPromise<Event | null> {
-        // console.log('_prepareEvent', hint);
         event.platform = event.platform || 'javascript';
         event.sdk = {
             ...event.sdk,
