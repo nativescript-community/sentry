@@ -224,7 +224,7 @@ export namespace NSSentry {
             if (event.extra) {
                 Object.keys(event.extra).forEach(k => {
                     const value = event.extra[k];
-                    nEvent.setExtra(k, value);
+                    nEvent.setExtra(k, typeof value === 'string' ? value : JSON.stringify(value));
                 });
             }
 
@@ -301,7 +301,7 @@ export namespace NSSentry {
             // io.sentry.core.Sentry.flush(0);
             resolve({ status: Status.Success, id });
         }).catch(err => {
-            console.error(err);
+            console.error('error sending sentry event', err, err.stack);
             return Promise.reject(err);
         }) as any;
     }
