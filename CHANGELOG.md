@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.0.8](https://github.com/Akylas/nativescript-akylas-sentry/compare/v0.0.7...v0.0.8) (2020-06-22)
+
+
+### Bug Fixes
+
+* **android:** stringify extra if not ([54918b2](https://github.com/Akylas/nativescript-akylas-sentry/commit/54918b2c5b690e540f76aa00202d90acf1f5350c))
+
+
+
+
+
 ## [0.0.7](https://github.com/Akylas/nativescript-akylas-sentry/compare/v0.0.6...v0.0.7) (2020-04-02)
 
 **Note:** Version bump only for package nativescript-akylas-sentry
