@@ -30,6 +30,6 @@
             </intent-filter>
         </activity>
         <activity android:name="com.tns.ErrorReportActivity"/>
-        <meta-data android:name="com.bugsnag.android.API_KEY" android:value="c2bac2381b9fed37bfa37453e71a0ea9"/>
-    </application>
+        <meta-data android:name="io.sentry.dsn" android:value="https://d248254c54f34d3abc5c68055a7f43d3@bugs.akylas.fr/5" />
+             </application>
 </manifest>

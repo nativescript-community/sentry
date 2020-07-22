@@ -11,7 +11,6 @@ export default {
       </ActionBar>
       <StackLayout>
         <Button text="leaveBreadcrumb" @tap="leaveBreadcrumb"/>
-        <Button text="leaveBreadcrumb2" @tap="leaveBreadcrumb2"/>
         <Button text="notify" @tap="notify"/>
         <Button text="throwError" @tap="throwError"/>
         <Button text="crashTest" @tap="crashTest"/>
@@ -32,8 +31,9 @@ export default {
             throw new Error('test_thrown_error');
             // this.$bugsnag.notify(new Error('test_error'));
         },
-        leaveBreadcrumb() {},
-        leaveBreadcrumb2() {},
+        leaveBreadcrumb() {
+            Sentry.addBreadcrumb({ category: 'ui', message: 'test', level: 'info' as any });
+        },
         crashTest() {
             Sentry.nativeCrash();
         },

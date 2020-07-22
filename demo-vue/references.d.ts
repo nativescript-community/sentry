@@ -18,4 +18,8 @@ declare module '*.vue' {
 
 declare const gVars: {
     SENTRY_DSN: string;
+    SENTRY_PREFIX: string;
+    platform: 'ios' | 'android';
+    isAndroid: boolean;
+    isIOS: boolean;
 };
