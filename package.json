@@ -1,5 +1,5 @@
 {
-    "name": "nativescript-akylas-sentry",
+    "name": "@nativescript-community/sentry",
     "version": "1.0.0",
     "scripts": {
         "tsc": "cp src/nssentry.d.ts plugin && tsc -skipLibCheck",

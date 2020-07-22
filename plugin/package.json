@@ -1,5 +1,5 @@
 {
-    "name": "nativescript-akylas-sentry",
+    "name": "@nativescript-community/sentry",
     "version": "0.0.9",
     "main": "./index",
     "typings": "./index.d.ts",
