@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.0.9](https://github.com/Akylas/nativescript-akylas-sentry/compare/v0.0.8...v0.0.9) (2020-07-22)
+
+
+### Bug Fixes
+
+* update to latest SDK ([3f02271](https://github.com/Akylas/nativescript-akylas-sentry/commit/3f02271bda4ca548606fa91ce50cd5ace198e7ef))
+
+
+
+
+
 ## [0.0.8](https://github.com/Akylas/nativescript-akylas-sentry/compare/v0.0.7...v0.0.8) (2020-06-22)
 
 
