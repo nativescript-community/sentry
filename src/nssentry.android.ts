@@ -14,7 +14,7 @@ export namespace NSSentry {
         return {
             id: packageInfo.packageName,
             version: packageInfo.versionName,
-            build: packageInfo.versionCode
+            build: packageInfo.versionCode,
         };
     }
     function eventLevel(event) {
@@ -37,7 +37,7 @@ export namespace NSSentry {
             return null;
         }
         const map = new java.util.HashMap<string, string>();
-        Object.keys(obj).forEach(k => {
+        Object.keys(obj).forEach((k) => {
             map.put(k, obj[k]);
         });
         return map;
@@ -150,7 +150,7 @@ export namespace NSSentry {
         nEvent.setExceptions(exceptions);
     }
     export function sendEvent(event: Event): Promise<Response> {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             const nEvent = new io.sentry.core.SentryEvent();
             if (event.event_id) {
                 nEvent.setEventId(new io.sentry.core.protocol.SentryId(event.event_id));
@@ -181,7 +181,7 @@ export namespace NSSentry {
 
                     try {
                         if (breadcrumb.data) {
-                            Object.keys(breadcrumb.data).forEach(k => {
+                            Object.keys(breadcrumb.data).forEach((k) => {
                                 const value = breadcrumb.data[k];
                                 // in case a `status_code` entry got accidentally stringified as a float
                                 if (k === 'status_code') {
@@ -222,7 +222,7 @@ export namespace NSSentry {
             }
 
             if (event.extra) {
-                Object.keys(event.extra).forEach(k => {
+                Object.keys(event.extra).forEach((k) => {
                     const value = event.extra[k];
                     nEvent.setExtra(k, typeof value === 'string' ? value : JSON.stringify(value));
                 });
@@ -238,7 +238,7 @@ export namespace NSSentry {
             }
 
             if (event.tags) {
-                Object.keys(event.tags).forEach(k => {
+                Object.keys(event.tags).forEach((k) => {
                     const value = event.tags[k];
                     nEvent.setTag(k, value || 'INVALID_TAG');
                 });
@@ -278,7 +278,7 @@ export namespace NSSentry {
                 nEvent.setLevel(eventLevel(event.level));
             }
             if (event.contexts) {
-                Object.keys(event.contexts).forEach(k => {
+                Object.keys(event.contexts).forEach((k) => {
                     // const value = event.contexts[k];
                     // const context = new io.sentry.core.protocol.Contexts();
                     // nEvent.setTag(k, value || 'INVALID_TAG');
@@ -300,7 +300,7 @@ export namespace NSSentry {
             const id = io.sentry.core.Sentry.captureEvent(nEvent);
             // io.sentry.core.Sentry.flush(0);
             resolve({ status: Status.Success, id });
-        }).catch(err => {
+        }).catch((err) => {
             console.error('error sending sentry event', err, err.stack);
             return Promise.reject(err);
         }) as any;
@@ -324,18 +324,15 @@ export namespace NSSentry {
                     appAndroid.context,
                     new io.sentry.core.Sentry.OptionsConfiguration({
                         configure(config) {
+                            config.setLogger(new io.sentry.core.SystemOutLogger());
+
+                            // config.setDiagnosticLevel(io.sentry.core.SentryLevel.DEBUG);
+                            // io.sentry.core.Sentry.setLevel(io.sentry.core.SentryLevel.DEBUG);
                             config.setDsn(dsnString);
                             config.setEnvironment('javascript');
                             if (!!options.environment) {
                                 config.setEnvironment(options.environment);
                             }
-                            config.setLogger(
-                                new io.sentry.core.ILogger({
-                                    log(param0: io.sentry.core.SentryLevel, param1: any, param2: any, param3?: native.Array<any>) {
-                                        console.log('sentry', param0, param1, param2, param3);
-                                    }
-                                })
-                            );
                             if (!!options.debug) {
                                 config.setDebug(options.debug);
                             }
@@ -345,26 +342,35 @@ export namespace NSSentry {
                             if (!!options.dist) {
                                 config.setDist(options.dist);
                             }
+                            if (options.enableAutoSessionTracking !== undefined) {
+                                config.setEnableSessionTracking(options.enableAutoSessionTracking);
+                            }
 
                             config.setEnableNdk(true);
-
                             const integrations = config.getIntegrations();
                             const size = integrations.size();
                             if (options.enableNativeCrashHandling === false) {
-                                let indexToRemove = -1;
-                                for (let index = 0; index < size; index++) {
+                                for (let index = size - 1; index >= 0; index--) {
                                     const inte = integrations.get(index);
-                                    if (inte instanceof io.sentry.core.UncaughtExceptionHandlerIntegration) {
-                                        indexToRemove = index;
+                                    if (
+                                        inte instanceof io.sentry.core.UncaughtExceptionHandlerIntegration ||
+                                        inte instanceof io.sentry.android.core.AnrIntegration ||
+                                        inte instanceof io.sentry.android.core.NdkIntegration
+                                    ) {
+                                        integrations.remove(index);
                                     }
-                                }
-                                if (indexToRemove > -1) {
-                                    integrations.remove(indexToRemove);
                                 }
                             }
                             config.setBeforeSend(
                                 new io.sentry.core.SentryOptions.BeforeSendCallback({
                                     execute(event, hint) {
+                                        if (options.beforeSend) {
+                                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+                                            options.beforeSend(event as any, hint);
+                                        }
+                                        const map = new java.util.HashMap();
+                                        map.put('X-Forwarded-Protocol', 'https');
+                                        event.getRequest().setHeaders(map);
                                         // we use this callback to actually try and get the JS stack when a native error is catched
                                         try {
                                             const ex: io.sentry.core.protocol.SentryException = event.getExceptions().get(0);
@@ -380,7 +386,7 @@ export namespace NSSentry {
                                                             const stack = parseErrorStack({ stack: jsStackTrace } as any);
 
                                                             const convertedFrames = convertNativescriptFramesToSentryFrames(stack as any);
-                                                            convertedFrames.forEach(frame => rewriteFrameIntegration._iteratee(frame));
+                                                            convertedFrames.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
                                                             addExceptionInterface(event, 'Error', throwable.getMessage(), convertedFrames.reverse());
                                                         }
                                                     }
@@ -388,10 +394,10 @@ export namespace NSSentry {
                                             }
                                         } catch (e) {}
                                         return event;
-                                    }
+                                    },
                                 })
                             );
-                        }
+                        },
                     })
                 );
                 initialized = true;
@@ -426,14 +432,11 @@ export namespace NSSentry {
         throw new java.lang.RuntimeException('TEST - Sentry Client Crash');
     }
     export function deviceContexts(): Promise<any> {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             const nEvent = new io.sentry.core.SentryEvent();
 
             const params = {};
-            const it = nEvent
-                .getContexts()
-                .entrySet()
-                .iterator();
+            const it = nEvent.getContexts().entrySet().iterator();
             let value, pair, key;
             while (it.hasNext()) {
                 pair = it.next();

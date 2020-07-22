@@ -4,10 +4,10 @@ declare namespace com {
             export class DefaultDateTypeAdapter extends TypeAdapter<java.util.Date> {
                 public static class: java.lang.Class<DefaultDateTypeAdapter>;
                 public constructor(param0: number, param1: number);
-                public read(param0: any): any;
-                public read(param0: any): java.util.Date;
-                public write(param0: any, param1: java.util.Date): void;
-                public write(param0: any, param1: any): void;
+                public read(param0: stream.JsonReader): any;
+                public read(param0: stream.JsonReader): java.util.Date;
+                public write(param0: stream.JsonWriter, param1: java.util.Date): void;
+                public write(param0: stream.JsonWriter, param1: any): void;
                 public constructor(param0: java.lang.Class<any>, param1: number, param2: number);
                 public toString(): string;
                 public constructor();
@@ -22,7 +22,7 @@ declare namespace com {
             export class ExclusionStrategy extends java.lang.Object {
                 public static class: java.lang.Class<ExclusionStrategy>;
                 /**
-                 * Constructs a new instance of the ExclusionStrategy interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                 * Constructs a new instance of the com.google.gson.ExclusionStrategy interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
                  */
                 public constructor(implementation: { shouldSkipField(param0: FieldAttributes): boolean; shouldSkipClass(param0: java.lang.Class<any>): boolean });
                 public constructor();
@@ -33,21 +33,6 @@ declare namespace com {
     }
 }
 
-declare namespace com {
-    export namespace google {
-        export namespace gson {
-            export class TypeAdapterFactory extends java.lang.Object {
-                public static class: java.lang.Class<TypeAdapterFactory>;
-                /**
-                 * Constructs a new instance of the com.google.gson.TypeAdapterFactory interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
-                 */
-                public constructor(implementation: { create(param0: Gson, param1: any): TypeAdapter<any> });
-                public constructor();
-                public create(param0: Gson, param1: any): TypeAdapter<any>;
-            }
-        }
-    }
-}
 declare namespace com {
     export namespace google {
         export namespace gson {
@@ -92,7 +77,7 @@ declare namespace com {
             export class FieldNamingStrategy extends java.lang.Object {
                 public static class: java.lang.Class<FieldNamingStrategy>;
                 /**
-                 * Constructs a new instance of the FieldNamingStrategy interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                 * Constructs a new instance of the com.google.gson.FieldNamingStrategy interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
                  */
                 public constructor(implementation: { translateName(param0: java.lang.reflect.Field): string });
                 public constructor();
@@ -107,42 +92,42 @@ declare namespace com {
         export namespace gson {
             export class Gson extends java.lang.Object {
                 public static class: java.lang.Class<Gson>;
-                public excluder(): any;
-                public getDelegateAdapter(param0: TypeAdapterFactory, param1: any): TypeAdapter<any>;
+                public excluder(): internal.Excluder;
+                public getDelegateAdapter(param0: TypeAdapterFactory, param1: reflect.TypeToken<any>): TypeAdapter<any>;
                 public getAdapter(param0: java.lang.Class<any>): TypeAdapter<any>;
                 public serializeNulls(): boolean;
-                public newJsonReader(param0: java.io.Reader): any;
+                public newJsonReader(param0: java.io.Reader): stream.JsonReader;
                 public fromJson(param0: java.io.Reader, param1: java.lang.reflect.Type): any;
-                public toJson(param0: JsonElement, param1: any): void;
+                public toJson(param0: JsonElement, param1: stream.JsonWriter): void;
                 public fromJson(param0: string, param1: java.lang.Class<any>): any;
                 public fromJson(param0: JsonElement, param1: java.lang.Class<any>): any;
                 public htmlSafe(): boolean;
                 public fromJson(param0: string, param1: java.lang.reflect.Type): any;
                 public constructor();
                 public toJsonTree(param0: any, param1: java.lang.reflect.Type): JsonElement;
-                public newJsonWriter(param0: java.io.Writer): any;
+                public newJsonWriter(param0: java.io.Writer): stream.JsonWriter;
                 public fieldNamingStrategy(): FieldNamingStrategy;
-                public fromJson(param0: any, param1: java.lang.reflect.Type): any;
+                public fromJson(param0: stream.JsonReader, param1: java.lang.reflect.Type): any;
                 public toJson(param0: JsonElement, param1: java.lang.Appendable): void;
                 public fromJson(param0: java.io.Reader, param1: java.lang.Class<any>): any;
                 public newBuilder(): GsonBuilder;
                 public toJson(param0: any, param1: java.lang.Appendable): void;
                 public toJson(param0: any): string;
-                public toJson(param0: any, param1: java.lang.reflect.Type, param2: any): void;
+                public toJson(param0: any, param1: java.lang.reflect.Type, param2: stream.JsonWriter): void;
                 public toJson(param0: any, param1: java.lang.reflect.Type): string;
                 public toJsonTree(param0: any): JsonElement;
                 public toString(): string;
                 public toJson(param0: any, param1: java.lang.reflect.Type, param2: java.lang.Appendable): void;
                 public toJson(param0: JsonElement): string;
-                public getAdapter(param0: any): TypeAdapter<any>;
+                public getAdapter(param0: reflect.TypeToken<any>): TypeAdapter<any>;
                 public fromJson(param0: JsonElement, param1: java.lang.reflect.Type): any;
             }
             export namespace Gson {
                 export class FutureTypeAdapter<T> extends TypeAdapter<any> {
                     public static class: java.lang.Class<FutureTypeAdapter<any>>;
-                    public write(param0: any, param1: any): void;
+                    public write(param0: stream.JsonWriter, param1: any): void;
                     public setDelegate(param0: TypeAdapter<any>): void;
-                    public read(param0: any): any;
+                    public read(param0: stream.JsonReader): any;
                 }
             }
         }
@@ -190,7 +175,7 @@ declare namespace com {
             export class InstanceCreator<T> extends java.lang.Object {
                 public static class: java.lang.Class<InstanceCreator<any>>;
                 /**
-                 * Constructs a new instance of the InstanceCreator<any> interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                 * Constructs a new instance of the com.google.gson.InstanceCreator<any> interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
                  */
                 public constructor(implementation: { createInstance(param0: java.lang.reflect.Type): T });
                 public constructor();
@@ -250,7 +235,7 @@ declare namespace com {
             export class JsonDeserializationContext extends java.lang.Object {
                 public static class: java.lang.Class<JsonDeserializationContext>;
                 /**
-                 * Constructs a new instance of the JsonDeserializationContext interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                 * Constructs a new instance of the com.google.gson.JsonDeserializationContext interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
                  */
                 public constructor(implementation: { deserialize(param0: JsonElement, param1: java.lang.reflect.Type): any });
                 public constructor();
@@ -266,7 +251,7 @@ declare namespace com {
             export class JsonDeserializer<T> extends java.lang.Object {
                 public static class: java.lang.Class<JsonDeserializer<any>>;
                 /**
-                 * Constructs a new instance of the JsonDeserializer<any> interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                 * Constructs a new instance of the com.google.gson.JsonDeserializer<any> interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
                  */
                 public constructor(implementation: { deserialize(param0: JsonElement, param1: java.lang.reflect.Type, param2: JsonDeserializationContext): T });
                 public constructor();
@@ -396,7 +381,7 @@ declare namespace com {
                 public static class: java.lang.Class<JsonParser>;
                 public parse(param0: java.io.Reader): JsonElement;
                 public parse(param0: string): JsonElement;
-                public parse(param0: any): JsonElement;
+                public parse(param0: stream.JsonReader): JsonElement;
                 public constructor();
             }
         }
@@ -443,7 +428,7 @@ declare namespace com {
             export class JsonSerializationContext extends java.lang.Object {
                 public static class: java.lang.Class<JsonSerializationContext>;
                 /**
-                 * Constructs a new instance of the JsonSerializationContext interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                 * Constructs a new instance of the com.google.gson.JsonSerializationContext interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
                  */
                 public constructor(implementation: { serialize(param0: any): JsonElement; serialize(param0: any, param1: java.lang.reflect.Type): JsonElement });
                 public constructor();
@@ -460,7 +445,7 @@ declare namespace com {
             export class JsonSerializer<T> extends java.lang.Object {
                 public static class: java.lang.Class<JsonSerializer<any>>;
                 /**
-                 * Constructs a new instance of the JsonSerializer<any> interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                 * Constructs a new instance of the com.google.gson.JsonSerializer<any> interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
                  */
                 public constructor(implementation: { serialize(param0: T, param1: java.lang.reflect.Type, param2: JsonSerializationContext): JsonElement });
                 public constructor();
@@ -521,7 +506,7 @@ declare namespace com {
         export namespace gson {
             export abstract class TypeAdapter<T> extends java.lang.Object {
                 public static class: java.lang.Class<TypeAdapter<any>>;
-                public write(param0: any, param1: T): void;
+                public write(param0: stream.JsonWriter, param1: T): void;
                 public fromJson(param0: java.io.Reader): T;
                 public toJsonTree(param0: T): JsonElement;
                 public toJson(param0: T): string;
@@ -529,419 +514,217 @@ declare namespace com {
                 public fromJson(param0: string): T;
                 public toJson(param0: java.io.Writer, param1: T): void;
                 public fromJsonTree(param0: JsonElement): T;
-                public read(param0: any): T;
+                public read(param0: stream.JsonReader): T;
                 public constructor();
             }
         }
     }
 }
 
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export class ANRWatchDog extends java.lang.Thread {
-                    public static class: java.lang.Class<ANRWatchDog>;
-                    public run(): void;
-                }
-                export namespace ANRWatchDog {
-                    export class ANRListener extends java.lang.Object {
-                        public static class: java.lang.Class<ANRListener>;
-                        /**
-                         * Constructs a new instance of the io.sentry.android.core.ANRWatchDog$ANRListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
-                         */
-                        public constructor(implementation: { onAppNotResponding(param0: ApplicationNotResponding): void });
-                        public constructor();
-                        public onAppNotResponding(param0: ApplicationNotResponding): void;
-                    }
-                }
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export class TypeAdapterFactory extends java.lang.Object {
+                public static class: java.lang.Class<TypeAdapterFactory>;
+                /**
+                 * Constructs a new instance of the com.google.gson.TypeAdapterFactory interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                 */
+                public constructor(implementation: { create(param0: Gson, param1: reflect.TypeToken<any>): TypeAdapter<any> });
+                public constructor();
+                public create(param0: Gson, param1: reflect.TypeToken<any>): TypeAdapter<any>;
             }
         }
     }
 }
 
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export class AndroidLogger extends java.lang.Object {
-                    public static class: java.lang.Class<AndroidLogger>;
-                    public log(param0: sentry.core.SentryLevel, param1: string, param2: native.Array<any>): void;
-                    public log(param0: sentry.core.SentryLevel, param1: string, param2: java.lang.Throwable): void;
-                    public log(param0: sentry.core.SentryLevel, param1: java.lang.Throwable, param2: string, param3: native.Array<any>): void;
-                }
-            }
-        }
-    }
-}
-
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export class AndroidOptionsInitializer extends java.lang.Object {
-                    public static class: java.lang.Class<AndroidOptionsInitializer>;
-                }
-            }
-        }
-    }
-}
-
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export class AndroidSerializer extends java.lang.Object {
-                    public static class: java.lang.Class<AndroidSerializer>;
-                    public deserializeEvent(param0: java.io.Reader): sentry.core.SentryEvent;
-                    public serialize(param0: sentry.core.SentryEvent, param1: java.io.Writer): void;
-                    public constructor(param0: sentry.core.ILogger);
-                }
-            }
-        }
-    }
-}
-
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export class AndroidTransportGate extends java.lang.Object {
-                    public static class: java.lang.Class<AndroidTransportGate>;
-                    public isSendingAllowed(): boolean;
-                }
-            }
-        }
-    }
-}
-
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export class AnrIntegration extends java.lang.Object implements java.io.Closeable {
-                    public static class: java.lang.Class<AnrIntegration>;
-                    public register(param0: sentry.core.IHub, param1: sentry.core.SentryOptions): void;
-                    public constructor();
-                    public close(): void;
-                }
-            }
-        }
-    }
-}
-
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export class ApplicationNotResponding extends java.lang.RuntimeException {
-                    public static class: java.lang.Class<ApplicationNotResponding>;
-                    public getState(): java.lang.Thread.State;
-                }
-            }
-        }
-    }
-}
-
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export class BuildConfig extends java.lang.Object {
-                    public static class: java.lang.Class<BuildConfig>;
-                    public static DEBUG: boolean;
-                    public static LIBRARY_PACKAGE_NAME: string;
-                    public static APPLICATION_ID: string;
-                    public static BUILD_TYPE: string;
-                    public static FLAVOR: string;
-                    public static VERSION_CODE: number;
-                    public static VERSION_NAME: string;
-                    public static SENTRY_CLIENT_NAME: string;
-                    public constructor();
-                }
-            }
-        }
-    }
-}
-
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export class DefaultAndroidEventProcessor extends java.lang.Object {
-                    public static class: java.lang.Class<DefaultAndroidEventProcessor>;
-                    public getUser(): sentry.core.protocol.User;
-                    public process(param0: sentry.core.SentryEvent, param1: any): sentry.core.SentryEvent;
-                    public constructor(param0: globalAndroid.content.Context, param1: sentry.core.SentryOptions);
-                }
-            }
-        }
-    }
-}
-
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export class EnvelopeFileObserver extends globalAndroid.os.FileObserver {
-                    public static class: java.lang.Class<EnvelopeFileObserver>;
-                    public onEvent(param0: number, param1: string): void;
-                }
-            }
-        }
-    }
-}
-
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export abstract class EnvelopeFileObserverIntegration extends java.lang.Object implements java.io.Closeable {
-                    public static class: java.lang.Class<EnvelopeFileObserverIntegration>;
-                    public register(param0: sentry.core.IHub, param1: sentry.core.SentryOptions): void;
-                    public close(): void;
-                    public static getOutboxFileObserver(): EnvelopeFileObserverIntegration;
-                }
-                export namespace EnvelopeFileObserverIntegration {
-                    export class OutboxEnvelopeFileObserverIntegration extends EnvelopeFileObserverIntegration {
-                        public static class: java.lang.Class<OutboxEnvelopeFileObserverIntegration>;
-                        public close(): void;
-                        public getPath(param0: sentry.core.SentryOptions): string;
-                    }
-                }
-            }
-        }
-    }
-}
-
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export class IHandler extends java.lang.Object {
-                    public static class: java.lang.Class<IHandler>;
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace annotations {
+                export class Expose extends java.lang.Object implements java.lang.annotation.Annotation {
+                    public static class: java.lang.Class<Expose>;
                     /**
-                     * Constructs a new instance of the io.sentry.android.core.IHandler interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                     * Constructs a new instance of the com.google.gson.annotations.Expose interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
                      */
-                    public constructor(implementation: { post(param0: java.lang.Runnable): void; getThread(): java.lang.Thread });
+                    public constructor(implementation: {
+                        serialize(): boolean;
+                        deserialize(): boolean;
+                        equals(param0: any): boolean;
+                        hashCode(): number;
+                        toString(): string;
+                        annotationType(): java.lang.Class<any>;
+                    });
                     public constructor();
-                    public post(param0: java.lang.Runnable): void;
-                    public getThread(): java.lang.Thread;
+                    public equals(param0: any): boolean;
+                    public toString(): string;
+                    public annotationType(): java.lang.Class<any>;
+                    public deserialize(): boolean;
+                    public serialize(): boolean;
+                    public hashCode(): number;
                 }
             }
         }
     }
 }
 
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export class Installation extends java.lang.Object {
-                    public static class: java.lang.Class<Installation>;
-                    public static id(param0: globalAndroid.content.Context): string;
-                }
-            }
-        }
-    }
-}
-
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export class MainLooperHandler extends java.lang.Object implements IHandler {
-                    public static class: java.lang.Class<MainLooperHandler>;
-                    public post(param0: java.lang.Runnable): void;
-                    public getThread(): java.lang.Thread;
-                }
-            }
-        }
-    }
-}
-
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export class ManifestMetadataReader extends java.lang.Object {
-                    public static class: java.lang.Class<ManifestMetadataReader>;
-                }
-            }
-        }
-    }
-}
-
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export class NdkIntegration extends java.lang.Object {
-                    public static class: java.lang.Class<NdkIntegration>;
-                    public register(param0: sentry.core.IHub, param1: sentry.core.SentryOptions): void;
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace annotations {
+                export class JsonAdapter extends java.lang.Object implements java.lang.annotation.Annotation {
+                    public static class: java.lang.Class<JsonAdapter>;
+                    /**
+                     * Constructs a new instance of the com.google.gson.annotations.JsonAdapter interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                     */
+                    public constructor(implementation: {
+                        value(): java.lang.Class<any>;
+                        nullSafe(): boolean;
+                        equals(param0: any): boolean;
+                        hashCode(): number;
+                        toString(): string;
+                        annotationType(): java.lang.Class<any>;
+                    });
                     public constructor();
+                    public equals(param0: any): boolean;
+                    public toString(): string;
+                    public value(): java.lang.Class<any>;
+                    public annotationType(): java.lang.Class<any>;
+                    public nullSafe(): boolean;
+                    public hashCode(): number;
                 }
             }
         }
     }
 }
 
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export class SentryAndroid extends java.lang.Object {
-                    public static class: java.lang.Class<SentryAndroid>;
-                    public static init(param0: globalAndroid.content.Context): void;
-                    public static init(param0: globalAndroid.content.Context, param1: sentry.core.ILogger, param2: sentry.core.Sentry.OptionsConfiguration<SentryAndroidOptions>): void;
-                    public static init(param0: globalAndroid.content.Context, param1: sentry.core.Sentry.OptionsConfiguration<SentryAndroidOptions>): void;
-                    public static init(param0: globalAndroid.content.Context, param1: sentry.core.ILogger): void;
-                }
-            }
-        }
-    }
-}
-
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export class SentryAndroidOptions extends sentry.core.SentryOptions {
-                    public static class: java.lang.Class<SentryAndroidOptions>;
-                    public setAnrReportInDebug(param0: boolean): void;
-                    public setAnrTimeoutIntervalMills(param0: number): void;
-                    public isAnrReportInDebug(): boolean;
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace annotations {
+                export class SerializedName extends java.lang.Object implements java.lang.annotation.Annotation {
+                    public static class: java.lang.Class<SerializedName>;
+                    /**
+                     * Constructs a new instance of the com.google.gson.annotations.SerializedName interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                     */
+                    public constructor(implementation: {
+                        value(): string;
+                        alternate(): native.Array<string>;
+                        equals(param0: any): boolean;
+                        hashCode(): number;
+                        toString(): string;
+                        annotationType(): java.lang.Class<any>;
+                    });
                     public constructor();
-                    public isAnrEnabled(): boolean;
-                    public setAnrEnabled(param0: boolean): void;
-                    public getAnrTimeoutIntervalMills(): number;
+                    public equals(param0: any): boolean;
+                    public toString(): string;
+                    public annotationType(): java.lang.Class<any>;
+                    public value(): string;
+                    public alternate(): native.Array<string>;
+                    public hashCode(): number;
                 }
             }
         }
     }
 }
 
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export class SentryInitProvider extends globalAndroid.content.ContentProvider {
-                    public static class: java.lang.Class<SentryInitProvider>;
-                    public query(param0: globalAndroid.net.Uri, param1: native.Array<string>, param2: string, param3: native.Array<string>, param4: string): globalAndroid.database.Cursor;
-                    public update(param0: globalAndroid.net.Uri, param1: globalAndroid.content.ContentValues, param2: string, param3: native.Array<string>): number;
-                    public shutdown(): void;
-                    public onTrimMemory(param0: number): void;
-                    public attachInfo(param0: globalAndroid.content.Context, param1: globalAndroid.content.pm.ProviderInfo): void;
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace annotations {
+                export class Since extends java.lang.Object implements java.lang.annotation.Annotation {
+                    public static class: java.lang.Class<Since>;
+                    /**
+                     * Constructs a new instance of the com.google.gson.annotations.Since interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                     */
+                    public constructor(implementation: { value(): number; equals(param0: any): boolean; hashCode(): number; toString(): string; annotationType(): java.lang.Class<any> });
                     public constructor();
-                    public onCreate(): boolean;
-                    public query(
-                        param0: globalAndroid.net.Uri,
-                        param1: native.Array<string>,
-                        param2: globalAndroid.os.Bundle,
-                        param3: globalAndroid.os.CancellationSignal
-                    ): globalAndroid.database.Cursor;
-                    public getType(param0: globalAndroid.net.Uri): string;
-                    public delete(param0: globalAndroid.net.Uri, param1: string, param2: native.Array<string>): number;
-                    public insert(param0: globalAndroid.net.Uri, param1: globalAndroid.content.ContentValues): globalAndroid.net.Uri;
-                    public query(
-                        param0: globalAndroid.net.Uri,
-                        param1: native.Array<string>,
-                        param2: string,
-                        param3: native.Array<string>,
-                        param4: string,
-                        param5: globalAndroid.os.CancellationSignal
-                    ): globalAndroid.database.Cursor;
+                    public equals(param0: any): boolean;
+                    public toString(): string;
+                    public annotationType(): java.lang.Class<any>;
+                    public hashCode(): number;
+                    public value(): number;
                 }
             }
         }
     }
 }
 
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export class UnknownPropertiesTypeAdapterFactory extends java.lang.Object implements com.google.gson.TypeAdapterFactory {
-                    public static class: java.lang.Class<UnknownPropertiesTypeAdapterFactory>;
-                    public create(param0: com.google.gson.Gson, param1: any): com.google.gson.TypeAdapter<any>;
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace annotations {
+                export class Until extends java.lang.Object implements java.lang.annotation.Annotation {
+                    public static class: java.lang.Class<Until>;
+                    /**
+                     * Constructs a new instance of the com.google.gson.annotations.Until interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                     */
+                    public constructor(implementation: { value(): number; equals(param0: any): boolean; hashCode(): number; toString(): string; annotationType(): java.lang.Class<any> });
+                    public constructor();
+                    public equals(param0: any): boolean;
+                    public toString(): string;
+                    public annotationType(): java.lang.Class<any>;
+                    public hashCode(): number;
+                    public value(): number;
                 }
-                export namespace UnknownPropertiesTypeAdapterFactory {
-                    export class UnknownPropertiesTypeAdapter<T> extends com.google.gson.TypeAdapter<any> {
-                        public static class: java.lang.Class<UnknownPropertiesTypeAdapter<any>>;
-                        public read(param0 /* : com.google.any */): any;
-                        public write(param0 /* : com.google.any */, param1: any): void;
+            }
+            export namespace internal {
+                export namespace Gson {
+                    export class Preconditions extends java.lang.Object {
+                        public static class: java.lang.Class<Preconditions>;
+                        public static checkArgument(param0: boolean): void;
+                        public static checkNotNull(param0: any): any;
                     }
-                }
-            }
-        }
-    }
-}
-
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export namespace adapters {
-                    export class ContextsDeserializerAdapter extends com.google.gson.JsonDeserializer<sentry.core.protocol.Contexts> {
-                        public static class: java.lang.Class<ContextsDeserializerAdapter>;
-                        public deserialize(param0: com.google.gson.JsonElement, param1: java.lang.reflect.Type, param2: com.google.gson.JsonDeserializationContext): any;
-                        public constructor(param0: sentry.core.ILogger);
-                        public deserialize(param0: com.google.gson.JsonElement, param1: java.lang.reflect.Type, param2: com.google.gson.JsonDeserializationContext): sentry.core.protocol.Contexts;
-                    }
-                }
-            }
-        }
-    }
-}
-
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export namespace adapters {
-                    export class DateDeserializerAdapter extends com.google.gson.JsonDeserializer<java.util.Date> {
-                        public static class: java.lang.Class<DateDeserializerAdapter>;
-                        public deserialize(param0: com.google.gson.JsonElement, param1: java.lang.reflect.Type, param2: com.google.gson.JsonDeserializationContext): any;
-                        public deserialize(param0: com.google.gson.JsonElement, param1: java.lang.reflect.Type, param2: com.google.gson.JsonDeserializationContext): java.util.Date;
-                        public constructor(param0: sentry.core.ILogger);
-                    }
-                }
-            }
-        }
-    }
-}
-
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export namespace adapters {
-                    export class DateSerializerAdapter extends com.google.gson.JsonSerializer<java.util.Date> {
-                        public static class: java.lang.Class<DateSerializerAdapter>;
-                        public constructor(param0: sentry.core.ILogger);
-                        public serialize(param0: java.util.Date, param1: java.lang.reflect.Type, param2: com.google.gson.JsonSerializationContext): com.google.gson.JsonElement;
-                        public serialize(param0: any, param1: java.lang.reflect.Type, param2: com.google.gson.JsonSerializationContext): com.google.gson.JsonElement;
-                    }
-                }
-            }
-        }
-    }
-}
-
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export namespace adapters {
-                    export class OrientationDeserializerAdapter extends com.google.gson.JsonDeserializer<sentry.core.protocol.Device.DeviceOrientation> {
-                        public static class: java.lang.Class<OrientationDeserializerAdapter>;
-                        public deserialize(param0: com.google.gson.JsonElement, param1: java.lang.reflect.Type, param2: com.google.gson.JsonDeserializationContext): any;
-                        public constructor(param0: sentry.core.ILogger);
-                        public deserialize(
-                            param0: com.google.gson.JsonElement,
+                    export class Types extends java.lang.Object {
+                        public static class: java.lang.Class<Types>;
+                        public static resolve(param0: java.lang.reflect.Type, param1: java.lang.Class<any>, param2: java.lang.reflect.Type): java.lang.reflect.Type;
+                        public static getRawType(param0: java.lang.reflect.Type): java.lang.Class<any>;
+                        public static subtypeOf(param0: java.lang.reflect.Type): java.lang.reflect.WildcardType;
+                        public static arrayOf(param0: java.lang.reflect.Type): java.lang.reflect.GenericArrayType;
+                        public static canonicalize(param0: java.lang.reflect.Type): java.lang.reflect.Type;
+                        public static getArrayComponentType(param0: java.lang.reflect.Type): java.lang.reflect.Type;
+                        public static newParameterizedTypeWithOwner(
+                            param0: java.lang.reflect.Type,
                             param1: java.lang.reflect.Type,
-                            param2: com.google.gson.JsonDeserializationContext
-                        ): sentry.core.protocol.Device.DeviceOrientation;
+                            param2: native.Array<java.lang.reflect.Type>
+                        ): java.lang.reflect.ParameterizedType;
+                        public static getCollectionElementType(param0: java.lang.reflect.Type, param1: java.lang.Class<any>): java.lang.reflect.Type;
+                        public static supertypeOf(param0: java.lang.reflect.Type): java.lang.reflect.WildcardType;
+                        public static equals(param0: java.lang.reflect.Type, param1: java.lang.reflect.Type): boolean;
+                        public static typeToString(param0: java.lang.reflect.Type): string;
+                        public static getMapKeyAndValueTypes(param0: java.lang.reflect.Type, param1: java.lang.Class<any>): native.Array<java.lang.reflect.Type>;
+                        public equals(param0: any): boolean;
+                    }
+                    export namespace Types {
+                        export class GenericArrayTypeImpl extends java.lang.Object implements java.lang.reflect.GenericArrayType, java.io.Serializable {
+                            public static class: java.lang.Class<GenericArrayTypeImpl>;
+                            public toString(): string;
+                            public getTypeName(): string;
+                            public constructor(param0: java.lang.reflect.Type);
+                            public equals(param0: any): boolean;
+                            public hashCode(): number;
+                            public getGenericComponentType(): java.lang.reflect.Type;
+                        }
+                        export class ParameterizedTypeImpl extends java.lang.Object implements java.lang.reflect.ParameterizedType, java.io.Serializable {
+                            public static class: java.lang.Class<ParameterizedTypeImpl>;
+                            public toString(): string;
+                            public constructor(param0: java.lang.reflect.Type, param1: java.lang.reflect.Type, param2: native.Array<java.lang.reflect.Type>);
+                            public getTypeName(): string;
+                            public equals(param0: any): boolean;
+                            public getRawType(): java.lang.reflect.Type;
+                            public getActualTypeArguments(): native.Array<java.lang.reflect.Type>;
+                            public getOwnerType(): java.lang.reflect.Type;
+                            public hashCode(): number;
+                        }
+                        export class WildcardTypeImpl extends java.lang.Object implements java.lang.reflect.WildcardType, java.io.Serializable {
+                            public static class: java.lang.Class<WildcardTypeImpl>;
+                            public toString(): string;
+                            public getTypeName(): string;
+                            public equals(param0: any): boolean;
+                            public getUpperBounds(): native.Array<java.lang.reflect.Type>;
+                            public hashCode(): number;
+                            public constructor(param0: native.Array<java.lang.reflect.Type>, param1: native.Array<java.lang.reflect.Type>);
+                            public getLowerBounds(): native.Array<java.lang.reflect.Type>;
+                        }
                     }
                 }
             }
@@ -949,20 +732,214 @@ declare namespace io {
     }
 }
 
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export namespace adapters {
-                    export class OrientationSerializerAdapter extends com.google.gson.JsonSerializer<sentry.core.protocol.Device.DeviceOrientation> {
-                        public static class: java.lang.Class<OrientationSerializerAdapter>;
-                        public constructor(param0: sentry.core.ILogger);
-                        public serialize(param0: any, param1: java.lang.reflect.Type, param2: com.google.gson.JsonSerializationContext): com.google.gson.JsonElement;
-                        public serialize(
-                            param0: sentry.core.protocol.Device.DeviceOrientation,
-                            param1: java.lang.reflect.Type,
-                            param2: com.google.gson.JsonSerializationContext
-                        ): com.google.gson.JsonElement;
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export class ConstructorConstructor extends java.lang.Object {
+                    public static class: java.lang.Class<ConstructorConstructor>;
+                    public toString(): string;
+                    public get(param0: gson.reflect.TypeToken<any>): ObjectConstructor<any>;
+                    public constructor(param0: java.util.Map<java.lang.reflect.Type, InstanceCreator<any>>);
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export class Excluder extends java.lang.Object implements TypeAdapterFactory, java.lang.Cloneable {
+                    public static class: java.lang.Class<Excluder>;
+                    public static DEFAULT: Excluder;
+                    public disableInnerClassSerialization(): Excluder;
+                    public clone(): Excluder;
+                    public clone(): any;
+                    public constructor();
+                    public create(param0: gson.Gson, param1: gson.reflect.TypeToken<any>): TypeAdapter<any>;
+                    public excludeField(param0: java.lang.reflect.Field, param1: boolean): boolean;
+                    public excludeFieldsWithoutExposeAnnotation(): Excluder;
+                    public withExclusionStrategy(param0: ExclusionStrategy, param1: boolean, param2: boolean): Excluder;
+                    public withVersion(param0: number): Excluder;
+                    public withModifiers(param0: native.Array<number>): Excluder;
+                    public excludeClass(param0: java.lang.Class<any>, param1: boolean): boolean;
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export class GsonBuildConfig extends java.lang.Object {
+                    public static class: java.lang.Class<GsonBuildConfig>;
+                    public static VERSION: string;
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export class JavaVersion extends java.lang.Object {
+                    public static class: java.lang.Class<JavaVersion>;
+                    public static isJava9OrLater(): boolean;
+                    public static getMajorJavaVersion(): number;
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export abstract class JsonReaderInternalAccess extends java.lang.Object {
+                    public static class: java.lang.Class<JsonReaderInternalAccess>;
+                    public static INSTANCE: JsonReaderInternalAccess;
+                    public constructor();
+                    public promoteNameToValue(param0: stream.JsonReader): void;
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export class LazilyParsedNumber extends java.lang.Number {
+                    public static class: java.lang.Class<LazilyParsedNumber>;
+                    public equals(param0: any): boolean;
+                    public intValue(): number;
+                    public toString(): string;
+                    public constructor(param0: string);
+                    public constructor();
+                    public doubleValue(): number;
+                    public floatValue(): number;
+                    public longValue(): number;
+                    public hashCode(): number;
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export class LinkedHashTreeMap<K, V> extends java.util.AbstractMap<any, any> implements java.io.Serializable {
+                    public static class: java.lang.Class<LinkedHashTreeMap<any, any>>;
+                    public replace(param0: any, param1: any): any;
+                    public isEmpty(): boolean;
+                    public computeIfPresent(param0: any, param1: any /* any<any,any,any>*/): any;
+                    public forEach(param0: any /* any<any,any>*/): void;
+                    public size(): number;
+                    public merge(param0: any, param1: any, param2: any /* any<any,any,any>*/): any;
+                    public put(param0: any, param1: any): any;
+                    public getOrDefault(param0: any, param1: any): any;
+                    public putAll(param0: java.util.Map<any, any>): void;
+                    public replace(param0: any, param1: any, param2: any): boolean;
+                    public remove(param0: any): any;
+                    public containsValue(param0: any): boolean;
+                    public constructor();
+                    public keySet(): java.util.Set<any>;
+                    public clear(): void;
+                    public hashCode(): number;
+                    public putIfAbsent(param0: any, param1: any): any;
+                    public remove(param0: any, param1: any): boolean;
+                    public computeIfAbsent(param0: any, param1: any /* any<any,any>*/): any;
+                    public constructor(param0: java.util.Comparator<any>);
+                    public values(): java.util.Collection<any>;
+                    public equals(param0: any): boolean;
+                    public containsKey(param0: any): boolean;
+                    public entrySet(): java.util.Set<java.util.Map.Entry<any, any>>;
+                    public compute(param0: any, param1: any /* any<any,any,any>*/): any;
+                    public replaceAll(param0: any /* any<any,any,any>*/): void;
+                    public get(param0: any): any;
+                }
+                export namespace LinkedHashTreeMap {
+                    export class AvlBuilder<K, V> extends java.lang.Object {
+                        public static class: java.lang.Class<AvlBuilder<any, any>>;
+                    }
+                    export class AvlIterator<K, V> extends java.lang.Object {
+                        public static class: java.lang.Class<AvlIterator<any, any>>;
+                        public next(): Node<K, V>;
+                    }
+                    export class EntrySet extends java.util.AbstractSet<java.util.Map.Entry<any, any>> {
+                        public static class: java.lang.Class<EntrySet>;
+                        public iterator(): java.util.Iterator<any>;
+                        public iterator(): java.util.Iterator<java.util.Map.Entry<any, any>>;
+                        public contains(param0: any): boolean;
+                        public add(param0: any): boolean;
+                        public stream(): java.util.stream.Stream<any>;
+                        public equals(param0: any): boolean;
+                        public hashCode(): number;
+                        public parallelStream(): java.util.stream.Stream<any>;
+                        public remove(param0: any): boolean;
+                        public toArray(param0: native.Array<any>): native.Array<any>;
+                        public addAll(param0: java.util.Collection<any>): boolean;
+                        public retainAll(param0: java.util.Collection<any>): boolean;
+                        public removeIf(param0: any /* any*/): boolean;
+                        public spliterator(): java.util.Spliterator<any>;
+                        public isEmpty(): boolean;
+                        public clear(): void;
+                        public size(): number;
+                        public removeAll(param0: java.util.Collection<any>): boolean;
+                        public toArray(): native.Array<any>;
+                        public containsAll(param0: java.util.Collection<any>): boolean;
+                    }
+                    export class KeySet extends java.util.AbstractSet<any> {
+                        public static class: java.lang.Class<KeySet>;
+                        public iterator(): java.util.Iterator<any>;
+                        public contains(param0: any): boolean;
+                        public add(param0: any): boolean;
+                        public stream(): java.util.stream.Stream<any>;
+                        public equals(param0: any): boolean;
+                        public hashCode(): number;
+                        public parallelStream(): java.util.stream.Stream<any>;
+                        public remove(param0: any): boolean;
+                        public toArray(param0: native.Array<any>): native.Array<any>;
+                        public addAll(param0: java.util.Collection<any>): boolean;
+                        public retainAll(param0: java.util.Collection<any>): boolean;
+                        public removeIf(param0: any /* any*/): boolean;
+                        public spliterator(): java.util.Spliterator<any>;
+                        public isEmpty(): boolean;
+                        public clear(): void;
+                        public size(): number;
+                        public removeAll(param0: java.util.Collection<any>): boolean;
+                        public toArray(): native.Array<any>;
+                        public containsAll(param0: java.util.Collection<any>): boolean;
+                    }
+                    export abstract class LinkedTreeMapIterator<T> extends java.util.Iterator<any> {
+                        public static class: java.lang.Class<LinkedTreeMapIterator<any>>;
+                        public hasNext(): boolean;
+                        public remove(): void;
+                    }
+                    export class Node<K, V> extends java.util.Map.Entry<any, any> {
+                        public static class: java.lang.Class<Node<any, any>>;
+                        public first(): Node<any, any>;
+                        public setValue(param0: any): any;
+                        public getValue(): any;
+                        public getKey(): any;
+                        public static comparingByValue(): java.util.Comparator<any>;
+                        public static comparingByKey(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+                        public equals(param0: any): boolean;
+                        public hashCode(): number;
+                        public static comparingByKey(): java.util.Comparator<any>;
+                        public static comparingByValue(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+                        public last(): Node<any, any>;
+                        public toString(): string;
                     }
                 }
             }
@@ -970,16 +947,105 @@ declare namespace io {
     }
 }
 
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export namespace adapters {
-                    export class SentryIdDeserializerAdapter extends com.google.gson.JsonDeserializer<sentry.core.protocol.SentryId> {
-                        public static class: java.lang.Class<SentryIdDeserializerAdapter>;
-                        public deserialize(param0: com.google.gson.JsonElement, param1: java.lang.reflect.Type, param2: com.google.gson.JsonDeserializationContext): any;
-                        public deserialize(param0: com.google.gson.JsonElement, param1: java.lang.reflect.Type, param2: com.google.gson.JsonDeserializationContext): sentry.core.protocol.SentryId;
-                        public constructor(param0: sentry.core.ILogger);
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export class LinkedTreeMap<K, V> extends java.util.AbstractMap<any, any> implements java.io.Serializable {
+                    public static class: java.lang.Class<LinkedTreeMap<any, any>>;
+                    public replace(param0: any, param1: any): any;
+                    public isEmpty(): boolean;
+                    public computeIfPresent(param0: any, param1: any /* any<any,any,any>*/): any;
+                    public forEach(param0: any /* any<any,any>*/): void;
+                    public size(): number;
+                    public merge(param0: any, param1: any, param2: any /* any<any,any,any>*/): any;
+                    public put(param0: any, param1: any): any;
+                    public getOrDefault(param0: any, param1: any): any;
+                    public putAll(param0: java.util.Map<any, any>): void;
+                    public replace(param0: any, param1: any, param2: any): boolean;
+                    public remove(param0: any): any;
+                    public containsValue(param0: any): boolean;
+                    public constructor();
+                    public keySet(): java.util.Set<any>;
+                    public clear(): void;
+                    public hashCode(): number;
+                    public putIfAbsent(param0: any, param1: any): any;
+                    public remove(param0: any, param1: any): boolean;
+                    public computeIfAbsent(param0: any, param1: any /* any<any,any>*/): any;
+                    public constructor(param0: java.util.Comparator<any>);
+                    public values(): java.util.Collection<any>;
+                    public equals(param0: any): boolean;
+                    public containsKey(param0: any): boolean;
+                    public entrySet(): java.util.Set<java.util.Map.Entry<any, any>>;
+                    public compute(param0: any, param1: any /* any<any,any,any>*/): any;
+                    public replaceAll(param0: any /* any<any,any,any>*/): void;
+                    public get(param0: any): any;
+                }
+                export namespace LinkedTreeMap {
+                    export class EntrySet extends java.util.AbstractSet<java.util.Map.Entry<any, any>> {
+                        public static class: java.lang.Class<EntrySet>;
+                        public iterator(): java.util.Iterator<any>;
+                        public iterator(): java.util.Iterator<java.util.Map.Entry<any, any>>;
+                        public contains(param0: any): boolean;
+                        public add(param0: any): boolean;
+                        public stream(): java.util.stream.Stream<any>;
+                        public equals(param0: any): boolean;
+                        public hashCode(): number;
+                        public parallelStream(): java.util.stream.Stream<any>;
+                        public remove(param0: any): boolean;
+                        public toArray(param0: native.Array<any>): native.Array<any>;
+                        public addAll(param0: java.util.Collection<any>): boolean;
+                        public retainAll(param0: java.util.Collection<any>): boolean;
+                        public removeIf(param0: any /* any*/): boolean;
+                        public spliterator(): java.util.Spliterator<any>;
+                        public isEmpty(): boolean;
+                        public clear(): void;
+                        public size(): number;
+                        public removeAll(param0: java.util.Collection<any>): boolean;
+                        public toArray(): native.Array<any>;
+                        public containsAll(param0: java.util.Collection<any>): boolean;
+                    }
+                    export class KeySet extends java.util.AbstractSet<any> {
+                        public static class: java.lang.Class<KeySet>;
+                        public iterator(): java.util.Iterator<any>;
+                        public contains(param0: any): boolean;
+                        public add(param0: any): boolean;
+                        public stream(): java.util.stream.Stream<any>;
+                        public equals(param0: any): boolean;
+                        public hashCode(): number;
+                        public parallelStream(): java.util.stream.Stream<any>;
+                        public remove(param0: any): boolean;
+                        public toArray(param0: native.Array<any>): native.Array<any>;
+                        public addAll(param0: java.util.Collection<any>): boolean;
+                        public retainAll(param0: java.util.Collection<any>): boolean;
+                        public removeIf(param0: any /* any*/): boolean;
+                        public spliterator(): java.util.Spliterator<any>;
+                        public isEmpty(): boolean;
+                        public clear(): void;
+                        public size(): number;
+                        public removeAll(param0: java.util.Collection<any>): boolean;
+                        public toArray(): native.Array<any>;
+                        public containsAll(param0: java.util.Collection<any>): boolean;
+                    }
+                    export abstract class LinkedTreeMapIterator<T> extends java.util.Iterator<any> {
+                        public static class: java.lang.Class<LinkedTreeMapIterator<any>>;
+                        public hasNext(): boolean;
+                        public remove(): void;
+                    }
+                    export class Node<K, V> extends java.util.Map.Entry<any, any> {
+                        public static class: java.lang.Class<Node<any, any>>;
+                        public setValue(param0: any): any;
+                        public getValue(): any;
+                        public last(): Node<any, any>;
+                        public getKey(): any;
+                        public static comparingByValue(): java.util.Comparator<any>;
+                        public static comparingByKey(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+                        public equals(param0: any): boolean;
+                        public hashCode(): number;
+                        public static comparingByKey(): java.util.Comparator<any>;
+                        public static comparingByValue(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+                        public first(): Node<any, any>;
+                        public toString(): string;
                     }
                 }
             }
@@ -987,16 +1053,90 @@ declare namespace io {
     }
 }
 
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export namespace adapters {
-                    export class SentryIdSerializerAdapter extends com.google.gson.JsonSerializer<sentry.core.protocol.SentryId> {
-                        public static class: java.lang.Class<SentryIdSerializerAdapter>;
-                        public constructor(param0: sentry.core.ILogger);
-                        public serialize(param0: sentry.core.protocol.SentryId, param1: java.lang.reflect.Type, param2: com.google.gson.JsonSerializationContext): com.google.gson.JsonElement;
-                        public serialize(param0: any, param1: java.lang.reflect.Type, param2: com.google.gson.JsonSerializationContext): com.google.gson.JsonElement;
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export class ObjectConstructor<T> extends java.lang.Object {
+                    public static class: java.lang.Class<ObjectConstructor<any>>;
+                    /**
+                     * Constructs a new instance of the com.google.gson.internal.ObjectConstructor<any> interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                     */
+                    public constructor(implementation: { construct(): T });
+                    public constructor();
+                    public construct(): T;
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export class PreJava9DateFormatProvider extends java.lang.Object {
+                    public static class: java.lang.Class<PreJava9DateFormatProvider>;
+                    public constructor();
+                    public static getUSDateTimeFormat(param0: number, param1: number): java.text.DateFormat;
+                    public static getUSDateFormat(param0: number): java.text.DateFormat;
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export class Primitives extends java.lang.Object {
+                    public static class: java.lang.Class<Primitives>;
+                    public static unwrap(param0: java.lang.Class<any>): java.lang.Class<any>;
+                    public static isWrapperType(param0: java.lang.reflect.Type): boolean;
+                    public static wrap(param0: java.lang.Class<any>): java.lang.Class<any>;
+                    public static isPrimitive(param0: java.lang.reflect.Type): boolean;
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export class Streams extends java.lang.Object {
+                    public static class: java.lang.Class<Streams>;
+                    public static write(param0: JsonElement, param1: stream.JsonWriter): void;
+                    public static parse(param0: stream.JsonReader): JsonElement;
+                    public static writerForAppendable(param0: java.lang.Appendable): java.io.Writer;
+                }
+                export namespace Streams {
+                    export class AppendableWriter extends java.io.Writer {
+                        public static class: java.lang.Class<AppendableWriter>;
+                        public write(param0: string, param1: number, param2: number): void;
+                        public append(param0: string, param1: number, param2: number): java.io.Writer;
+                        public append(param0: string): java.io.Writer;
+                        public close(): void;
+                        public write(param0: number): void;
+                        public append(param0: string): java.lang.Appendable;
+                        public flush(): void;
+                        public write(param0: native.Array<string>): void;
+                        public append(param0: string, param1: number, param2: number): java.lang.Appendable;
+                        public write(param0: native.Array<string>, param1: number, param2: number): void;
+                        public write(param0: string): void;
+                    }
+                    export namespace AppendableWriter {
+                        export class CurrentWrite extends java.lang.Object implements java.lang.CharSequence {
+                            public static class: java.lang.Class<CurrentWrite>;
+                            public charAt(param0: number): string;
+                            public codePoints(): java.util.stream.IntStream;
+                            public chars(): java.util.stream.IntStream;
+                            public toString(): string;
+                            public length(): number;
+                            public subSequence(param0: number, param1: number): string;
+                        }
                     }
                 }
             }
@@ -1004,16 +1144,33 @@ declare namespace io {
     }
 }
 
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export namespace adapters {
-                    export class SentryLevelDeserializerAdapter extends com.google.gson.JsonDeserializer<sentry.core.SentryLevel> {
-                        public static class: java.lang.Class<SentryLevelDeserializerAdapter>;
-                        public deserialize(param0: com.google.gson.JsonElement, param1: java.lang.reflect.Type, param2: com.google.gson.JsonDeserializationContext): any;
-                        public constructor(param0: sentry.core.ILogger);
-                        public deserialize(param0: com.google.gson.JsonElement, param1: java.lang.reflect.Type, param2: com.google.gson.JsonDeserializationContext): sentry.core.SentryLevel;
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export abstract class UnsafeAllocator extends java.lang.Object {
+                    public static class: java.lang.Class<UnsafeAllocator>;
+                    public static create(): UnsafeAllocator;
+                    public constructor();
+                    public newInstance(param0: java.lang.Class<any>): any;
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export namespace bind {
+                    export class ArrayTypeAdapter<E> extends TypeAdapter<any> {
+                        public static class: java.lang.Class<ArrayTypeAdapter<any>>;
+                        public static FACTORY: TypeAdapterFactory;
+                        public constructor();
+                        public read(param0: stream.JsonReader): any;
+                        public write(param0: stream.JsonWriter, param1: any): void;
+                        public constructor(param0: gson.Gson, param1: TypeAdapter<any>, param2: java.lang.Class<any>);
                     }
                 }
             }
@@ -1021,16 +1178,26 @@ declare namespace io {
     }
 }
 
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export namespace adapters {
-                    export class SentryLevelSerializerAdapter extends com.google.gson.JsonSerializer<sentry.core.SentryLevel> {
-                        public static class: java.lang.Class<SentryLevelSerializerAdapter>;
-                        public constructor(param0: sentry.core.ILogger);
-                        public serialize(param0: sentry.core.SentryLevel, param1: java.lang.reflect.Type, param2: com.google.gson.JsonSerializationContext): com.google.gson.JsonElement;
-                        public serialize(param0: any, param1: java.lang.reflect.Type, param2: com.google.gson.JsonSerializationContext): com.google.gson.JsonElement;
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export namespace bind {
+                    export class CollectionTypeAdapterFactory extends java.lang.Object implements TypeAdapterFactory {
+                        public static class: java.lang.Class<CollectionTypeAdapterFactory>;
+                        public create(param0: gson.Gson, param1: gson.reflect.TypeToken<any>): TypeAdapter<any>;
+                        public constructor(param0: ConstructorConstructor);
+                    }
+                    export namespace CollectionTypeAdapterFactory {
+                        export class Adapter<E> extends TypeAdapter<java.util.Collection<any>> {
+                            public static class: java.lang.Class<Adapter<any>>;
+                            public constructor();
+                            public write(param0: stream.JsonWriter, param1: any): void;
+                            public constructor(param0: gson.Gson, param1: java.lang.reflect.Type, param2: TypeAdapter<any>, param3: ObjectConstructor<any>);
+                            public read(param0: stream.JsonReader): java.util.Collection<any>;
+                            public read(param0: stream.JsonReader): any;
+                            public write(param0: stream.JsonWriter, param1: java.util.Collection<any>): void;
+                        }
                     }
                 }
             }
@@ -1038,16 +1205,19 @@ declare namespace io {
     }
 }
 
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export namespace adapters {
-                    export class TimeZoneDeserializerAdapter extends com.google.gson.JsonDeserializer<java.util.TimeZone> {
-                        public static class: java.lang.Class<TimeZoneDeserializerAdapter>;
-                        public deserialize(param0: com.google.gson.JsonElement, param1: java.lang.reflect.Type, param2: com.google.gson.JsonDeserializationContext): any;
-                        public constructor(param0: sentry.core.ILogger);
-                        public deserialize(param0: com.google.gson.JsonElement, param1: java.lang.reflect.Type, param2: com.google.gson.JsonDeserializationContext): java.util.TimeZone;
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export namespace bind {
+                    export class DateTypeAdapter extends TypeAdapter<java.util.Date> {
+                        public static class: java.lang.Class<DateTypeAdapter>;
+                        public static FACTORY: TypeAdapterFactory;
+                        public constructor();
+                        public read(param0: stream.JsonReader): java.util.Date;
+                        public read(param0: stream.JsonReader): any;
+                        public write(param0: stream.JsonWriter, param1: any): void;
+                        public write(param0: stream.JsonWriter, param1: java.util.Date): void;
                     }
                 }
             }
@@ -1055,16 +1225,15 @@ declare namespace io {
     }
 }
 
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export namespace adapters {
-                    export class TimeZoneSerializerAdapter extends com.google.gson.JsonSerializer<java.util.TimeZone> {
-                        public static class: java.lang.Class<TimeZoneSerializerAdapter>;
-                        public constructor(param0: sentry.core.ILogger);
-                        public serialize(param0: java.util.TimeZone, param1: java.lang.reflect.Type, param2: com.google.gson.JsonSerializationContext): com.google.gson.JsonElement;
-                        public serialize(param0: any, param1: java.lang.reflect.Type, param2: com.google.gson.JsonSerializationContext): com.google.gson.JsonElement;
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export namespace bind {
+                    export class JsonAdapterAnnotationTypeAdapterFactory extends java.lang.Object implements TypeAdapterFactory {
+                        public static class: java.lang.Class<JsonAdapterAnnotationTypeAdapterFactory>;
+                        public create(param0: gson.Gson, param1: gson.reflect.TypeToken<any>): TypeAdapter<any>;
+                        public constructor(param0: ConstructorConstructor);
                     }
                 }
             }
@@ -1072,15 +1241,33 @@ declare namespace io {
     }
 }
 
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export namespace util {
-                    export class ConnectivityChecker extends java.lang.Object {
-                        public static class: java.lang.Class<ConnectivityChecker>;
-                        public static isConnected(param0: globalAndroid.content.Context, param1: sentry.core.ILogger): java.lang.Boolean;
-                        public static getConnectionType(param0: globalAndroid.content.Context, param1: sentry.core.ILogger): string;
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export namespace bind {
+                    export class JsonTreeReader extends stream.JsonReader {
+                        public static class: java.lang.Class<JsonTreeReader>;
+                        public nextNull(): void;
+                        public beginObject(): void;
+                        public promoteNameToValue(): void;
+                        public nextBoolean(): boolean;
+                        public close(): void;
+                        public endArray(): void;
+                        public getPath(): string;
+                        public beginArray(): void;
+                        public endObject(): void;
+                        public toString(): string;
+                        public nextInt(): number;
+                        public peek(): stream.JsonToken;
+                        public nextLong(): number;
+                        public nextName(): string;
+                        public skipValue(): void;
+                        public constructor(param0: java.io.Reader);
+                        public hasNext(): boolean;
+                        public constructor(param0: JsonElement);
+                        public nextDouble(): number;
+                        public nextString(): string;
                     }
                 }
             }
@@ -1088,30 +1275,506 @@ declare namespace io {
     }
 }
 
-declare namespace io {
-    export namespace sentry {
-        export namespace android {
-            export namespace core {
-                export namespace util {
-                    export class Permissions extends java.lang.Object {
-                        public static class: java.lang.Class<Permissions>;
-                        public static hasPermission(param0: globalAndroid.content.Context, param1: string): boolean;
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export namespace bind {
+                    export class JsonTreeWriter extends stream.JsonWriter {
+                        public static class: java.lang.Class<JsonTreeWriter>;
+                        public nullValue(): stream.JsonWriter;
+                        public constructor();
+                        public name(param0: string): stream.JsonWriter;
+                        public value(param0: boolean): stream.JsonWriter;
+                        public value(param0: number): stream.JsonWriter;
+                        public close(): void;
+                        public constructor(param0: java.io.Writer);
+                        public flush(): void;
+                        public endObject(): stream.JsonWriter;
+                        public value(param0: java.lang.Boolean): stream.JsonWriter;
+                        public beginArray(): stream.JsonWriter;
+                        public endArray(): stream.JsonWriter;
+                        public beginObject(): stream.JsonWriter;
+                        public value(param0: java.lang.Number): stream.JsonWriter;
+                        public get(): JsonElement;
+                        public value(param0: string): stream.JsonWriter;
                     }
                 }
             }
         }
     }
 }
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export namespace bind {
+                    export class MapTypeAdapterFactory extends java.lang.Object implements TypeAdapterFactory {
+                        public static class: java.lang.Class<MapTypeAdapterFactory>;
+                        public create(param0: gson.Gson, param1: gson.reflect.TypeToken<any>): TypeAdapter<any>;
+                        public constructor(param0: ConstructorConstructor, param1: boolean);
+                    }
+                    export namespace MapTypeAdapterFactory {
+                        export class Adapter<K, V> extends TypeAdapter<java.util.Map<any, any>> {
+                            public static class: java.lang.Class<Adapter<any, any>>;
+                            public constructor();
+                            public write(param0: stream.JsonWriter, param1: any): void;
+                            public read(param0: stream.JsonReader): java.util.Map<any, any>;
+                            public read(param0: stream.JsonReader): any;
+                            public write(param0: stream.JsonWriter, param1: java.util.Map<any, any>): void;
+                            public constructor(
+                                param0: gson.Gson,
+                                param1: java.lang.reflect.Type,
+                                param2: TypeAdapter<any>,
+                                param3: java.lang.reflect.Type,
+                                param4: TypeAdapter<any>,
+                                param5: ObjectConstructor<any>
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export namespace bind {
+                    export class ObjectTypeAdapter extends TypeAdapter<any> {
+                        public static class: java.lang.Class<ObjectTypeAdapter>;
+                        public static FACTORY: TypeAdapterFactory;
+                        public read(param0: stream.JsonReader): any;
+                        public write(param0: stream.JsonWriter, param1: any): void;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export namespace bind {
+                    export class ReflectiveTypeAdapterFactory extends java.lang.Object implements TypeAdapterFactory {
+                        public static class: java.lang.Class<ReflectiveTypeAdapterFactory>;
+                        public constructor(param0: ConstructorConstructor, param1: FieldNamingStrategy, param2: Excluder, param3: JsonAdapterAnnotationTypeAdapterFactory);
+                        public create(param0: gson.Gson, param1: gson.reflect.TypeToken<any>): TypeAdapter<any>;
+                        public excludeField(param0: java.lang.reflect.Field, param1: boolean): boolean;
+                    }
+                    export namespace ReflectiveTypeAdapterFactory {
+                        export class Adapter<T> extends TypeAdapter<any> {
+                            public static class: java.lang.Class<Adapter<any>>;
+                            public write(param0: stream.JsonWriter, param1: any): void;
+                            public read(param0: stream.JsonReader): any;
+                        }
+                        export abstract class BoundField extends java.lang.Object {
+                            public static class: java.lang.Class<BoundField>;
+                            public constructor(param0: string, param1: boolean, param2: boolean);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export namespace bind {
+                    export class SqlDateTypeAdapter extends TypeAdapter<java.sql.Date> {
+                        public static class: java.lang.Class<SqlDateTypeAdapter>;
+                        public static FACTORY: TypeAdapterFactory;
+                        public constructor();
+                        public write(param0: stream.JsonWriter, param1: java.sql.Date): void;
+                        public read(param0: stream.JsonReader): any;
+                        public read(param0: stream.JsonReader): java.sql.Date;
+                        public write(param0: stream.JsonWriter, param1: any): void;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export namespace bind {
+                    export class TimeTypeAdapter extends TypeAdapter<java.sql.Time> {
+                        public static class: java.lang.Class<TimeTypeAdapter>;
+                        public static FACTORY: TypeAdapterFactory;
+                        public constructor();
+                        public read(param0: stream.JsonReader): java.sql.Time;
+                        public write(param0: stream.JsonWriter, param1: java.sql.Time): void;
+                        public read(param0: stream.JsonReader): any;
+                        public write(param0: stream.JsonWriter, param1: any): void;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export namespace bind {
+                    export class TreeTypeAdapter<T> extends TypeAdapter<any> {
+                        public static class: java.lang.Class<TreeTypeAdapter<any>>;
+                        public constructor();
+                        public constructor(param0: JsonSerializer<any>, param1: JsonDeserializer<any>, param2: gson.Gson, param3: gson.reflect.TypeToken<any>, param4: TypeAdapterFactory);
+                        public static newTypeHierarchyFactory(param0: java.lang.Class<any>, param1: any): TypeAdapterFactory;
+                        public read(param0: stream.JsonReader): any;
+                        public static newFactoryWithMatchRawType(param0: gson.reflect.TypeToken<any>, param1: any): TypeAdapterFactory;
+                        public static newFactory(param0: gson.reflect.TypeToken<any>, param1: any): TypeAdapterFactory;
+                        public write(param0: stream.JsonWriter, param1: any): void;
+                    }
+                    export namespace TreeTypeAdapter {
+                        export class GsonContextImpl extends java.lang.Object implements JsonSerializationContext, JsonDeserializationContext {
+                            public static class: java.lang.Class<GsonContextImpl>;
+                            public serialize(param0: any): JsonElement;
+                            public serialize(param0: any, param1: java.lang.reflect.Type): JsonElement;
+                            public deserialize(param0: JsonElement, param1: java.lang.reflect.Type): any;
+                        }
+                        export class SingleTypeFactory extends java.lang.Object implements TypeAdapterFactory {
+                            public static class: java.lang.Class<SingleTypeFactory>;
+                            public create(param0: gson.Gson, param1: gson.reflect.TypeToken<any>): TypeAdapter<any>;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export namespace bind {
+                    export class TypeAdapterRuntimeTypeWrapper<T> extends TypeAdapter<any> {
+                        public static class: java.lang.Class<TypeAdapterRuntimeTypeWrapper<any>>;
+                        public read(param0: stream.JsonReader): any;
+                        public write(param0: stream.JsonWriter, param1: any): void;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export namespace bind {
+                    export class TypeAdapters extends java.lang.Object {
+                        public static class: java.lang.Class<TypeAdapters>;
+                        public static CLASS: TypeAdapter<java.lang.Class<any>>;
+                        public static CLASS_FACTORY: TypeAdapterFactory;
+                        public static BIT_SET: TypeAdapter<java.util.BitSet>;
+                        public static BIT_SET_FACTORY: TypeAdapterFactory;
+                        public static BOOLEAN: TypeAdapter<java.lang.Boolean>;
+                        public static BOOLEAN_AS_STRING: TypeAdapter<java.lang.Boolean>;
+                        public static BOOLEAN_FACTORY: TypeAdapterFactory;
+                        public static BYTE: TypeAdapter<java.lang.Number>;
+                        public static BYTE_FACTORY: TypeAdapterFactory;
+                        public static SHORT: TypeAdapter<java.lang.Number>;
+                        public static SHORT_FACTORY: TypeAdapterFactory;
+                        public static INTEGER: TypeAdapter<java.lang.Number>;
+                        public static INTEGER_FACTORY: TypeAdapterFactory;
+                        public static ATOMIC_INTEGER: TypeAdapter<java.util.concurrent.atomic.AtomicInteger>;
+                        public static ATOMIC_INTEGER_FACTORY: TypeAdapterFactory;
+                        public static ATOMIC_BOOLEAN: TypeAdapter<java.util.concurrent.atomic.AtomicBoolean>;
+                        public static ATOMIC_BOOLEAN_FACTORY: TypeAdapterFactory;
+                        public static ATOMIC_INTEGER_ARRAY: TypeAdapter<java.util.concurrent.atomic.AtomicIntegerArray>;
+                        public static ATOMIC_INTEGER_ARRAY_FACTORY: TypeAdapterFactory;
+                        public static LONG: TypeAdapter<java.lang.Number>;
+                        public static FLOAT: TypeAdapter<java.lang.Number>;
+                        public static DOUBLE: TypeAdapter<java.lang.Number>;
+                        public static NUMBER: TypeAdapter<java.lang.Number>;
+                        public static NUMBER_FACTORY: TypeAdapterFactory;
+                        public static CHARACTER: TypeAdapter<java.lang.Character>;
+                        public static CHARACTER_FACTORY: TypeAdapterFactory;
+                        public static STRING: TypeAdapter<string>;
+                        public static BIG_DECIMAL: TypeAdapter<java.math.BigDecimal>;
+                        public static BIG_INTEGER: TypeAdapter<java.math.BigInteger>;
+                        public static STRING_FACTORY: TypeAdapterFactory;
+                        public static STRING_BUILDER: TypeAdapter<java.lang.StringBuilder>;
+                        public static STRING_BUILDER_FACTORY: TypeAdapterFactory;
+                        public static STRING_BUFFER: TypeAdapter<java.lang.StringBuffer>;
+                        public static STRING_BUFFER_FACTORY: TypeAdapterFactory;
+                        public static URL: TypeAdapter<java.net.URL>;
+                        public static URL_FACTORY: TypeAdapterFactory;
+                        public static URI: TypeAdapter<java.net.URI>;
+                        public static URI_FACTORY: TypeAdapterFactory;
+                        public static INET_ADDRESS: TypeAdapter<java.net.InetAddress>;
+                        public static INET_ADDRESS_FACTORY: TypeAdapterFactory;
+                        public static UUID: TypeAdapter<java.util.UUID>;
+                        public static UUID_FACTORY: TypeAdapterFactory;
+                        public static CURRENCY: TypeAdapter<java.util.Currency>;
+                        public static CURRENCY_FACTORY: TypeAdapterFactory;
+                        public static TIMESTAMP_FACTORY: TypeAdapterFactory;
+                        public static CALENDAR: TypeAdapter<java.util.Calendar>;
+                        public static CALENDAR_FACTORY: TypeAdapterFactory;
+                        public static LOCALE: TypeAdapter<java.util.Locale>;
+                        public static LOCALE_FACTORY: TypeAdapterFactory;
+                        public static JSON_ELEMENT: TypeAdapter<JsonElement>;
+                        public static JSON_ELEMENT_FACTORY: TypeAdapterFactory;
+                        public static ENUM_FACTORY: TypeAdapterFactory;
+                        public static newFactory(param0: java.lang.Class<any>, param1: TypeAdapter<any>): TypeAdapterFactory;
+                        public static newFactoryForMultipleTypes(param0: java.lang.Class<any>, param1: java.lang.Class<any>, param2: TypeAdapter<any>): TypeAdapterFactory;
+                        public static newTypeHierarchyFactory(param0: java.lang.Class<any>, param1: TypeAdapter<any>): TypeAdapterFactory;
+                        public static newFactory(param0: gson.reflect.TypeToken<any>, param1: TypeAdapter<any>): TypeAdapterFactory;
+                        public static newFactory(param0: java.lang.Class<any>, param1: java.lang.Class<any>, param2: TypeAdapter<any>): TypeAdapterFactory;
+                    }
+                    export namespace TypeAdapters {
+                        export class EnumTypeAdapter<T> extends TypeAdapter<any> {
+                            public static class: java.lang.Class<EnumTypeAdapter<any>>;
+                            public constructor();
+                            public write(param0: stream.JsonWriter, param1: any): void;
+                            public constructor(param0: java.lang.Class<any>);
+                            public read(param0: stream.JsonReader): any;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export namespace bind {
+                    export namespace util {
+                        export class ISO8601Utils extends java.lang.Object {
+                            public static class: java.lang.Class<ISO8601Utils>;
+                            public constructor();
+                            public static format(param0: java.util.Date): string;
+                            public static format(param0: java.util.Date, param1: boolean, param2: java.util.TimeZone): string;
+                            public static parse(param0: string, param1: java.text.ParsePosition): java.util.Date;
+                            public static format(param0: java.util.Date, param1: boolean): string;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export namespace reflect {
+                    export class PreJava9ReflectionAccessor extends ReflectionAccessor {
+                        public static class: java.lang.Class<PreJava9ReflectionAccessor>;
+                        public makeAccessible(param0: java.lang.reflect.AccessibleObject): void;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export namespace reflect {
+                    export abstract class ReflectionAccessor extends java.lang.Object {
+                        public static class: java.lang.Class<ReflectionAccessor>;
+                        public static getInstance(): ReflectionAccessor;
+                        public constructor();
+                        public makeAccessible(param0: java.lang.reflect.AccessibleObject): void;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace internal {
+                export namespace reflect {
+                    export class UnsafeReflectionAccessor extends ReflectionAccessor {
+                        public static class: java.lang.Class<UnsafeReflectionAccessor>;
+                        public makeAccessible(param0: java.lang.reflect.AccessibleObject): void;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace reflect {
+                export class TypeToken<T> extends java.lang.Object {
+                    public static class: java.lang.Class<TypeToken<any>>;
+                    public static get(param0: java.lang.Class<any>): TypeToken<any>;
+                    public getType(): java.lang.reflect.Type;
+                    /** @deprecated */
+                    public isAssignableFrom(param0: java.lang.Class<any>): boolean;
+                    public static getParameterized(param0: java.lang.reflect.Type, param1: native.Array<java.lang.reflect.Type>): TypeToken<any>;
+                    public static get(param0: java.lang.reflect.Type): TypeToken<any>;
+                    public equals(param0: any): boolean;
+                    public toString(): string;
+                    public constructor();
+                    /** @deprecated */
+                    public isAssignableFrom(param0: java.lang.reflect.Type): boolean;
+                    public static getArray(param0: java.lang.reflect.Type): TypeToken<any>;
+                    /** @deprecated */
+                    public isAssignableFrom(param0: TypeToken<any>): boolean;
+                    public hashCode(): number;
+                    public getRawType(): java.lang.Class<any>;
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace stream {
+                export class JsonReader extends java.lang.Object implements java.io.Closeable {
+                    public static class: java.lang.Class<JsonReader>;
+                    public beginArray(): void;
+                    public nextBoolean(): boolean;
+                    public isLenient(): boolean;
+                    public nextNull(): void;
+                    public constructor(param0: java.io.Reader);
+                    public nextString(): string;
+                    public nextDouble(): number;
+                    public nextLong(): number;
+                    public setLenient(param0: boolean): void;
+                    public hasNext(): boolean;
+                    public beginObject(): void;
+                    public getPath(): string;
+                    public peek(): JsonToken;
+                    public toString(): string;
+                    public endObject(): void;
+                    public nextInt(): number;
+                    public close(): void;
+                    public endArray(): void;
+                    public skipValue(): void;
+                    public nextName(): string;
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace stream {
+                export class JsonScope extends java.lang.Object {
+                    public static class: java.lang.Class<JsonScope>;
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace stream {
+                export class JsonToken {
+                    public static class: java.lang.Class<JsonToken>;
+                    public static BEGIN_ARRAY: JsonToken;
+                    public static END_ARRAY: JsonToken;
+                    public static BEGIN_OBJECT: JsonToken;
+                    public static END_OBJECT: JsonToken;
+                    public static NAME: JsonToken;
+                    public static STRING: JsonToken;
+                    public static NUMBER: JsonToken;
+                    public static BOOLEAN: JsonToken;
+                    public static NULL: JsonToken;
+                    public static END_DOCUMENT: JsonToken;
+                    public static values(): native.Array<JsonToken>;
+                    public static valueOf(param0: string): JsonToken;
+                    public static valueOf(param0: java.lang.Class<any>, param1: string): java.lang.Enum<any>;
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace stream {
+                export class JsonWriter extends java.lang.Object implements java.io.Closeable, java.io.Flushable {
+                    public static class: java.lang.Class<JsonWriter>;
+                    public isHtmlSafe(): boolean;
+                    public beginArray(): JsonWriter;
+                    public jsonValue(param0: string): JsonWriter;
+                    public isLenient(): boolean;
+                    public setSerializeNulls(param0: boolean): void;
+                    public flush(): void;
+                    public setLenient(param0: boolean): void;
+                    public beginObject(): JsonWriter;
+                    public value(param0: number): JsonWriter;
+                    public name(param0: string): JsonWriter;
+                    public setHtmlSafe(param0: boolean): void;
+                    public getSerializeNulls(): boolean;
+                    public endArray(): JsonWriter;
+                    public nullValue(): JsonWriter;
+                    public constructor(param0: java.io.Writer);
+                    public close(): void;
+                    public setIndent(param0: string): void;
+                    public value(param0: string): JsonWriter;
+                    public value(param0: java.lang.Boolean): JsonWriter;
+                    public endObject(): JsonWriter;
+                    public value(param0: boolean): JsonWriter;
+                    public value(param0: java.lang.Number): JsonWriter;
+                }
+            }
+        }
+    }
+}
+
+declare namespace com {
+    export namespace google {
+        export namespace gson {
+            export namespace stream {
+                export class MalformedJsonException extends java.io.IOException {
+                    public static class: java.lang.Class<MalformedJsonException>;
+                    public constructor(param0: string, param1: java.lang.Throwable, param2: boolean, param3: boolean);
+                    public constructor(param0: string, param1: java.lang.Throwable);
+                    public constructor(param0: string);
+                    public constructor(param0: java.lang.Throwable);
+                    public constructor();
+                }
+            }
+        }
+    }
+}
+
 declare namespace io {
     export namespace sentry {
         export namespace core {
             export class AsyncConnectionFactory extends java.lang.Object {
                 public static class: java.lang.Class<AsyncConnectionFactory>;
-                public static create(
-                    param0: SentryOptions,
-                    param1: cache.IEventCache,
-                    param2: cache.IEnvelopeCache
-                ): transport.AsyncConnection;
+                public static create(param0: SentryOptions, param1: cache.IEventCache, param2: cache.IEnvelopeCache): transport.AsyncConnection;
             }
         }
     }
@@ -1127,6 +1790,7 @@ declare namespace io {
                 public setData(param0: string, param1: any): void;
                 public setCategory(param0: string): void;
                 public setType(param0: string): void;
+                public getData(param0: string): any;
                 public constructor(param0: string);
                 public setLevel(param0: SentryLevel): void;
                 public constructor();
@@ -1232,12 +1896,12 @@ declare namespace io {
         export namespace core {
             export abstract class DirectoryProcessor extends java.lang.Object {
                 public static class: java.lang.Class<DirectoryProcessor>;
+                public processDirectory(param0: java.io.File): void;
                 public processFile(param0: java.io.File, param1: any): void;
                 public isRelevantFileName(param0: string): boolean;
             }
             export namespace DirectoryProcessor {
-                export class SendCachedEventHint extends java.lang.Object
-                    implements hints.Cached, hints.Retryable, hints.SubmissionResult, hints.Flushable {
+                export class SendCachedEventHint extends java.lang.Object implements hints.Cached, hints.Retryable, hints.SubmissionResult, hints.Flushable {
                     public static class: java.lang.Class<SendCachedEventHint>;
                     public constructor(param0: number, param1: ILogger);
                     public isRetry(): boolean;
@@ -1602,6 +2266,23 @@ declare namespace io {
 declare namespace io {
     export namespace sentry {
         export namespace core {
+            export class ISentryExecutorService extends java.lang.Object {
+                public static class: java.lang.Class<ISentryExecutorService>;
+                /**
+                 * Constructs a new instance of the io.sentry.core.ISentryExecutorService interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                 */
+                public constructor(implementation: { submit(param0: java.lang.Runnable): java.util.concurrent.Future<any>; close(param0: number): void });
+                public constructor();
+                public submit(param0: java.lang.Runnable): java.util.concurrent.Future<any>;
+                public close(param0: number): void;
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace core {
             export class ISerializer extends java.lang.Object {
                 public static class: java.lang.Class<ISerializer>;
                 /**
@@ -1884,6 +2565,7 @@ declare namespace io {
             export class SendCachedEventFireAndForgetIntegration extends java.lang.Object implements Integration {
                 public static class: java.lang.Class<SendCachedEventFireAndForgetIntegration>;
                 public register(param0: IHub, param1: SentryOptions): void;
+                public constructor(param0: SendCachedEventFireAndForgetIntegration.SendFireAndForgetFactory);
             }
             export namespace SendCachedEventFireAndForgetIntegration {
                 export class SendFireAndForget extends java.lang.Object {
@@ -1895,17 +2577,47 @@ declare namespace io {
                     public constructor();
                     public send(): void;
                 }
+                export class SendFireAndForgetDirPath extends java.lang.Object {
+                    public static class: java.lang.Class<SendFireAndForgetDirPath>;
+                    /**
+                     * Constructs a new instance of the io.sentry.core.SendCachedEventFireAndForgetIntegration$SendFireAndForgetDirPath interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                     */
+                    public constructor(implementation: { getDirPath(): string });
+                    public constructor();
+                    public getDirPath(): string;
+                }
                 export class SendFireAndForgetFactory extends java.lang.Object {
                     public static class: java.lang.Class<SendFireAndForgetFactory>;
                     /**
                      * Constructs a new instance of the io.sentry.core.SendCachedEventFireAndForgetIntegration$SendFireAndForgetFactory interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
                      */
-                    public constructor(implementation: {
-                        create(param0: IHub, param1: SentryOptions): SendFireAndForget;
-                    });
+                    public constructor(implementation: { create(param0: IHub, param1: SentryOptions): SendFireAndForget });
                     public constructor();
                     public create(param0: IHub, param1: SentryOptions): SendFireAndForget;
                 }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace core {
+            export class SendFireAndForgetEnvelopeSender extends java.lang.Object implements SendCachedEventFireAndForgetIntegration.SendFireAndForgetFactory {
+                public static class: java.lang.Class<SendFireAndForgetEnvelopeSender>;
+                public constructor(param0: SendCachedEventFireAndForgetIntegration.SendFireAndForgetDirPath);
+                public create(param0: IHub, param1: SentryOptions): SendCachedEventFireAndForgetIntegration.SendFireAndForget;
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace core {
+            export class SendFireAndForgetEventSender extends java.lang.Object implements SendCachedEventFireAndForgetIntegration.SendFireAndForgetFactory {
+                public static class: java.lang.Class<SendFireAndForgetEventSender>;
+                public create(param0: IHub, param1: SentryOptions): SendCachedEventFireAndForgetIntegration.SendFireAndForget;
             }
         }
     }
@@ -2029,8 +2741,8 @@ declare namespace io {
         export namespace core {
             export class SentryEnvelopeHeaderAdapter extends com.google.gson.TypeAdapter<SentryEnvelopeHeader> {
                 public static class: java.lang.Class<SentryEnvelopeHeaderAdapter>;
-                public read(param0: any): SentryEnvelopeHeader;
-                public write(param0: any, param1: SentryEnvelopeHeader): void;
+                public read(param0: com.google.gson.stream.JsonReader): SentryEnvelopeHeader;
+                public write(param0: com.google.gson.stream.JsonWriter, param1: SentryEnvelopeHeader): void;
                 public constructor();
             }
         }
@@ -2063,9 +2775,9 @@ declare namespace io {
         export namespace core {
             export class SentryEnvelopeItemHeader extends java.lang.Object {
                 public static class: java.lang.Class<SentryEnvelopeItemHeader>;
-                public getType(): string;
                 public getContentType(): string;
                 public getFileName(): string;
+                public getType(): SentryItemType;
                 public getLength(): number;
             }
         }
@@ -2077,25 +2789,9 @@ declare namespace io {
         export namespace core {
             export class SentryEnvelopeItemHeaderAdapter extends com.google.gson.TypeAdapter<SentryEnvelopeItemHeader> {
                 public static class: java.lang.Class<SentryEnvelopeItemHeaderAdapter>;
-                public write(param0: any, param1: SentryEnvelopeItemHeader): void;
-                public read(param0: any): SentryEnvelopeItemHeader;
+                public write(param0: com.google.gson.stream.JsonWriter, param1: SentryEnvelopeItemHeader): void;
+                public read(param0: com.google.gson.stream.JsonReader): SentryEnvelopeItemHeader;
                 public constructor();
-            }
-        }
-    }
-}
-
-declare namespace io {
-    export namespace sentry {
-        export namespace core {
-            export class SentryEnvelopeItemType {
-                public static class: java.lang.Class<SentryEnvelopeItemType>;
-                public static Session: SentryEnvelopeItemType;
-                public static Event: SentryEnvelopeItemType;
-                public getType(): string;
-                public static values(): native.Array<SentryEnvelopeItemType>;
-                public static valueOf(param0: java.lang.Class<any>, param1: string): java.lang.Enum<any>;
-                public static valueOf(param0: string): SentryEnvelopeItemType;
             }
         }
     }
@@ -2113,12 +2809,15 @@ declare namespace io {
                 public setBreadcrumbs(param0: java.util.List<Breadcrumb>): void;
                 public setServerName(param0: string): void;
                 public setSdk(param0: protocol.SdkVersion): void;
+                public getModule(param0: string): string;
                 public constructor(param0: java.lang.Throwable);
                 public constructor();
                 public getBreadcrumbs(): java.util.List<Breadcrumb>;
                 public setMessage(param0: protocol.Message): void;
                 public getEnvironment(): string;
+                public getTag(param0: string): string;
                 public getLevel(): SentryLevel;
+                public getFingerprints(): java.util.List<string>;
                 public getExceptions(): java.util.List<protocol.SentryException>;
                 public setContexts(param0: protocol.Contexts): void;
                 public acceptUnknownProperties(param0: java.util.Map<string, any>): void;
@@ -2157,6 +2856,7 @@ declare namespace io {
                 public setThreads(param0: java.util.List<protocol.SentryThread>): void;
                 public getThreads(): java.util.List<protocol.SentryThread>;
                 public setTransaction(param0: string): void;
+                public getExtra(param0: string): any;
                 public setDebugMeta(param0: protocol.DebugMeta): void;
                 public getPlatform(): string;
                 public setModules(param0: java.util.Map<string, string>): void;
@@ -2173,6 +2873,37 @@ declare namespace io {
             export class SentryExceptionFactory extends java.lang.Object {
                 public static class: java.lang.Class<SentryExceptionFactory>;
                 public constructor(param0: SentryStackTraceFactory);
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace core {
+            export class SentryExecutorService extends java.lang.Object implements ISentryExecutorService {
+                public static class: java.lang.Class<SentryExecutorService>;
+                public submit(param0: java.lang.Runnable): java.util.concurrent.Future<any>;
+                public close(param0: number): void;
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace core {
+            export class SentryItemType {
+                public static class: java.lang.Class<SentryItemType>;
+                public static Session: SentryItemType;
+                public static Event: SentryItemType;
+                public static Attachment: SentryItemType;
+                public static Transaction: SentryItemType;
+                public static Unknown: SentryItemType;
+                public static values(): native.Array<SentryItemType>;
+                public static valueOf(param0: string): SentryItemType;
+                public getItemType(): string;
+                public static valueOf(param0: java.lang.Class<any>, param1: string): java.lang.Enum<any>;
             }
         }
     }
@@ -2202,7 +2933,9 @@ declare namespace io {
         export namespace core {
             export class SentryOptions extends java.lang.Object {
                 public static class: java.lang.Class<SentryOptions>;
+                public isBypassSecurity(): boolean;
                 public getEventProcessors(): java.util.List<EventProcessor>;
+                public setConnectionTimeoutMillis(param0: number): void;
                 public isDebug(): boolean;
                 public getShutdownTimeout(): number;
                 public setServerName(param0: string): void;
@@ -2234,6 +2967,7 @@ declare namespace io {
                 public getSessionTrackingIntervalMillis(): number;
                 public setBeforeSend(param0: SentryOptions.BeforeSendCallback): void;
                 public setDistinctId(param0: string): void;
+                public getReadTimeoutMillis(): number;
                 public setAttachStacktrace(param0: boolean): void;
                 public getSessionsPath(): string;
                 public setLogger(param0: ILogger): void;
@@ -2250,10 +2984,13 @@ declare namespace io {
                 public getTransport(): transport.ITransport;
                 public setDebug(param0: boolean): void;
                 public setEnableSessionTracking(param0: boolean): void;
+                public setBypassSecurity(param0: boolean): void;
                 public getDist(): string;
                 public setProxy(param0: java.net.Proxy): void;
+                public getConnectionTimeoutMillis(): number;
                 public setEnableNdk(param0: boolean): void;
                 public setDiagnosticLevel(param0: SentryLevel): void;
+                public setEnableUncaughtExceptionHandler(param0: boolean): void;
                 public getMaxBreadcrumbs(): number;
                 public setSentryClientName(param0: string): void;
                 public isAttachStacktrace(): boolean;
@@ -2266,8 +3003,10 @@ declare namespace io {
                 public isEnableSessionTracking(): boolean;
                 public setBeforeBreadcrumb(param0: SentryOptions.BeforeBreadcrumbCallback): void;
                 public getProxy(): java.net.Proxy;
+                public setReadTimeoutMillis(param0: number): void;
                 public setDist(param0: string): void;
                 public isEnableNdk(): boolean;
+                public isEnableUncaughtExceptionHandler(): boolean;
                 public getBeforeSend(): SentryOptions.BeforeSendCallback;
             }
             export namespace SentryOptions {
@@ -2348,6 +3087,7 @@ declare namespace io {
                 public getStatus(): Session.State;
                 public constructor(param0: string, param1: protocol.User, param2: string, param3: string);
                 public getDuration(): java.lang.Double;
+                public clone(): any;
                 public getRelease(): string;
                 public constructor(
                     param0: Session.State,
@@ -2365,6 +3105,7 @@ declare namespace io {
                     param12: string
                 );
                 public getUserAgent(): string;
+                public clone(): Session;
             }
             export namespace Session {
                 export class State {
@@ -2387,9 +3128,9 @@ declare namespace io {
         export namespace core {
             export class SessionAdapter extends com.google.gson.TypeAdapter<Session> {
                 public static class: java.lang.Class<SessionAdapter>;
-                public read(param0: any): Session;
-                public write(param0: any, param1: Session): void;
-                public constructor();
+                public read(param0: com.google.gson.stream.JsonReader): Session;
+                public write(param0: com.google.gson.stream.JsonWriter, param1: Session): void;
+                public constructor(param0: ILogger);
             }
         }
     }
@@ -2517,6 +3258,7 @@ declare namespace io {
                 public close(): void;
                 public register(param0: IHub, param1: SentryOptions): void;
                 public uncaughtException(param0: java.lang.Thread, param1: java.lang.Throwable): void;
+                public constructor();
             }
             export namespace UncaughtExceptionHandlerIntegration {
                 export class UncaughtExceptionHint extends java.lang.Object implements hints.DiskFlushNotification, hints.Flushable {
@@ -3040,6 +3782,7 @@ declare namespace io {
                     public isCharging(): java.lang.Boolean;
                     public setLanguage(param0: string): void;
                     public getExternalFreeStorage(): java.lang.Long;
+                    public setBatteryTemperature(param0: java.lang.Float): void;
                     public setManufacturer(param0: string): void;
                     public setBatteryLevel(param0: java.lang.Float): void;
                     public setScreenDpi(param0: java.lang.Integer): void;
@@ -3071,6 +3814,7 @@ declare namespace io {
                     public getExternalStorageSize(): java.lang.Long;
                     public setBrand(param0: string): void;
                     public getName(): string;
+                    public getBatteryTemperature(): java.lang.Float;
                     public setFreeMemory(param0: java.lang.Long): void;
                     public setId(param0: string): void;
                     public getLanguage(): string;
@@ -3496,14 +4240,7 @@ declare namespace io {
                     public close(): void;
                     public send(param0: SentryEvent): void;
                     public send(param0: SentryEvent, param1: any): void;
-                    public constructor(
-                        param0: ITransport,
-                        param1: ITransportGate,
-                        param2: cache.IEventCache,
-                        param3: cache.IEnvelopeCache,
-                        param4: number,
-                        param5: SentryOptions
-                    );
+                    public constructor(param0: ITransport, param1: ITransportGate, param2: cache.IEventCache, param3: cache.IEnvelopeCache, param4: number, param5: SentryOptions);
                 }
                 export namespace AsyncConnection {
                     export class AsyncConnectionThreadFactory extends java.lang.Object implements java.util.concurrent.ThreadFactory {
@@ -3556,21 +4293,46 @@ declare namespace io {
     export namespace sentry {
         export namespace core {
             export namespace transport {
+                export class CurrentDateProvider extends java.lang.Object implements ICurrentDateProvider {
+                    public static class: java.lang.Class<CurrentDateProvider>;
+                    public getCurrentTimeMillis(): number;
+                    public static getInstance(): ICurrentDateProvider;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace core {
+            export namespace transport {
                 export class HttpTransport extends java.lang.Object implements ITransport {
                     public static class: java.lang.Class<HttpTransport>;
                     public send(param0: SentryEvent): TransportResult;
+                    public open(param0: java.net.URL, param1: java.net.Proxy): java.net.HttpURLConnection;
                     public isRetryAfter(param0: string): boolean;
-                    public constructor(
-                        param0: SentryOptions,
-                        param1: IConnectionConfigurator,
-                        param2: number,
-                        param3: number,
-                        param4: boolean,
-                        param5: java.net.URL
-                    );
+                    public constructor(param0: SentryOptions, param1: IConnectionConfigurator, param2: number, param3: number, param4: boolean, param5: java.net.URL);
                     public close(): void;
                     public send(param0: SentryEnvelope): TransportResult;
                     public open(param0: java.net.Proxy): java.net.HttpURLConnection;
+                }
+                export namespace HttpTransport {
+                    export class DataCategory {
+                        public static class: java.lang.Class<DataCategory>;
+                        public static All: DataCategory;
+                        public static Default: DataCategory;
+                        public static Error: DataCategory;
+                        public static Session: DataCategory;
+                        public static Attachment: DataCategory;
+                        public static Transaction: DataCategory;
+                        public static Security: DataCategory;
+                        public static Unknown: DataCategory;
+                        public getCategory(): string;
+                        public static values(): native.Array<DataCategory>;
+                        public static valueOf(param0: string): DataCategory;
+                        public static valueOf(param0: java.lang.Class<any>, param1: string): java.lang.Enum<any>;
+                    }
                 }
             }
         }
@@ -3589,6 +4351,24 @@ declare namespace io {
                     public constructor(implementation: { configure(param0: java.net.HttpURLConnection): void });
                     public constructor();
                     public configure(param0: java.net.HttpURLConnection): void;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace core {
+            export namespace transport {
+                export class ICurrentDateProvider extends java.lang.Object {
+                    public static class: java.lang.Class<ICurrentDateProvider>;
+                    /**
+                     * Constructs a new instance of the io.sentry.core.transport.ICurrentDateProvider interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                     */
+                    public constructor(implementation: { getCurrentTimeMillis(): number });
+                    public constructor();
+                    public getCurrentTimeMillis(): number;
                 }
             }
         }
@@ -3631,9 +4411,9 @@ declare namespace io {
                     /**
                      * Constructs a new instance of the io.sentry.core.transport.ITransportGate interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
                      */
-                    public constructor(implementation: { isSendingAllowed(): boolean });
+                    public constructor(implementation: { isConnected(): boolean });
                     public constructor();
-                    public isSendingAllowed(): boolean;
+                    public isConnected(): boolean;
                 }
             }
         }
@@ -3683,11 +4463,12 @@ declare namespace io {
     export namespace sentry {
         export namespace core {
             export namespace transport {
-                export class RetryingThreadPoolExecutor extends java.util.concurrent.ScheduledThreadPoolExecutor {
-                    public static class: java.lang.Class<RetryingThreadPoolExecutor>;
+                export class QueuedThreadPoolExecutor extends java.util.concurrent.ThreadPoolExecutor {
+                    public static class: java.lang.Class<QueuedThreadPoolExecutor>;
+                    public afterExecute(param0: java.lang.Runnable, param1: java.lang.Throwable): void;
                     public invokeAll(param0: java.util.Collection<any>, param1: number, param2: java.util.concurrent.TimeUnit): java.util.List<any>;
+                    public isTerminated(): boolean;
                     public invokeAny(param0: java.util.Collection<any>): any;
-                    public constructor(param0: number, param1: java.util.concurrent.ThreadFactory, param2: java.util.concurrent.RejectedExecutionHandler);
                     public constructor(
                         param0: number,
                         param1: number,
@@ -3697,6 +4478,7 @@ declare namespace io {
                         param5: java.util.concurrent.ThreadFactory,
                         param6: java.util.concurrent.RejectedExecutionHandler
                     );
+                    public submit(param0: java.lang.Runnable): java.util.concurrent.Future<any>;
                     public constructor(
                         param0: number,
                         param1: number,
@@ -3705,23 +4487,11 @@ declare namespace io {
                         param4: java.util.concurrent.BlockingQueue<java.lang.Runnable>,
                         param5: java.util.concurrent.ThreadFactory
                     );
-                    public schedule(param0: java.lang.Runnable, param1: number, param2: java.util.concurrent.TimeUnit): java.util.concurrent.ScheduledFuture<any>;
-                    public isShutdown(): boolean;
-                    public schedule(param0: java.util.concurrent.Callable<any>, param1: number, param2: java.util.concurrent.TimeUnit): java.util.concurrent.ScheduledFuture<any>;
-                    public shutdown(): void;
-                    public constructor();
-                    public beforeExecute(param0: java.lang.Thread, param1: java.lang.Runnable): void;
-                    public invokeAny(param0: java.util.Collection<any>, param1: number, param2: java.util.concurrent.TimeUnit): any;
-                    public constructor(param0: number, param1: java.util.concurrent.RejectedExecutionHandler);
-                    public submit(param0: java.util.concurrent.Callable<any>): java.util.concurrent.Future<any>;
-                    public constructor(param0: number);
-                    public afterExecute(param0: java.lang.Runnable, param1: java.lang.Throwable): void;
-                    public isTerminated(): boolean;
-                    public submit(param0: java.lang.Runnable): java.util.concurrent.Future<any>;
                     public invokeAll(param0: java.util.Collection<any>): java.util.List<any>;
-                    public constructor(param0: number, param1: java.util.concurrent.ThreadFactory);
+                    public isShutdown(): boolean;
                     public shutdownNow(): java.util.List<java.lang.Runnable>;
                     public constructor(param0: number, param1: number, param2: java.util.concurrent.ThreadFactory, param3: java.util.concurrent.RejectedExecutionHandler);
+                    public shutdown(): void;
                     public awaitTermination(param0: number, param1: java.util.concurrent.TimeUnit): boolean;
                     public constructor(param0: number, param1: number, param2: number, param3: java.util.concurrent.TimeUnit, param4: java.util.concurrent.BlockingQueue<java.lang.Runnable>);
                     public constructor(
@@ -3732,11 +4502,13 @@ declare namespace io {
                         param4: java.util.concurrent.BlockingQueue<java.lang.Runnable>,
                         param5: java.util.concurrent.RejectedExecutionHandler
                     );
-                    public scheduleAtFixedRate(param0: java.lang.Runnable, param1: number, param2: number, param3: java.util.concurrent.TimeUnit): java.util.concurrent.ScheduledFuture<any>;
+                    public constructor();
+                    public beforeExecute(param0: java.lang.Thread, param1: java.lang.Runnable): void;
+                    public invokeAny(param0: java.util.Collection<any>, param1: number, param2: java.util.concurrent.TimeUnit): any;
                     public submit(param0: java.lang.Runnable, param1: any): java.util.concurrent.Future<any>;
-                    public scheduleWithFixedDelay(param0: java.lang.Runnable, param1: number, param2: number, param3: java.util.concurrent.TimeUnit): java.util.concurrent.ScheduledFuture<any>;
+                    public submit(param0: java.util.concurrent.Callable<any>): java.util.concurrent.Future<any>;
                 }
-                export namespace RetryingThreadPoolExecutor {
+                export namespace QueuedThreadPoolExecutor {
                     export class CancelledFuture<T> extends java.util.concurrent.Future<any> {
                         public static class: java.lang.Class<CancelledFuture<any>>;
                         public isDone(): boolean;
@@ -3776,6 +4548,7 @@ declare namespace io {
                     public static class: java.lang.Class<TransportResult>;
                     public getResponseCode(): number;
                     public static error(param0: number): TransportResult;
+                    public static error(): TransportResult;
                     public static success(): TransportResult;
                     public isSuccess(): boolean;
                 }
@@ -3802,8 +4575,36 @@ declare namespace io {
             export namespace util {
                 export class ApplyScopeUtils extends java.lang.Object {
                     public static class: java.lang.Class<ApplyScopeUtils>;
-                    public constructor();
                     public static shouldApplyScopeData(param0: any): boolean;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace core {
+            export namespace util {
+                export class CollectionUtils extends java.lang.Object {
+                    public static class: java.lang.Class<CollectionUtils>;
+                    public static size(param0: java.lang.Iterable<any>): number;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace core {
+            export namespace util {
+                export class LogUtils extends java.lang.Object {
+                    public static class: java.lang.Class<LogUtils>;
+                    public static logIfNotSubmissionResult(param0: ILogger, param1: any): void;
+                    public static logIfNotFlushable(param0: ILogger, param1: any): void;
+                    public constructor();
+                    public static logIfNotRetryable(param0: ILogger, param1: any): void;
                 }
             }
         }
@@ -3822,3 +4623,873 @@ declare namespace io {
         }
     }
 }
+
+declare namespace io {
+    export namespace sentry {
+        export namespace core {
+            export namespace util {
+                export class StringUtils extends java.lang.Object {
+                    public static class: java.lang.Class<StringUtils>;
+                    public static capitalize(param0: string): string;
+                    public static getStringAfterDot(param0: string): string;
+                }
+            }
+        }
+    }
+}
+
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class ANRWatchDog extends java.lang.Thread {
+                    public static class: java.lang.Class<ANRWatchDog>;
+                    public run(): void;
+                }
+                export namespace ANRWatchDog {
+                    export class ANRListener extends java.lang.Object {
+                        public static class: java.lang.Class<ANRListener>;
+                        /**
+                         * Constructs a new instance of the io.sentry.android.core.ANRWatchDog$ANRListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                         */
+                        public constructor(implementation: { onAppNotResponding(param0: ApplicationNotResponding): void });
+                        public constructor();
+                        public onAppNotResponding(param0: ApplicationNotResponding): void;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class ActivityBreadcrumbsIntegration extends java.lang.Object implements java.io.Closeable, globalAndroid.app.Application.ActivityLifecycleCallbacks {
+                    public static class: java.lang.Class<ActivityBreadcrumbsIntegration>;
+                    public register(param0: sentry.core.IHub, param1: sentry.core.SentryOptions): void;
+                    public onActivitySaveInstanceState(param0: globalAndroid.app.Activity, param1: globalAndroid.os.Bundle): void;
+                    public onActivityStarted(param0: globalAndroid.app.Activity): void;
+                    public onActivityCreated(param0: globalAndroid.app.Activity, param1: globalAndroid.os.Bundle): void;
+                    public onActivityStopped(param0: globalAndroid.app.Activity): void;
+                    public close(): void;
+                    public constructor(param0: globalAndroid.app.Application);
+                    public onActivityResumed(param0: globalAndroid.app.Activity): void;
+                    public onActivityPaused(param0: globalAndroid.app.Activity): void;
+                    public onActivityDestroyed(param0: globalAndroid.app.Activity): void;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class AndroidLogger extends java.lang.Object {
+                    public static class: java.lang.Class<AndroidLogger>;
+                    public log(param0: sentry.core.SentryLevel, param1: string, param2: native.Array<any>): void;
+                    public log(param0: sentry.core.SentryLevel, param1: string, param2: java.lang.Throwable): void;
+                    public log(param0: sentry.core.SentryLevel, param1: java.lang.Throwable, param2: string, param3: native.Array<any>): void;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class AndroidOptionsInitializer extends java.lang.Object {
+                    public static class: java.lang.Class<AndroidOptionsInitializer>;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class AndroidSerializer extends java.lang.Object {
+                    public static class: java.lang.Class<AndroidSerializer>;
+                    public deserializeSession(param0: java.io.Reader): sentry.core.Session;
+                    public deserializeEvent(param0: java.io.Reader): sentry.core.SentryEvent;
+                    public serialize(param0: sentry.core.Session, param1: java.io.Writer): void;
+                    public constructor(param0: sentry.core.ILogger, param1: sentry.core.IEnvelopeReader);
+                    public deserializeEnvelope(param0: java.io.InputStream): sentry.core.SentryEnvelope;
+                    public serialize(param0: sentry.core.SentryEnvelope, param1: java.io.Writer): void;
+                    public serialize(param0: sentry.core.SentryEvent, param1: java.io.Writer): void;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class AndroidTransportGate extends java.lang.Object {
+                    public static class: java.lang.Class<AndroidTransportGate>;
+                    public isConnected(): boolean;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class AnrIntegration extends java.lang.Object implements java.io.Closeable {
+                    public static class: java.lang.Class<AnrIntegration>;
+                    public constructor(param0: globalAndroid.content.Context);
+                    public register(param0: sentry.core.IHub, param1: sentry.core.SentryOptions): void;
+                    public close(): void;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class AppComponentsBreadcrumbsIntegration extends java.lang.Object implements java.io.Closeable, globalAndroid.content.ComponentCallbacks2 {
+                    public static class: java.lang.Class<AppComponentsBreadcrumbsIntegration>;
+                    public constructor(param0: globalAndroid.content.Context);
+                    public register(param0: sentry.core.IHub, param1: sentry.core.SentryOptions): void;
+                    public onTrimMemory(param0: number): void;
+                    public close(): void;
+                    public onConfigurationChanged(param0: globalAndroid.content.res.Configuration): void;
+                    public onLowMemory(): void;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class AppLifecycleIntegration extends java.lang.Object implements java.io.Closeable {
+                    public static class: java.lang.Class<AppLifecycleIntegration>;
+                    public register(param0: sentry.core.IHub, param1: sentry.core.SentryOptions): void;
+                    public constructor();
+                    public close(): void;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class ApplicationNotResponding extends java.lang.RuntimeException {
+                    public static class: java.lang.Class<ApplicationNotResponding>;
+                    public getThread(): java.lang.Thread;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class BuildConfig extends java.lang.Object {
+                    public static class: java.lang.Class<BuildConfig>;
+                    public static DEBUG: boolean;
+                    public static LIBRARY_PACKAGE_NAME: string;
+                    public static BUILD_TYPE: string;
+                    public static VERSION_CODE: number;
+                    public static VERSION_NAME: string;
+                    public static SENTRY_CLIENT_NAME: string;
+                    public constructor();
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class BuildInfoProvider extends java.lang.Object implements IBuildInfoProvider {
+                    public static class: java.lang.Class<BuildInfoProvider>;
+                    public constructor();
+                    public getSdkInfoVersion(): number;
+                    public getBuildTags(): string;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class ContextUtils extends java.lang.Object {
+                    public static class: java.lang.Class<ContextUtils>;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class DefaultAndroidEventProcessor extends java.lang.Object {
+                    public static class: java.lang.Class<DefaultAndroidEventProcessor>;
+                    public getUser(): sentry.core.protocol.User;
+                    public process(param0: sentry.core.SentryEvent, param1: any): sentry.core.SentryEvent;
+                    public constructor(param0: globalAndroid.content.Context, param1: sentry.core.SentryOptions, param2: IBuildInfoProvider);
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class EnvelopeFileObserver extends globalAndroid.os.FileObserver {
+                    public static class: java.lang.Class<EnvelopeFileObserver>;
+                    public onEvent(param0: number, param1: string): void;
+                }
+                export namespace EnvelopeFileObserver {
+                    export class CachedEnvelopeHint extends java.lang.Object {
+                        public static class: java.lang.Class<CachedEnvelopeHint>;
+                        public constructor(param0: number, param1: sentry.core.ILogger);
+                        public isRetry(): boolean;
+                        public waitFlush(): boolean;
+                        public isSuccess(): boolean;
+                        public setResult(param0: boolean): void;
+                        public setRetry(param0: boolean): void;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export abstract class EnvelopeFileObserverIntegration extends java.lang.Object implements java.io.Closeable {
+                    public static class: java.lang.Class<EnvelopeFileObserverIntegration>;
+                    public register(param0: sentry.core.IHub, param1: sentry.core.SentryOptions): void;
+                    public close(): void;
+                    public static getOutboxFileObserver(param0: sentry.core.IEnvelopeReader): EnvelopeFileObserverIntegration;
+                }
+                export namespace EnvelopeFileObserverIntegration {
+                    export class OutboxEnvelopeFileObserverIntegration extends EnvelopeFileObserverIntegration {
+                        public static class: java.lang.Class<OutboxEnvelopeFileObserverIntegration>;
+                        public close(): void;
+                        public getPath(param0: sentry.core.SentryOptions): string;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class IBuildInfoProvider extends java.lang.Object {
+                    public static class: java.lang.Class<IBuildInfoProvider>;
+                    /**
+                     * Constructs a new instance of the io.sentry.android.core.IBuildInfoProvider interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                     */
+                    public constructor(implementation: { getSdkInfoVersion(): number; getBuildTags(): string });
+                    public constructor();
+                    public getSdkInfoVersion(): number;
+                    public getBuildTags(): string;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class IHandler extends java.lang.Object {
+                    public static class: java.lang.Class<IHandler>;
+                    /**
+                     * Constructs a new instance of the io.sentry.android.core.IHandler interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                     */
+                    public constructor(implementation: { post(param0: java.lang.Runnable): void; getThread(): java.lang.Thread });
+                    public constructor();
+                    public post(param0: java.lang.Runnable): void;
+                    public getThread(): java.lang.Thread;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class ILoadClass extends java.lang.Object {
+                    public static class: java.lang.Class<ILoadClass>;
+                    /**
+                     * Constructs a new instance of the io.sentry.android.core.ILoadClass interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                     */
+                    public constructor(implementation: { loadClass(param0: string): java.lang.Class<any> });
+                    public constructor();
+                    public loadClass(param0: string): java.lang.Class<any>;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class Installation extends java.lang.Object {
+                    public static class: java.lang.Class<Installation>;
+                    public static id(param0: globalAndroid.content.Context): string;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class LifecycleWatcher extends java.lang.Object {
+                    public static class: java.lang.Class<LifecycleWatcher>;
+                    public onStart(param0: androidx.lifecycle.LifecycleOwner): void;
+                    public onStop(param0: androidx.lifecycle.LifecycleOwner): void;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class LoadClass extends java.lang.Object implements ILoadClass {
+                    public static class: java.lang.Class<LoadClass>;
+                    public loadClass(param0: string): java.lang.Class<any>;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class MainLooperHandler extends java.lang.Object implements IHandler {
+                    public static class: java.lang.Class<MainLooperHandler>;
+                    public post(param0: java.lang.Runnable): void;
+                    public getThread(): java.lang.Thread;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class ManifestMetadataReader extends java.lang.Object {
+                    public static class: java.lang.Class<ManifestMetadataReader>;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class NdkIntegration extends java.lang.Object {
+                    public static class: java.lang.Class<NdkIntegration>;
+                    public static SENTRY_NDK_CLASS_NAME: string;
+                    public register(param0: sentry.core.IHub, param1: sentry.core.SentryOptions): void;
+                    public constructor(param0: java.lang.Class<any>);
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class PhoneStateBreadcrumbsIntegration extends java.lang.Object implements java.io.Closeable {
+                    public static class: java.lang.Class<PhoneStateBreadcrumbsIntegration>;
+                    public constructor(param0: globalAndroid.content.Context);
+                    public register(param0: sentry.core.IHub, param1: sentry.core.SentryOptions): void;
+                    public close(): void;
+                }
+                export namespace PhoneStateBreadcrumbsIntegration {
+                    export class PhoneStateChangeListener extends globalAndroid.telephony.PhoneStateListener {
+                        public static class: java.lang.Class<PhoneStateChangeListener>;
+                        public onCallStateChanged(param0: number, param1: string): void;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class SentryAndroid extends java.lang.Object {
+                    public static class: java.lang.Class<SentryAndroid>;
+                    public static init(param0: globalAndroid.content.Context): void;
+                    public static init(
+                        param0: globalAndroid.content.Context,
+                        param1: sentry.core.ILogger,
+                        param2: sentry.core.Sentry.OptionsConfiguration<SentryAndroidOptions>
+                    ): void;
+                    public static init(param0: globalAndroid.content.Context, param1: sentry.core.Sentry.OptionsConfiguration<SentryAndroidOptions>): void;
+                    public static init(param0: globalAndroid.content.Context, param1: sentry.core.ILogger): void;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class SentryAndroidOptions extends sentry.core.SentryOptions {
+                    public static class: java.lang.Class<SentryAndroidOptions>;
+                    public isAnrReportInDebug(): boolean;
+                    public setEnableAppComponentBreadcrumbs(param0: boolean): void;
+                    public isEnableSystemEventBreadcrumbs(): boolean;
+                    public enableAllAutoBreadcrumbs(param0: boolean): void;
+                    public isEnableAppLifecycleBreadcrumbs(): boolean;
+                    public isEnableActivityLifecycleBreadcrumbs(): boolean;
+                    public setAnrReportInDebug(param0: boolean): void;
+                    /** @deprecated */
+                    public setAnrTimeoutIntervalMills(param0: number): void;
+                    public setAnrTimeoutIntervalMillis(param0: number): void;
+                    public setEnableSystemEventBreadcrumbs(param0: boolean): void;
+                    public constructor();
+                    public setEnableActivityLifecycleBreadcrumbs(param0: boolean): void;
+                    public isAnrEnabled(): boolean;
+                    /** @deprecated */
+                    public getAnrTimeoutIntervalMills(): number;
+                    public getAnrTimeoutIntervalMillis(): number;
+                    public setAnrEnabled(param0: boolean): void;
+                    public setEnableAppLifecycleBreadcrumbs(param0: boolean): void;
+                    public isEnableAppComponentBreadcrumbs(): boolean;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class SentryInitProvider extends globalAndroid.content.ContentProvider {
+                    public static class: java.lang.Class<SentryInitProvider>;
+                    public query(param0: globalAndroid.net.Uri, param1: native.Array<string>, param2: string, param3: native.Array<string>, param4: string): globalAndroid.database.Cursor;
+                    public update(param0: globalAndroid.net.Uri, param1: globalAndroid.content.ContentValues, param2: string, param3: native.Array<string>): number;
+                    public shutdown(): void;
+                    public onTrimMemory(param0: number): void;
+                    public attachInfo(param0: globalAndroid.content.Context, param1: globalAndroid.content.pm.ProviderInfo): void;
+                    public constructor();
+                    public onCreate(): boolean;
+                    public query(
+                        param0: globalAndroid.net.Uri,
+                        param1: native.Array<string>,
+                        param2: globalAndroid.os.Bundle,
+                        param3: globalAndroid.os.CancellationSignal
+                    ): globalAndroid.database.Cursor;
+                    public getType(param0: globalAndroid.net.Uri): string;
+                    public delete(param0: globalAndroid.net.Uri, param1: string, param2: native.Array<string>): number;
+                    public insert(param0: globalAndroid.net.Uri, param1: globalAndroid.content.ContentValues): globalAndroid.net.Uri;
+                    public query(
+                        param0: globalAndroid.net.Uri,
+                        param1: native.Array<string>,
+                        param2: string,
+                        param3: native.Array<string>,
+                        param4: string,
+                        param5: globalAndroid.os.CancellationSignal
+                    ): globalAndroid.database.Cursor;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class SystemEventsBreadcrumbsIntegration extends java.lang.Object implements java.io.Closeable {
+                    public static class: java.lang.Class<SystemEventsBreadcrumbsIntegration>;
+                    public constructor(param0: globalAndroid.content.Context);
+                    public register(param0: sentry.core.IHub, param1: sentry.core.SentryOptions): void;
+                    public close(): void;
+                    public constructor(param0: globalAndroid.content.Context, param1: java.util.List<string>);
+                }
+                export namespace SystemEventsBreadcrumbsIntegration {
+                    export class SystemEventsBroadcastReceiver extends globalAndroid.content.BroadcastReceiver {
+                        public static class: java.lang.Class<SystemEventsBroadcastReceiver>;
+                        public onReceive(param0: globalAndroid.content.Context, param1: globalAndroid.content.Intent): void;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class TempSensorBreadcrumbsIntegration extends java.lang.Object implements java.io.Closeable, globalAndroid.hardware.SensorEventListener {
+                    public static class: java.lang.Class<TempSensorBreadcrumbsIntegration>;
+                    public constructor(param0: globalAndroid.content.Context);
+                    public register(param0: sentry.core.IHub, param1: sentry.core.SentryOptions): void;
+                    public onSensorChanged(param0: globalAndroid.hardware.SensorEvent): void;
+                    public onAccuracyChanged(param0: globalAndroid.hardware.Sensor, param1: number): void;
+                    public close(): void;
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export class UnknownPropertiesTypeAdapterFactory extends java.lang.Object {
+                    public static class: java.lang.Class<UnknownPropertiesTypeAdapterFactory>;
+                    public create(param0: com.google.gson.Gson, param1: com.google.gson.reflect.TypeToken<any>): com.google.gson.TypeAdapter<any>;
+                }
+                export namespace UnknownPropertiesTypeAdapterFactory {
+                    export class UnknownPropertiesTypeAdapter<T> extends com.google.gson.TypeAdapter<any> {
+                        public static class: java.lang.Class<UnknownPropertiesTypeAdapter<any>>;
+                        public read(param0: com.google.gson.stream.JsonReader): any;
+                        public write(param0: com.google.gson.stream.JsonWriter, param1: any): void;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export namespace adapters {
+                    export class ContextsDeserializerAdapter extends com.google.gson.JsonDeserializer<sentry.core.protocol.Contexts> {
+                        public static class: java.lang.Class<ContextsDeserializerAdapter>;
+                        public constructor(param0: sentry.core.ILogger);
+                        public deserialize(param0: com.google.gson.JsonElement, param1: java.lang.reflect.Type, param2: com.google.gson.JsonDeserializationContext): sentry.core.protocol.Contexts;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export namespace adapters {
+                    export class ContextsSerializerAdapter extends com.google.gson.JsonSerializer<sentry.core.protocol.Contexts> {
+                        public static class: java.lang.Class<ContextsSerializerAdapter>;
+                        public serialize(param0: sentry.core.protocol.Contexts, param1: java.lang.reflect.Type, param2: com.google.gson.JsonSerializationContext): com.google.gson.JsonElement;
+                        public constructor(param0: sentry.core.ILogger);
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export namespace adapters {
+                    export class DateDeserializerAdapter extends com.google.gson.JsonDeserializer<java.util.Date> {
+                        public static class: java.lang.Class<DateDeserializerAdapter>;
+                        public deserialize(param0: com.google.gson.JsonElement, param1: java.lang.reflect.Type, param2: com.google.gson.JsonDeserializationContext): java.util.Date;
+                        public constructor(param0: sentry.core.ILogger);
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export namespace adapters {
+                    export class DateSerializerAdapter extends com.google.gson.JsonSerializer<java.util.Date> {
+                        public static class: java.lang.Class<DateSerializerAdapter>;
+                        public constructor(param0: sentry.core.ILogger);
+                        public serialize(param0: java.util.Date, param1: java.lang.reflect.Type, param2: com.google.gson.JsonSerializationContext): com.google.gson.JsonElement;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export namespace adapters {
+                    export class OrientationDeserializerAdapter extends com.google.gson.JsonDeserializer<sentry.core.protocol.Device.DeviceOrientation> {
+                        public static class: java.lang.Class<OrientationDeserializerAdapter>;
+                        public constructor(param0: sentry.core.ILogger);
+                        public deserialize(
+                            param0: com.google.gson.JsonElement,
+                            param1: java.lang.reflect.Type,
+                            param2: com.google.gson.JsonDeserializationContext
+                        ): sentry.core.protocol.Device.DeviceOrientation;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export namespace adapters {
+                    export class OrientationSerializerAdapter extends com.google.gson.JsonSerializer<sentry.core.protocol.Device.DeviceOrientation> {
+                        public static class: java.lang.Class<OrientationSerializerAdapter>;
+                        public constructor(param0: sentry.core.ILogger);
+                        public serialize(
+                            param0: sentry.core.protocol.Device.DeviceOrientation,
+                            param1: java.lang.reflect.Type,
+                            param2: com.google.gson.JsonSerializationContext
+                        ): com.google.gson.JsonElement;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export namespace adapters {
+                    export class SentryIdDeserializerAdapter extends com.google.gson.JsonDeserializer<sentry.core.protocol.SentryId> {
+                        public static class: java.lang.Class<SentryIdDeserializerAdapter>;
+                        public deserialize(param0: com.google.gson.JsonElement, param1: java.lang.reflect.Type, param2: com.google.gson.JsonDeserializationContext): sentry.core.protocol.SentryId;
+                        public constructor(param0: sentry.core.ILogger);
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export namespace adapters {
+                    export class SentryIdSerializerAdapter extends com.google.gson.JsonSerializer<sentry.core.protocol.SentryId> {
+                        public static class: java.lang.Class<SentryIdSerializerAdapter>;
+                        public constructor(param0: sentry.core.ILogger);
+                        public serialize(param0: sentry.core.protocol.SentryId, param1: java.lang.reflect.Type, param2: com.google.gson.JsonSerializationContext): com.google.gson.JsonElement;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export namespace adapters {
+                    export class SentryLevelDeserializerAdapter extends com.google.gson.JsonDeserializer<sentry.core.SentryLevel> {
+                        public static class: java.lang.Class<SentryLevelDeserializerAdapter>;
+                        public constructor(param0: sentry.core.ILogger);
+                        public deserialize(param0: com.google.gson.JsonElement, param1: java.lang.reflect.Type, param2: com.google.gson.JsonDeserializationContext): sentry.core.SentryLevel;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export namespace adapters {
+                    export class SentryLevelSerializerAdapter extends com.google.gson.JsonSerializer<sentry.core.SentryLevel> {
+                        public static class: java.lang.Class<SentryLevelSerializerAdapter>;
+                        public constructor(param0: sentry.core.ILogger);
+                        public serialize(param0: sentry.core.SentryLevel, param1: java.lang.reflect.Type, param2: com.google.gson.JsonSerializationContext): com.google.gson.JsonElement;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export namespace adapters {
+                    export class TimeZoneDeserializerAdapter extends com.google.gson.JsonDeserializer<java.util.TimeZone> {
+                        public static class: java.lang.Class<TimeZoneDeserializerAdapter>;
+                        public constructor(param0: sentry.core.ILogger);
+                        public deserialize(param0: com.google.gson.JsonElement, param1: java.lang.reflect.Type, param2: com.google.gson.JsonDeserializationContext): java.util.TimeZone;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export namespace adapters {
+                    export class TimeZoneSerializerAdapter extends com.google.gson.JsonSerializer<java.util.TimeZone> {
+                        public static class: java.lang.Class<TimeZoneSerializerAdapter>;
+                        public constructor(param0: sentry.core.ILogger);
+                        public serialize(param0: java.util.TimeZone, param1: java.lang.reflect.Type, param2: com.google.gson.JsonSerializationContext): com.google.gson.JsonElement;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export namespace util {
+                    export class ConnectivityChecker extends java.lang.Object {
+                        public static class: java.lang.Class<ConnectivityChecker>;
+                        public static getConnectionType(param0: globalAndroid.content.Context, param1: sentry.core.ILogger, param2: IBuildInfoProvider): string;
+                        public static getConnectionStatus(param0: globalAndroid.content.Context, param1: sentry.core.ILogger): ConnectivityChecker.Status;
+                    }
+                    export namespace ConnectivityChecker {
+                        export class Status {
+                            public static class: java.lang.Class<Status>;
+                            public static CONNECTED: Status;
+                            public static NOT_CONNECTED: Status;
+                            public static NO_PERMISSION: Status;
+                            public static UNKNOWN: Status;
+                            public static valueOf(param0: java.lang.Class<any>, param1: string): java.lang.Enum<any>;
+                            public static valueOf(param0: string): Status;
+                            public static values(): native.Array<Status>;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export namespace util {
+                    export class DeviceOrientations extends java.lang.Object {
+                        public static class: java.lang.Class<DeviceOrientations>;
+                        public static getOrientation(param0: number): sentry.core.protocol.Device.DeviceOrientation;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export namespace util {
+                    export class Permissions extends java.lang.Object {
+                        public static class: java.lang.Class<Permissions>;
+                        public static hasPermission(param0: globalAndroid.content.Context, param1: string): boolean;
+                    }
+                }
+            }
+        }
+    }
+}
+
+declare namespace io {
+    export namespace sentry {
+        export namespace android {
+            export namespace core {
+                export namespace util {
+                    export class RootChecker extends java.lang.Object {
+                        public static class: java.lang.Class<RootChecker>;
+                        public constructor(param0: globalAndroid.content.Context, param1: IBuildInfoProvider, param2: sentry.core.ILogger);
+                        public isDeviceRooted(): boolean;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Generics information:
+// io.sentry.android.core.UnknownPropertiesTypeAdapterFactory.UnknownPropertiesTypeAdapter:1

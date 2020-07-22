@@ -1,4 +1,3 @@
-
 import { BrowserOptions, Transports } from '@sentry/browser';
 import { BrowserBackend } from '@sentry/browser/dist/backend';
 import { BaseBackend, NoopTransport } from '@sentry/core';
@@ -22,6 +21,8 @@ export interface NativescriptOptions extends BrowserOptions {
      * Defaults to `true`.
      */
     enableNative?: boolean;
+
+    enableAutoSessionTracking?: boolean;
 
     /**
      * Enables native crashHandling. This only works if `enableNative` is `true`.
@@ -77,7 +78,7 @@ export class NativescriptBackend extends BaseBackend<BrowserOptions> {
 
         const transportOptions = {
             ...this._options.transportOptions,
-            dsn: this._options.dsn
+            dsn: this._options.dsn,
         };
 
         if (this._options.transport) {

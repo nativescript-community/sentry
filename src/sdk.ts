@@ -10,7 +10,7 @@ import { DebugSymbolicator, DeviceContext, NativescriptErrorHandlers, Release } 
 const IGNORED_DEFAULT_INTEGRATIONS = [
     'GlobalHandlers', // We will use the react-native internal handlers
     'Breadcrumbs', // We add it later, just not patching fetch
-    'TryCatch' // We don't need this
+    'TryCatch', // We don't need this
 ];
 
 export let rewriteFrameIntegration: {
@@ -22,10 +22,11 @@ export let rewriteFrameIntegration: {
 export function init(
     options: NativescriptOptions = {
         enableNative: true,
-        enableNativeCrashHandling: true
+        enableNativeCrashHandling: true,
     }
 ): void {
     // tslint:disable: strict-comparisons
+    console.log('init');
     if (options.defaultIntegrations === undefined) {
         rewriteFrameIntegration = new RewriteFrames({
             iteratee: (frame: StackFrame) => {
@@ -36,32 +37,34 @@ export function init(
                         .replace(/^.*\/[^\.]+(\.app|CodePush|.*(?=\/))/, ''));
 
                     // const appPrefix = 'app://';
-                    const appPrefix = options.appPrefix || '';
-                    if (appPrefix.endsWith('//') && !appPrefix.endsWith('///')) {
-                        filename = frame.filename.indexOf('/') === 0 ? `${appPrefix}${frame.filename}` : `${appPrefix}/${frame.filename}`;
-                    } else {
-                        filename = frame.filename.indexOf('/') === 0 ? `${appPrefix}${frame.filename.slice(1)}` : `${appPrefix}${frame.filename}`;
+                    if (frame.filename.indexOf('[native code]') === -1) {
+                        const appPrefix = options.appPrefix || '';
+                        if (appPrefix.endsWith('//') && !appPrefix.endsWith('///')) {
+                            filename = frame.filename.indexOf('/') === 0 ? `${appPrefix}${frame.filename}` : `${appPrefix}/${frame.filename}`;
+                        } else {
+                            filename = frame.filename.indexOf('/') === 0 ? `${appPrefix}${frame.filename.slice(1)}` : `${appPrefix}${frame.filename}`;
+                        }
                     }
 
                     frame.filename = filename;
                     // We always want to have a tripple slash
                 }
                 return frame;
-            }
+            },
         }) as any;
         options.defaultIntegrations = [
             new NativescriptErrorHandlers(options),
             new Release(),
-            ...defaultIntegrations.filter(i => !IGNORED_DEFAULT_INTEGRATIONS.includes(i.name)),
+            ...defaultIntegrations.filter((i) => !IGNORED_DEFAULT_INTEGRATIONS.includes(i.name)),
             new Integrations.Breadcrumbs({
                 // console: false,
                 xhr: false,
                 dom: false,
-                fetch: false
+                fetch: false,
             }),
             // new DebugSymbolicator(),
             rewriteFrameIntegration as any,
-            new DeviceContext()
+            new DeviceContext(),
         ];
     }
     if (options.enableNative === undefined) {

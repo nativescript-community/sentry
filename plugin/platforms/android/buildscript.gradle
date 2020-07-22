@@ -1,0 +1,8 @@
+
+repositories {
+    jcenter()
+    google()
+}
+dependencies {
+    classpath 'io.sentry:sentry-android-gradle-plugin:1.7.28'
+}
