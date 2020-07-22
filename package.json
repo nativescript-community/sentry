@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "scripts": {
         "tsc": "cp src/nssentry.d.ts plugin && tsc -skipLibCheck",
-        "build": "npm run tsc && \\cp README.md plugin/",
+        "build": "cp README.md plugin/ && npm run tsc",
         "publish": "npm run build && lerna publish",
         "commitmsg": "commitlint -e $GIT_PARAMS",
         "demo.ios": "npm i && npm run tsc && cd demo && tns run ios",
