@@ -17,8 +17,7 @@ export namespace NSSentry {
             build: packageInfo.versionCode,
         };
     }
-    function eventLevel(event) {
-        const level = event.level || '';
+    function eventLevel(level) {
         switch (level) {
             case 'fatal':
                 return io.sentry.core.SentryLevel.FATAL;
