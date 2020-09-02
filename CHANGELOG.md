@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.1](https://github.com/Akylas/nativescript-akylas-sentry/compare/v2.0.0...v2.0.1) (2020-09-02)
+
+
+### Bug Fixes
+
+* **android:** crash on missing event request ([118f104](https://github.com/Akylas/nativescript-akylas-sentry/commit/118f104c42b905c3bee44f0369c7e9077b827946))
+
+
+
+
+
 # [2.0.0](https://github.com/Akylas/nativescript-akylas-sentry/compare/v1.0.0...v2.0.0) (2020-07-22)
 
 **Note:** Version bump only for package @nativescript-community/sentry
