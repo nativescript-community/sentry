@@ -25,6 +25,8 @@ export namespace NSSentry {
                 return io.sentry.core.SentryLevel.WARNING;
             case 'info':
                 return io.sentry.core.SentryLevel.INFO;
+            case 'log':
+                return io.sentry.core.SentryLevel.LOG;
             case 'debug':
                 return io.sentry.core.SentryLevel.DEBUG;
             default:
