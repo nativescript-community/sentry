@@ -368,9 +368,12 @@ export namespace NSSentry {
                                             // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
                                             options.beforeSend(event as any, hint);
                                         }
-                                        const map = new java.util.HashMap();
-                                        map.put('X-Forwarded-Protocol', 'https');
-                                        event.getRequest().setHeaders(map);
+
+                                        if (event.getRequest()) {
+                                            const map = new java.util.HashMap();
+                                            map.put('X-Forwarded-Protocol', 'https');
+                                            event.getRequest().setHeaders(map);
+                                        }
                                         // we use this callback to actually try and get the JS stack when a native error is catched
                                         try {
                                             const ex: io.sentry.core.protocol.SentryException = event.getExceptions().get(0);
