@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.5](https://github.com/Akylas/nativescript-akylas-sentry/compare/v2.0.4...v2.0.5) (2020-11-02)
+
+
+### Bug Fixes
+
+* N 7 update ([1a03eec](https://github.com/Akylas/nativescript-akylas-sentry/commit/1a03eeccc2b344e1fca4c23ce1a91b1c77df4354))
+
+
+
+
+
 ## [2.0.4](https://github.com/Akylas/nativescript-akylas-sentry/compare/v2.0.3...v2.0.4) (2020-11-02)
 
 **Note:** Version bump only for package @nativescript-community/sentry
