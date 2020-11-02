@@ -1,4 +1,3 @@
-const misc = require('@sentry/utils/esm/misc');
 import { logger } from '@sentry/utils';
 logger.disable(); // this crashes for {N} for now
 export { Breadcrumb, Request, SdkInfo, Event, Exception, Response, Severity, StackFrame, Stacktrace, Status, Thread, User } from '@sentry/types';

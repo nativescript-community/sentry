@@ -1,4 +1,4 @@
-import { android as appAndroid } from '@nativescript/core/application';
+import { Application } from '@nativescript/core';
 import { Event, Response, Status } from '@sentry/types';
 import { NativescriptOptions } from './backend';
 import { rewriteFrameIntegration } from './sdk';
@@ -9,7 +9,7 @@ export namespace NSSentry {
     export const nativeTransport = true;
 
     export function fetchRelease() {
-        const ctx = appAndroid.context as android.content.Context;
+        const ctx = Application.android.context as android.content.Context;
         const packageInfo = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), 0);
         return {
             id: packageInfo.packageName,
@@ -322,7 +322,7 @@ export namespace NSSentry {
 
             try {
                 io.sentry.android.core.SentryAndroid.init(
-                    appAndroid.context,
+                    Application.android.context,
                     new io.sentry.core.Sentry.OptionsConfiguration({
                         configure(config) {
                             config.setLogger(new io.sentry.core.SystemOutLogger());

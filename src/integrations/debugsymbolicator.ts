@@ -90,7 +90,8 @@ export class DebugSymbolicator implements Integration {
             if (!self || hint === undefined || hint.originalException === undefined) {
                 return event;
             }
-            const error: NativescriptError = hint.originalException as any;
+            // @ts-ignore
+            const error: NativescriptError = hint.originalException;
 
             // const parseErrorStack = require('react-native/Libraries/Core/Devtools/parseErrorStack');
             const stack = parseErrorStack(error);

@@ -23,8 +23,7 @@
         "outDir": "./plugin",
         "rootDir": "src",
         "paths": {
-            "nativescript-akylas-sentry": ["./src/index"],
-            "*": ["./node_modules/tns-core-modules/*", "./node_modules/*"]
+            "@nativescript-community/sentry": ["./src/index"]
         }
     },
     "include": ["src/**/*.ts", "references.d.ts", "src/references.d.ts"],

@@ -5,8 +5,7 @@ import { logger } from '@sentry/utils';
 
 import { NativescriptClient } from '../client';
 
-import * as application from '@nativescript/core/application';
-import * as trace from '@nativescript/core/trace';
+import {Application, Trace} from '@nativescript/core';
 
 /** NativescriptErrorHandlers Options */
 export interface NativescriptErrorHandlersOptions {
@@ -53,7 +52,7 @@ export class NativescriptErrorHandlers implements Integration {
      */
     private _handleUnhandledRejections(): void {
         if (this._options.uncaughtErrors) {
-            application.on(application.uncaughtErrorEvent, this.globalHanderEvent, this);
+            Application.on(Application.uncaughtErrorEvent, this.globalHanderEvent, this);
             // const tracking = require('promise/setimmediate/rejection-tracking');
             // tracking.disable();
             // tracking.enable({
@@ -110,6 +109,7 @@ export class NativescriptErrorHandlers implements Integration {
         // Just for a better dev experience
         if (client) {
             const timeout = client.getOptions().shutdownTimeout || 2000;
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
             (client.flush(timeout) as Promise<any>)
                 .then(() => {
                     // defaultHandler(error, isFatal);
@@ -129,9 +129,9 @@ export class NativescriptErrorHandlers implements Integration {
     private _handleOnError(): void {
         if (this._options.traceErrorHandler) {
             // let handlingFatal = false;
-            application.on(application.discardedErrorEvent, this.globalHanderEvent, this);
+            Application.on(Application.discardedErrorEvent, this.globalHanderEvent, this);
 
-            trace.setErrorHandler({
+            Trace.setErrorHandler({
                 handlerError: this.globalHander
             });
             // const defaultHandler = ErrorUtils.getGlobalHandler && ErrorUtils.getGlobalHandler();
