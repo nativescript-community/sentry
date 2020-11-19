@@ -79,7 +79,7 @@ module.exports = env => {
         const srcFullPath = resolve(projectRoot, '..', 'src');
         alias = Object.assign(alias, {
             '#': srcFullPath,
-            'nativescript-akylas-sentry$': '#/nssentry.' + platform
+            '@nativescript-community/sentry$': '#/nssentry.' + platform
         });
     }
 

@@ -1,18 +1,18 @@
-[![npm](https://img.shields.io/npm/v/nativescript-akylas-sentry.svg)](https://www.npmjs.com/package/nativescript-akylas-sentry)
-[![npm](https://img.shields.io/npm/dt/nativescript-akylas-sentry.svg?label=npm%20downloads)](https://www.npmjs.com/package/nativescript-akylas-sentry)
-[![GitHub forks](https://img.shields.io/github/forks/Akylas/nativescript-akylas-sentry.svg)](https://github.com/Akylas/nativescript-akylas-sentry/network)
-[![GitHub stars](https://img.shields.io/github/stars/Akylas/nativescript-akylas-sentry.svg)](https://github.com/Akylas/nativescript-akylas-sentry/stargazers)
+[![npm](https://img.shields.io/npm/v/nativescript-community/sentry.svg)](https://www.npmjs.com/package/nativescript-community/sentry)
+[![npm](https://img.shields.io/npm/dt/nativescript-community/sentry.svg?label=npm%20downloads)](https://www.npmjs.com/package/nativescript-community/sentry)
+[![GitHub forks](https://img.shields.io/github/forks/nativescript-community/sentry.svg)](https://github.com/nativescript-community/sentry/network)
+[![GitHub stars](https://img.shields.io/github/stars/nativescript-community/sentry.svg)](https://github.com/nativescript-community/sentry/stargazers)
 
 # Installation
 
-* `tns plugin add nativescript-akylas-sentry`
+* `tns plugin add @nativescript-community/sentry`
 
 Be sure to run a new build after adding plugins to avoid any issues.
 
 # Usage
 
 ```typescript
-import * as Sentry from 'nativescript-akylas-sentry';
+import * as Sentry from '@nativescript-community/sentry';
 Sentry.init({
         dsn: "__DSN__"
     });
@@ -27,7 +27,7 @@ The `handleUncaughtErrors` method ensures all unhandled NativeScript errors will
 
 If you would like to send a handled error to Bugsnag, you can pass any Error object to Sentry notify method:
 ```typescript
-import * as Sentry from 'nativescript-akylas-sentry';
+import * as Sentry from '@nativescript-community/sentry';
 try {
   // potentially crashy code
 } catch (error) {
@@ -40,7 +40,7 @@ try {
 To report a promise rejection, use notify() as a part of the catch block:
 
 ```typescript
-import * as Sentry from 'nativescript-akylas-sentry';
+import * as Sentry from '@nativescript-community/sentry';
 new Promise(function(resolve, reject) {
   /* potentially failing code */
 })

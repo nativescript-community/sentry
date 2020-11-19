@@ -2,7 +2,7 @@
     "description": "NativeScript Bugsnag Demo",
     "license": "SEE LICENSE IN LICENSE.md",
     "readme": "README.md",
-    "repository": "http://www.github.com/Akylas/nativescript-akylas-sentry.git",
+    "repository": "http://www.github.com/nativescript-community/sentry.git",
     "nativescript": {
         "id": "org.nativescript.demovuesentry",
         "tns-android": {
@@ -12,7 +12,7 @@
     "dependencies": {
         "@nativescript/core": "^6.5.10",
         "nativescript-vue": "2.7.0",
-        "nativescript-akylas-sentry": "../plugin",
+        "@nativescript-community/sentry": "../plugin",
         "nativescript-extendedinfo": "^1.0.11",
         "@sentry/browser": "^5.19.2",
         "@sentry/core": "^5.19.2",

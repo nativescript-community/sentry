@@ -1,4 +1,4 @@
-import * as Sentry from 'nativescript-akylas-sentry';
+import * as Sentry from '@nativescript-community/sentry';
 declare class TestClass {
     static someMethod();
 }

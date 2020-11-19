@@ -42,7 +42,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/Akylas/nativescript-akylas-sentry.git"
+        "url": "git+https://github.com/nativescript-community/sentry.git"
     },
     "author": {
         "name": "Martin Guillon",
@@ -50,9 +50,9 @@
     },
     "license": "ISC",
     "bugs": {
-        "url": "https://github.com/Akylas/nativescript-akylas-sentry/issues"
+        "url": "https://github.com/nativescript-community/sentry/issues"
     },
-    "homepage": "https://github.com/Akylas/nativescript-akylas-sentry#readme",
+    "homepage": "https://github.com/nativescript-community/sentry#readme",
     "commitlint": {
         "extends": [
             "@commitlint/config-conventional"

@@ -31,7 +31,7 @@ export class NativescriptClient extends BaseClient<NativescriptBackend, Nativesc
             packages: [
                 ...((event.sdk && event.sdk.packages) || []),
                 {
-                    name: 'npm:nativescript-akylas-sentry',
+                    name: 'npm:@nativescript-community/sentry',
                     version: SDK_VERSION
                 }
             ],
