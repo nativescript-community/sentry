@@ -16,7 +16,8 @@
         "JavaScript",
         "Android",
         "iOS",
-        "Vue"
+        "Vue",
+        "preview|https://raw.githubusercontent.com/nativescript-community/sentry/master/images/preview.png"
     ],
     "author": {
         "name": "Martin Guillon",
