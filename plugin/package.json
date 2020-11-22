@@ -1,12 +1,9 @@
 {
     "name": "@nativescript-community/sentry",
     "version": "2.0.6",
+    "description": "A cross-platform application monitoring tool, with a focus on error reporting.",
     "main": "./index",
     "typings": "./index.d.ts",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/nativescript-community/sentry.git"
-    },
     "sideEffects": false,
     "nativescript": {
         "platforms": {
@@ -18,7 +15,8 @@
         "NativeScript",
         "JavaScript",
         "Android",
-        "iOS"
+        "iOS",
+        "Vue"
     ],
     "author": {
         "name": "Martin Guillon",
@@ -28,7 +26,10 @@
     "bugs": {
         "url": "https://github.com/nativescript-community/sentry/issues"
     },
-    "homepage": "https://github.com/nativescript-community/sentry#readme",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/nativescript-community/sentry"
+    },
     "dependencies": {
         "@sentry/browser": "^5.27.2",
         "@sentry/core": "^5.27.2",
