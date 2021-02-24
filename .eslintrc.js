@@ -4,9 +4,13 @@ module.exports = {
     },
     parser: '@typescript-eslint/parser',
     parserOptions: {
-        createDefaultProgram: true,
-        project: 'tsconfig.json',
-        sourceType: 'module'
+        ecmaVersion: 2019,
+        sourceType: 'module',
+        parser: '@typescript-eslint/parser',
+        project: 'tsconfig.eslint.json',
+        extraFileExtensions: ['.svelte'],
+        warnOnUnsupportedTypeScriptVersion: false,
+        tsconfigRootDir: __dirname
     },
     plugins: ['@typescript-eslint'],
     rules: {

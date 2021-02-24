@@ -24,7 +24,6 @@ export class DeviceContext implements Integration {
             }
 
             try {
-                // tslint:disable-next-line: no-unsafe-any
                 const deviceContexts = await NSSentry.deviceContexts();
                 event.contexts = { ...deviceContexts, ...event.contexts };
             } catch (_Oo) {

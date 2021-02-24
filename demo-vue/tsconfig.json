@@ -1,31 +1,22 @@
 {
     "compilerOptions": {
-        "target": "es5",
-        "module": "commonjs",
+        "module": "esnext",
+        "target": "es2017",
         "moduleResolution": "node",
-        "incremental": true,
-        "tsBuildInfoFile": ".tsbuildinfo",
-        "removeComments": false,
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": false,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
-        "sourceMap": true,
-        "importHelpers": true,
         "noEmitHelpers": true,
         "noEmitOnError": true,
-        "preserveSymlinks": true,
-        "esModuleInterop": true,
-        "allowSyntheticDefaultImports": true,
-        "noImplicitUseStrict": true,
-        "lib": ["es6", "dom", "es2015.iterable"],
+        "skipLibCheck": true,
+        "lib": ["es6", "dom", "es2017"],
+        "types": ["vue"],
         "baseUrl": ".",
         "paths": {
-            "~/*": ["app/*"],
-            "nativescript-vue": ["./node_modules/nativescript-akylas-vue"],
-            "tns-core-modules": ["./node_modules/@nativescript/core"],
-            "tns-core-modules/*": ["./node_modules/@nativescript/core/*"],
-            "*": ["./node_modules/tns-core-modules/*", "./node_modules/*"]
+            "~/*": ["app/*"]
         }
     },
-    "include": ["app/**/*", "references.d.ts"],
-    "exclude": ["node_modules", "platforms", "**/angular"]
+    "include": ["app/**/*", "./references.d.ts"],
+    "exclude": ["node_modules", "platforms"]
 }

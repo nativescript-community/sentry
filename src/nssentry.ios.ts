@@ -1,6 +1,7 @@
 import { getClass } from '@nativescript/core/utils/types';
 import { Event, Response, Severity, Status } from '@sentry/types';
-import { NativescriptOptions } from './backend';
+import { NativescriptOptions, _processLevel } from './backend';
+import { UserFeedback } from './nssentry';
 export namespace NSSentry {
     export const nativeClientAvailable = true;
     export const nativeTransport = true;
@@ -12,66 +13,58 @@ export namespace NSSentry {
             build: infoDict.objectForKey('CFBundleVersion'),
         };
     }
-    export function sendEvent(event: Event): Promise<Response> {
-        return new Promise((resolve, reject) => {
-            const jsonData = NSString.stringWithString(JSON.stringify(event)).dataUsingEncoding(NSUTF8StringEncoding);
-            const sentryEvent = SentryEvent.alloc().initWithJSON(jsonData);
-            if ((event.level = Severity.Fatal)) {
-                // captureEvent queues the event for submission, so storing to disk happens asynchronously
-                // We need to make sure the event is written to disk before resolving the promise.
-                // This could be replaced by SentrySDK.flush() when available.
-                SentrySDK.currentHub().getClient().fileManager().storeEvent(sentryEvent);
-            } else {
-                // SentrySDK.currentHub().getClient().captureEventWithScope(sentryEvent, null);
-                SentrySDK.captureEvent(sentryEvent);
-            }
-        }).catch((err) => {
-            console.error(err);
-            return Promise.reject(err);
-        }) as any;
+
+    export async function sendEvent(event: Event) {
+        // Process and convert deprecated levels
+        event.level = event.level ? _processLevel(event.level) : undefined;
+
+        const header = NSDictionary.dictionaryWithObjectsForKeys([event.event_id,event.sdk], ['event_id', 'sdk']);
+
+        const payload = {
+            ...event,
+            message: {
+                message: event.message,
+            },
+        };
+
+        // Serialize and remove any instances that will crash the native bridge such as Spans
+        const serializedPayload = JSON.parse(JSON.stringify(payload));
+        const sdkInfo = SentrySdkInfo.alloc().initWithDict(header);
+        const eventId = SentryId.alloc().initWithUUIDString(event.event_id);
+        const envelopeHeader = SentryEnvelopeHeader.alloc().initWithIdAndSdkInfo(eventId, sdkInfo);
+        const envelopeItemData = NSJSONSerialization.dataWithJSONObjectOptionsError(serializedPayload, 0);
+
+        let itemType = payload.type;
+        if (!itemType) {
+            // Default to event type.
+            itemType = 'event' as any;
+        }
+
+        const envelopeItemHeader = SentryEnvelopeItemHeader.alloc().initWithTypeLength(itemType,envelopeItemData.length);
+        const envelopeItem = SentryEnvelopeItem.alloc().initWithHeaderData(envelopeItemHeader,envelopeItemData);
+
+        const envelope = SentryEnvelope.alloc().initWithHeaderSingleItem(envelopeHeader,envelopeItem);
+
+        if (TNS_ENV === 'production' && event.level === Severity.Fatal) {
+            // captureEvent queues the event for submission, so storing to disk happens asynchronously
+            // We need to make sure the event is written to disk before resolving the promise.
+            // This could be replaced by SentrySDK.flush() when available.
+            SentrySDK.currentHub().getClient().storeEnvelope(envelope);
+        } else {
+            SentrySDK.currentHub().captureEnvelope(envelope);
+        }
+
+
     }
     export function startWithDsnString(dsnString: string, options: NativescriptOptions): Promise<Response> {
         return new Promise((resolve) => {
-            // const obj = NSJSONSerialization.JSONObjectWithDataOptionsError(
-            //     NSString.stringWithString(
-            //         JSON.stringify({
-            //             dsn: dsnString,
-            //             ...options,
-            //         })
-            //     ).dataUsingEncoding(NSUTF8StringEncoding),
-            //     0
-            // );
-            // SentrySDK.startWithOptions(obj);
+
             SentrySDK.startWithConfigureOptions((obj) => {
                 obj.logLevel = SentryLogLevel.kSentryLogLevelVerbose;
                 Object.keys(options).forEach((k) => {
                     obj[k] = options[k];
                 });
             });
-            // client.shouldSendEvent = (event: SentryEvent) => true;
-            // client.beforeSerializeEvent = (e: SentryEvent) => {
-            //     console.log('beforeSerializeEvent3', e.exceptions,  e.exceptions && e.exceptions.count > 0 && toJsObject(e.exceptions.objectAtIndex(0).serialize()), e.stacktrace);
-            //     const stacktrace = e.stacktrace;
-            //     if (stacktrace) {
-            //         const frames = stacktrace.frames;
-            //         frames.enumerateObjectsUsingBlock(p => {
-            //             console.log('frame', p.fileName);
-            //         });
-            //     }
-            // };
-            // SentryClient.sharedClient = client;
-            // if (!!options.enableNativeCrashHandling) {
-            //     SentryClient.sharedClient.startCrashHandlerWithError();
-            // }
-            // if (!!options.environment) {
-            //     SentryClient.sharedClient.environment = options.environment;
-            // }
-            // if (!!options.release) {
-            //     SentryClient.sharedClient.releaseName = options.release;
-            // }
-            // if (!!options.dist) {
-            //     SentryClient.sharedClient.dist = options.dist;
-            // }
             resolve({ status: Status.Success });
         });
     }
@@ -166,10 +159,23 @@ export namespace NSSentry {
             SentrySDK.configureScope((scope) => {
                 const serializedScope = scope.serialize();
                 const contexts = serializedScope.valueForKey('context');
-                resolve(NSString.alloc().initWithDataEncoding(NSJSONSerialization.dataWithJSONObjectOptionsError(contexts, 0), NSUTF8StringEncoding));
+                resolve(JSON.parse(NSString.alloc().initWithDataEncoding(NSJSONSerialization.dataWithJSONObjectOptionsError(contexts, 0), NSUTF8StringEncoding) as any));
             });
             //
             // resolve(toJsObject(SentryEvent.alloc().init().context));
         });
+    }
+    export function captureUserFeedback(feedback: UserFeedback) {
+        const userFeedback = SentryUserFeedback.alloc().initWithEventId(SentryId.alloc().initWithUUIDString(feedback.eventId));
+        if (feedback.comments) {
+            userFeedback.comments = (feedback.comments);
+        }
+        if (feedback.email) {
+            userFeedback.email = (feedback.email);
+        }
+        if (feedback.name) {
+            userFeedback.name = (feedback.name);
+        }
+        SentrySDK.currentHub().getClient().captureUserFeedback(userFeedback);
     }
 }

@@ -33,6 +33,8 @@ export interface NativescriptOptions extends BrowserOptions {
     /** Maximum time to wait to drain the request queue, before the process is allowed to exit. */
     shutdownTimeout?: number;
 
+    sessionTrackingIntervalMillis?: number;
+
     /** Should the native nagger alert be shown or not. */
     // enableNativeNagger?: boolean;
     /**
@@ -42,6 +44,15 @@ export interface NativescriptOptions extends BrowserOptions {
 
     traceErrorHandler?: boolean;
     uncaughtErrors?: boolean;
+
+    breadcrumbs?: {
+        console?: boolean;
+        dom?: boolean;
+        fetch?: boolean;
+        history?: boolean;
+        sentry?: boolean;
+        xhr?: boolean;
+    };
 }
 
 /** The Sentry Nativescript SDK Backend. */
@@ -123,4 +134,21 @@ export class NativescriptBackend extends BaseBackend<BrowserOptions> {
     public eventFromMessage(message: string, level: Severity = Severity.Info, hint?: EventHint): SyncPromise<Event> {
         return this._browserBackend.eventFromMessage(message, level, hint) as any;
     }
+}
+
+
+/**
+* Convert js severity level which has critical and log to more widely supported levels.
+* @param level
+* @returns More widely supported Severity level strings
+*/
+export function _processLevel(level: Severity): Severity {
+    if (level === Severity.Critical) {
+        return Severity.Fatal;
+    }
+    if (level === Severity.Log) {
+        return Severity.Debug;
+    }
+
+    return level;
 }

@@ -24,12 +24,10 @@ export default {
     // },
     methods: {
         notify() {
-            // throw new Error('test_error');
             Sentry.captureException(new Error('test_notify_error' + Date.now()));
         },
         throwError() {
             throw new Error('test_thrown_error');
-            // this.$bugsnag.notify(new Error('test_error'));
         },
         leaveBreadcrumb() {
             Sentry.addBreadcrumb({ category: 'ui', message: 'test', level: 'info' as any });

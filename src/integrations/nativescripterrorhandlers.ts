@@ -74,22 +74,6 @@ export class NativescriptErrorHandlers implements Integration {
         this.globalHander(event.error);
     }
     private globalHander(error: any, isFatal?: boolean) {
-        // error.stack = error.stackTrace;
-        // We want to handle fatals, but only in production mode.
-
-        // const stackTrace = error.stackTrace;
-        // error.stackTrace = error.stack;
-        // error.stack = stackTrace;
-        // const shouldHandleFatal = isFatal && !global.__DEV__;
-        // let handlingFatal = false;
-        // if (shouldHandleFatal) {
-        //     if (handlingFatal) {
-        //         logger.log('Encountered multiple fatals in a row. The latest:', error);
-        //         return;
-        //     }
-        //     handlingFatal = true;
-        // }
-
         getCurrentHub().withScope(scope => {
             if (isFatal) {
                 scope.setLevel(Severity.Fatal);
@@ -97,11 +81,6 @@ export class NativescriptErrorHandlers implements Integration {
             getCurrentHub().captureException(error, {
                 originalException: error
             });
-            // const timeout = client.getOptions().shutdownTimeout || 2000;
-            // NSSentry.flush(timeout);
-            // getCurrentHub()
-            //     .getClient()
-            //     .flush(2000);
         });
 
         const client = getCurrentHub().getClient<NativescriptClient>();
@@ -111,9 +90,6 @@ export class NativescriptErrorHandlers implements Integration {
             const timeout = client.getOptions().shutdownTimeout || 2000;
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
             (client.flush(timeout) as Promise<any>)
-                .then(() => {
-                    // defaultHandler(error, isFatal);
-                })
                 .catch(e => {
                     logger.error(e);
                 });

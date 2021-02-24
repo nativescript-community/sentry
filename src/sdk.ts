@@ -10,6 +10,7 @@ import { DebugSymbolicator, DeviceContext, NativescriptErrorHandlers, Release } 
 const IGNORED_DEFAULT_INTEGRATIONS = [
     'GlobalHandlers', // We will use the react-native internal handlers
     'Breadcrumbs', // We add it later, just not patching fetch
+    'CaptureConsole', // We add it later, just not patching fetch
     'TryCatch', // We don't need this
 ];
 
@@ -57,12 +58,12 @@ export function init(
             new Release(),
             ...defaultIntegrations.filter((i) => !IGNORED_DEFAULT_INTEGRATIONS.includes(i.name)),
             new Integrations.Breadcrumbs({
-                // console: false,
+                console: false,
                 xhr: false,
                 dom: false,
                 fetch: false,
+                ...(options.breadcrumbs || {})
             }),
-            // new DebugSymbolicator(),
             rewriteFrameIntegration as any,
             new DeviceContext(),
         ];
@@ -77,6 +78,9 @@ export function init(
     //     options.enableNativeNagger = true;
     // }
     initAndBind(NativescriptClient, options);
+
+    // set the event.origin tag.
+    getCurrentHub().setTag('event.origin', 'javascript');
 }
 
 /**
