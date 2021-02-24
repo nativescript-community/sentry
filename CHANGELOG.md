@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/nativescript-community/sentry/compare/v2.0.8...v2.1.0) (2021-02-24)
+
+
+### Features
+
+* update to latest SDKs REQUIRES Sentry 20.6.0 + ([b4db1a9](https://github.com/nativescript-community/sentry/commit/b4db1a95f0f265472512e1ee10ef39d965f94e44))
+
+
+
+
+
 ## [2.0.8](https://github.com/nativescript-community/sentry/compare/v2.0.7...v2.0.8) (2020-11-23)
 
 **Note:** Version bump only for package @nativescript-community/sentry
