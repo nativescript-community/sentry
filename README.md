@@ -1,5 +1,5 @@
-[![npm](https://img.shields.io/npm/v/nativescript-community/sentry.svg)](https://www.npmjs.com/package/nativescript-community/sentry)
-[![npm](https://img.shields.io/npm/dt/nativescript-community/sentry.svg?label=npm%20downloads)](https://www.npmjs.com/package/nativescript-community/sentry)
+[![npm](https://img.shields.io/npm/v/@nativescript-community/sentry.svg)](https://www.npmjs.com/package/@nativescript-community/sentry)
+[![npm](https://img.shields.io/npm/dt/@nativescript-community/sentry.svg?label=npm%20downloads)](https://www.npmjs.com/package/@nativescript-community/sentry)
 [![GitHub forks](https://img.shields.io/github/forks/nativescript-community/sentry.svg)](https://github.com/nativescript-community/sentry/network)
 [![GitHub stars](https://img.shields.io/github/stars/nativescript-community/sentry.svg)](https://github.com/nativescript-community/sentry/stargazers)
 
