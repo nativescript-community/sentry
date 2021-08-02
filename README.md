@@ -9,12 +9,96 @@
 
 Be sure to run a new build after adding plugins to avoid any issues.
 
-# Usage
+# Configuration
+
+## Webpack 
+
+You will need to add something like this to your webpack config so that the source maps gets uploaded. I dont set `auth` or `project` in the options as i use a `.sentryclirc` config file.
+* `SOURCEMAP_REL_DIR`: i almost always set it to `../../sourcemaps`
+* `SENTRY_PREFIX`: i almost always set it to `app:///`
+```javascript
+if (!!sentry && !!uploadSentry) {
+  config.devtool = false;
+  config.plugins.push(
+      new webpack.SourceMapDevToolPlugin({
+          append: `\n//# sourceMappingURL=${process.env.SENTRY_PREFIX}[name].js.map`,
+          filename: join(process.env.SOURCEMAP_REL_DIR, '[name].js.map')
+      })
+  );
+  let appVersion;
+  let buildNumber;
+  if (isAndroid) {
+      const gradlePath = `${appResourcesPath}/Android/app.gradle`;
+      const gradleData = readFileSync(gradlePath, 'utf8');
+      appVersion = gradleData.match(/versionName "((?:[0-9]+\.?)+)"/)[1];
+      buildNumber = gradleData.match(/versionCode ([0-9]+)/)[1];
+  } else if (isIOS) {
+      const plistPath = `${appResourcesPath}/iOS/Info.plist`;
+      const plistData = readFileSync(plistPath, 'utf8');
+      appVersion = plistData.match(/<key>CFBundleShortVersionString<\/key>[\s\n]*<string>(.*?)<\/string>/)[1];
+      buildNumber = plistData.match(/<key>CFBundleVersion<\/key>[\s\n]*<string>([0-9]*)<\/string>/)[1];
+  }
+  config.plugins.push(
+      new SentryCliPlugin({
+          release: appVersion,
+          urlPrefix: 'app:///',
+          rewrite: true,
+          release: `${nconfig.id}@${appVersion}+${buildNumber}`,
+          dist: `${buildNumber}.${platform}`,
+          ignoreFile: '.sentrycliignore',
+          include: [join(dist, process.env.SOURCEMAP_REL_DIR)]
+      })
+  );
+}
+```
+
+## Fastlane
+
+If you use fastlane you can use it to create release and upload dsyms
+To do that you need to install it:
+```sh
+fastlane add_plugin sentry
+```
+Also for now you should install `nativescript-set-version` as it is needed to read app version, build number.
+```sh
+npm install -D nativescript-set-version
+```
+
+Now you can setup your `Fastfile`
+* create release 
+```
+version = ""
+versionCode = ""
+
+Dir.chdir("..") do
+  version  =  sh("./node_modules/.bin/get-version", platform, "version").gsub(/\n/,'')
+  versionCode  =  sh("./node_modules/.bin/get-version", platform, "code").gsub(/\n/,'')
+end
+sentry_create_release(
+  version: version, # release version to create
+)
+```
+
+* upload dsyms
+```
+sentry_upload_dsym
+```
+
+# Usage in the app
 
 ```typescript
 import * as Sentry from '@nativescript-community/sentry';
+import { getBuildNumber } from '@nativescript-community/extendedinfo';
+
+const buildNumber = await getBuildNumber();
+// setting the platform in dist allows to have 
+// android and ios dist inside the same release
+const dist = `${buildNumber}.${global.isAndroid ? 'android' : 'ios'}`;
 Sentry.init({
-        dsn: "__DSN__"
+        dsn: "__DSN__",
+        // SENTRY_PREFIX is the same as the one you use in webpack config
+        appPrefix: SENTRY_PREFIX,
+        dist
     });
 ```
 
