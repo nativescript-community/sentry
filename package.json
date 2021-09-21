@@ -5,6 +5,7 @@
         "tsc": "cp src/nssentry.d.ts plugin && tsc -skipLibCheck",
         "build": "cp README.md plugin/ && npm run tsc",
         "publish": "npm run build && lerna publish --create-release=github --force-publish",
+        "publish.major": "npm run build && lerna publish major --create-release=github --force-publish",
         "commitmsg": "commitlint -e $GIT_PARAMS",
         "demo.ios": "npm i && npm run tsc && cd demo && tns run ios",
         "demo.android": "npm i && npm run tsc && cd demo && tns run android",
