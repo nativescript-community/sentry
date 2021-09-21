@@ -4,20 +4,13 @@ import { NativescriptOptions, _processLevel } from './backend';
 import { rewriteFrameIntegration } from './sdk';
 import { convertNativescriptFramesToSentryFrames, parseErrorStack } from './integrations/debugsymbolicator';
 import { UserFeedback } from './nssentry';
+import { android as androidApp } from '@nativescript/core/application';
+import { Breadcrumb, User } from '@sentry/types';
 
 export namespace NSSentry {
     export const nativeClientAvailable = true;
     export const nativeTransport = true;
 
-    export function fetchRelease() {
-        const ctx = Application.android.context as android.content.Context;
-        const packageInfo = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), 0);
-        return {
-            id: packageInfo.packageName,
-            version: packageInfo.versionName,
-            build: packageInfo.versionCode,
-        };
-    }
     function eventLevel(level) {
         switch (level) {
             case 'fatal':
@@ -187,7 +180,9 @@ export namespace NSSentry {
 
             const envelopeString = `${headerString}\n${itemString}\n${payloadString}`;
             captureEnvelope(envelopeString);
-            io.sentry.Sentry.flush(0);
+            if (sentryOptions.flushSendEvent === true) {
+                io.sentry.Sentry.flush(0);
+            }
             resolve({ status: Status.Success });
         }).catch((err) => {
             console.error('error sending sentry event', err, err.stack);
@@ -196,7 +191,7 @@ export namespace NSSentry {
     }
 
     export async function captureEnvelope(envelope: string) {
-        const installation = new java.io.File(sentryOptions.getOutboxPath(), java.util.UUID.randomUUID().toString());
+        const installation = new java.io.File(nSentryOptions.getOutboxPath(), java.util.UUID.randomUUID().toString());
         try {
             const out = new java.io.FileOutputStream(installation);
             out.write(new java.lang.String(envelope).getBytes(java.nio.charset.Charset.forName('UTF-8')));
@@ -206,11 +201,33 @@ export namespace NSSentry {
     }
 
     export function flush(timeout: number) {
-        console.log('native flush', timeout);
         io.sentry.Sentry.flush(timeout);
     }
     let initialized = false;
-    let sentryOptions: io.sentry.SentryOptions ;
+    let sentryOptions: NativescriptOptions ;
+    let nSentryOptions: io.sentry.SentryOptions ;
+
+    function addPackages( event: io.sentry.SentryEvent,  sdk: io.sentry.protocol.SdkVersion) {
+        const eventSdk = event.getSdk();
+        if (eventSdk != null && eventSdk.getName() === "sentry.javascript.react-native" && sdk != null) {
+            const sentryPackages = sdk.getPackages();
+            if (sentryPackages != null) {
+                for (let index = 0; index < sentryPackages.size(); index++) {
+                    const sentryPackage = sentryPackages.get(index);
+                    eventSdk.addPackage(sentryPackage.getName(), sentryPackage.getVersion());
+                    
+                }
+            }
+            const integrations = sdk.getIntegrations();
+            if (integrations != null) {
+                for (let index = 0; index < integrations.size(); index++) {
+                    eventSdk.addIntegration(integrations.get(index));
+                    
+                }
+            }
+            event.setSdk(eventSdk);
+        }
+    }
     export function startWithDsnString(dsnString: string, options: NativescriptOptions): Promise<Response> {
         return new Promise((resolve, reject) => {
             if (initialized) {
@@ -229,9 +246,10 @@ export namespace NSSentry {
                             // config.setDiagnosticLevel(io.sentry.SentryLevel.DEBUG);
                             io.sentry.Sentry.setLevel(io.sentry.SentryLevel.DEBUG);
                             config.setDsn(dsnString);
-                            config.setEnvironment('javascript');
                             if (!!options.environment) {
                                 config.setEnvironment(options.environment);
+                            } else {
+                                config.setEnvironment('javascript');
                             }
                             if (!!options.debug) {
                                 config.setDebug(options.debug);
@@ -248,8 +266,22 @@ export namespace NSSentry {
                             if (options.sessionTrackingIntervalMillis !== undefined) {
                                 config.setSessionTrackingIntervalMillis(options.sessionTrackingIntervalMillis);
                             }
+                            if (options.enableNdkScopeSync !== undefined) {
+                                config.setEnableScopeSync(options.enableNdkScopeSync);
+                            }
+                            if (options.attachStacktrace !== undefined) {
+                                config.setAttachStacktrace(options.attachStacktrace);
+                            }
+                            if (options.attachThreads !== undefined) {
+                                // JS use top level stacktraces and android attaches Threads which hides them so
+                                // by default we hide.
+                                config.setAttachThreads(options.attachThreads);
+                            }
+                            if (options.sendDefaultPii !== undefined) {
+                                config.setSendDefaultPii(options.sendDefaultPii);
+                            }
 
-                            config.setEnableNdk(true);
+                            // config.setEnableNdk(true);
                             const integrations = config.getIntegrations();
                             const size = integrations.size();
                             if (options.enableNativeCrashHandling === false) {
@@ -305,11 +337,15 @@ export namespace NSSentry {
                                                 }
                                             }
                                         } catch (e) {}
+                                        event.setTag("event.origin", "android");
+                                        event.setTag("event.environment", "nativescript");
+                                        addPackages(event, config.getSdkVersion());
                                         return event;
                                     },
                                 })
                             );
-                            sentryOptions = config;
+                            nSentryOptions = config;
+                            sentryOptions = options;
                         },
                     })
                 );
@@ -324,21 +360,39 @@ export namespace NSSentry {
         });
     }
 
-    export function setLogLevel(level: number) {
-        switch (level) {
-            case 1:
-                io.sentry.Sentry.setLevel(null);
-                break;
-            case 2:
-                io.sentry.Sentry.setLevel(io.sentry.SentryLevel.ERROR);
-                break;
-            case 3:
-                io.sentry.Sentry.setLevel(io.sentry.SentryLevel.DEBUG);
-                break;
-            case 4:
-                io.sentry.Sentry.setLevel(io.sentry.SentryLevel.INFO);
-                break;
+    // export function setLogLevel(level: number) {
+    //     switch (level) {
+    //         case 1:
+    //             io.sentry.Sentry.setLevel(null);
+    //             break;
+    //         case 2:
+    //             io.sentry.Sentry.setLevel(io.sentry.SentryLevel.ERROR);
+    //             break;
+    //         case 3:
+    //             io.sentry.Sentry.setLevel(io.sentry.SentryLevel.DEBUG);
+    //             break;
+    //         case 4:
+    //             io.sentry.Sentry.setLevel(io.sentry.SentryLevel.INFO);
+    //             break;
+    //     }
+    // }
+
+    export function fetchNativeSdkInfo () {
+        return {}
+    }
+
+    export function fetchNativeRelease () {
+        const context = androidApp.context;
+        const packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+        return {
+            "id": packageInfo.packageName,
+            "version": packageInfo.versionName,
+            "build": packageInfo.versionCode + ''
         }
+    }
+
+    export function closeNativeSdk () {
+        io.sentry.Sentry.close();
     }
 
     export function crash() {
@@ -373,5 +427,100 @@ export namespace NSSentry {
             userFeedback.setName(feedback.name);
         }
         io.sentry.Sentry.captureUserFeedback(userFeedback);
+    }
+
+
+    export function setUser(user: User | null, otherUserKeys) {
+        io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
+            run(scope) {
+                if (user == null && otherUserKeys == null) {
+                    scope.setUser(null);
+                } else {
+                    const userInstance = new io.sentry.protocol.User();
+    
+                    if (user) {
+                        if (user.email) {
+                            userInstance.setEmail(user.email);
+                        }
+    
+                        if (user.id) {
+                            userInstance.setId(user.id);
+                        }
+    
+                        if (user.username) {
+                            userInstance.setUsername(user.username);
+                        }
+    
+                        if (user.ip_address) {
+                            userInstance.setIpAddress(user.ip_address);
+                        }
+                    }
+    
+                    if (otherUserKeys ) {
+                        userInstance.setOthers(getNativeHashMap(otherUserKeys));
+                    }
+                    scope.setUser(userInstance);
+                }
+            }
+        }));
+        
+    }
+    export function setTag(key: string, value: string) {
+        io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
+            run(scope) {
+                scope.setTag(key, value);
+            }
+        }));
+    }
+
+    export function setExtra(key: string, extra: string) {
+        io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
+            run(scope) {
+                scope.setExtra(key, extra);
+            }
+        }));
+    }
+
+    export function addBreadcrumb(breadcrumb: Breadcrumb, maxBreadcrumbs?: number) {
+        io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
+            run(scope) {
+                const breadcrumbInstance = new io.sentry.Breadcrumb();
+
+            if (breadcrumb.message) {
+                breadcrumbInstance.setMessage(breadcrumb.message);
+            }
+
+            if (breadcrumb.type) {
+                breadcrumbInstance.setType(breadcrumb.type);
+            }
+
+            if (breadcrumb.category) {
+                breadcrumbInstance.setCategory(breadcrumb.category);
+            }
+
+            if (breadcrumb.level) {
+                breadcrumbInstance.setLevel(eventLevel(breadcrumb.level));
+            }
+
+            if (breadcrumb.data) {
+                Object.keys(breadcrumb.data).forEach(key => {
+                    breadcrumbInstance.setData(key, breadcrumb.data[key]);
+                })
+            }
+
+            scope.addBreadcrumb(breadcrumbInstance);
+            }
+        }));
+    }
+    export function clearBreadcrumbs() {
+        io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
+            run(scope) {
+                scope.clearBreadcrumbs();
+            }
+        }));
+    }
+    export function setContext(key: string, context: { [key: string]: any } | null) {
+        // setContext not available on the Android SDK yet.
+        setExtra(key, context?JSON.stringify(context) : null);
     }
 }
