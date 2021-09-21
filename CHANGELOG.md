@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.1](https://github.com/nativescript-community/sentry/compare/v2.1.0...v2.1.1) (2021-09-21)
+
+
+### Bug Fixes
+
+* move to latest SDKs ([34e37fd](https://github.com/nativescript-community/sentry/commit/34e37fdea216741f76a99bf748c036b5319e3218))
+* **android:** working with latest sdks ([b967cf7](https://github.com/nativescript-community/sentry/commit/b967cf7b76f8e41e6a82de0441c1bb0d879cf927))
+
+
+
+
+
 # [2.1.0](https://github.com/nativescript-community/sentry/compare/v2.0.8...v2.1.0) (2021-02-24)
 
 
