@@ -1,9 +1,7 @@
 import { BaseClient, Scope } from '@sentry/core';
-import { Event, EventHint } from '@sentry/types';
-import { SyncPromise } from '@sentry/utils';
 
 import { NativescriptBackend, NativescriptOptions } from './backend';
-import { SDK_NAME, SDK_VERSION } from './version';
+import { NSSentry } from './nssentry';
 
 /**
  * The Sentry React Native SDK Client.
@@ -21,31 +19,20 @@ export class NativescriptClient extends BaseClient<NativescriptBackend, Nativesc
     }
 
     /**
-     * @inheritDoc
-     */
-    protected _prepareEvent(event: Event, scope?: Scope, hint?: EventHint): SyncPromise<Event | null> {
-        event.platform = event.platform || 'javascript';
-        event.sdk = {
-            ...event.sdk,
-            name: SDK_NAME,
-            packages: [
-                ...((event.sdk && event.sdk.packages) || []),
-                {
-                    name: 'npm:@nativescript-community/sentry',
-                    version: SDK_VERSION
-                }
-            ],
-            version: SDK_VERSION
-        };
+   * If native client is available it will trigger a native crash.
+   * Use this only for testing purposes.
+   */
+  public nativeCrash(): void {
+    this._getBackend().nativeCrash();
+  }
 
-        return super._prepareEvent(event, scope, hint) as any;
-    }
-
-    /**
-     * If native client is available it will trigger a native crash.
-     * Use this only for testing purposes.
-     */
-    public nativeCrash(): void {
-        this._getBackend().nativeCrash();
-    }
+  /**
+   * @inheritDoc
+   */
+  public close(): PromiseLike<boolean> {
+    // As super.close() flushes queued events, we wait for that to finish before closing the native SDK.
+    return super.close().then((result: boolean) => {
+      return NSSentry.closeNativeSdk().then(() => result) as PromiseLike<boolean>;
+    });
+  }
 }

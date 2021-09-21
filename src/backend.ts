@@ -35,6 +35,19 @@ export interface NativescriptOptions extends BrowserOptions {
 
     sessionTrackingIntervalMillis?: number;
 
+    /** Enable scope sync from Java to NDK on Android */
+    enableNdkScopeSync?: boolean;
+
+    /** When enabled, all the threads are automatically attached to all logged events on Android */
+    attachThreads?: boolean;
+
+    /**
+     *  When enabled, certain personally identifiable information (PII) is added by active integrations.
+     *
+     * @default false
+     * */
+    sendDefaultPii?: boolean;
+
     /** Should the native nagger alert be shown or not. */
     // enableNativeNagger?: boolean;
     /**
@@ -53,6 +66,11 @@ export interface NativescriptOptions extends BrowserOptions {
         sentry?: boolean;
         xhr?: boolean;
     };
+
+    /** Enable auto performance tracking by default. */
+    enableAutoPerformanceTracking?: boolean;
+
+    flushSendEvent?: boolean;
 }
 
 /** The Sentry Nativescript SDK Backend. */
@@ -65,9 +83,10 @@ export class NativescriptBackend extends BaseBackend<BrowserOptions> {
         this._browserBackend = new BrowserBackend(_options);
 
         if (_options.enableNative !== false) {
-            NSSentry.startWithDsnString(_options.dsn, _options).then(() => {
-                NSSentry.setLogLevel(_options.debug ? 2 : 1);
-            });
+            NSSentry.startWithDsnString(_options.dsn, _options);
+            // .then(() => {
+            //     // NSSentry.setLogLevel(_options.debug ? 2 : 1);
+            // });
         } else {
             // if (__DEV__ && _options.enableNativeNagger) {
             //     Alert.alert(
@@ -89,7 +108,7 @@ export class NativescriptBackend extends BaseBackend<BrowserOptions> {
 
         const transportOptions = {
             ...this._options.transportOptions,
-            dsn: this._options.dsn,
+            dsn: this._options.dsn
         };
 
         if (this._options.transport) {
@@ -136,12 +155,11 @@ export class NativescriptBackend extends BaseBackend<BrowserOptions> {
     }
 }
 
-
 /**
-* Convert js severity level which has critical and log to more widely supported levels.
-* @param level
-* @returns More widely supported Severity level strings
-*/
+ * Convert js severity level which has critical and log to more widely supported levels.
+ * @param level
+ * @returns More widely supported Severity level strings
+ */
 export function _processLevel(level: Severity): Severity {
     if (level === Severity.Critical) {
         return Severity.Fatal;

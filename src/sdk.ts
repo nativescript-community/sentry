@@ -1,17 +1,21 @@
 import { Integrations, defaultIntegrations, getCurrentHub } from '@sentry/browser';
 import { initAndBind, setExtra } from '@sentry/core';
+import { Hub, makeMain } from '@sentry/hub';
 import { RewriteFrames } from '@sentry/integrations';
 import { StackFrame } from '@sentry/types';
 
 import { NativescriptOptions } from './backend';
 import { NativescriptClient } from './client';
+import { NativescriptScope } from './scope';
 import { DebugSymbolicator, DeviceContext, NativescriptErrorHandlers, Release } from './integrations';
+import { EventOrigin } from './integrations/eventorigin';
+import { SdkInfo } from './integrations/sdkinfo';
 
 const IGNORED_DEFAULT_INTEGRATIONS = [
     'GlobalHandlers', // We will use the react-native internal handlers
     'Breadcrumbs', // We add it later, just not patching fetch
     'CaptureConsole', // We add it later, just not patching fetch
-    'TryCatch', // We don't need this
+    'TryCatch' // We don't need this
 ];
 
 export let rewriteFrameIntegration: {
@@ -22,12 +26,15 @@ export let rewriteFrameIntegration: {
  */
 export function init(
     options: NativescriptOptions = {
+        flushSendEvent: true,
         enableNative: true,
         enableNativeCrashHandling: true,
+        enableAutoPerformanceTracking: true
     }
 ): void {
+    const nativescriptHub = new Hub(undefined, new NativescriptScope());
+    makeMain(nativescriptHub);
     // tslint:disable: strict-comparisons
-    console.log('init');
     if (options.defaultIntegrations === undefined) {
         rewriteFrameIntegration = new RewriteFrames({
             iteratee: (frame: StackFrame) => {
@@ -51,7 +58,7 @@ export function init(
                     // We always want to have a tripple slash
                 }
                 return frame;
-            },
+            }
         }) as any;
         options.defaultIntegrations = [
             new NativescriptErrorHandlers(options),
@@ -65,7 +72,8 @@ export function init(
                 ...(options.breadcrumbs || {})
             }),
             rewriteFrameIntegration as any,
-            new DeviceContext(),
+            new EventOrigin(),
+            new SdkInfo()
         ];
     }
     if (options.enableNative === undefined) {
@@ -78,9 +86,6 @@ export function init(
     //     options.enableNativeNagger = true;
     // }
     initAndBind(NativescriptClient, options);
-
-    // set the event.origin tag.
-    getCurrentHub().setTag('event.origin', 'javascript');
 }
 
 /**
@@ -105,5 +110,41 @@ export function nativeCrash(): void {
     const client = getCurrentHub().getClient<NativescriptClient>();
     if (client) {
         client.nativeCrash();
+    }
+}
+
+/**
+ * Flushes all pending events in the queue to disk.
+ * Use this before applying any realtime updates such as code-push or expo updates.
+ */
+export async function flush(): Promise<boolean> {
+    try {
+        const client = getCurrentHub().getClient<NativescriptClient>();
+
+        if (client) {
+            const result = await client.flush();
+
+            return result;
+        }
+        // eslint-disable-next-line no-empty
+    } catch (_) {}
+
+    console.error('Failed to flush the event queue.');
+
+    return false;
+}
+
+/**
+ * Closes the SDK, stops sending events.
+ */
+export async function close(): Promise<void> {
+    try {
+        const client = getCurrentHub().getClient<NativescriptClient>();
+
+        if (client) {
+            await client.close();
+        }
+    } catch (e) {
+        console.error('Failed to close the SDK');
     }
 }

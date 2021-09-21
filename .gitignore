@@ -21,3 +21,4 @@ Pods
 *.xcuserdatad
 /plugin/README.md
 pnpm-lock.yaml
+/plugin/platforms/android/sentry.aar
