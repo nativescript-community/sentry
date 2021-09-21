@@ -281,20 +281,26 @@ export namespace NSSentry {
                                         try {
                                             const ex: io.sentry.protocol.SentryException = event.getExceptions().get(0);
                                             if (ex && ex.getType() === 'NativeScriptException') {
-                                                const privateMethod = io.sentry.SentryEvent.class.getDeclaredMethod('getThrowable', null);
-                                                privateMethod.setAccessible(true);
-                                                const returnValue: java.lang.Throwable = privateMethod.invoke(event, null);
-                                                if (returnValue instanceof io.sentry.exception.ExceptionMechanismException) {
-                                                    const throwable: java.lang.Throwable = returnValue.getThrowable();
-                                                    if (throwable instanceof (com as any).tns.NativeScriptException) {
-                                                        const jsStackTrace: string = (throwable as any).getIncomingStackTrace();
-                                                        if (jsStackTrace) {
-                                                            const stack = parseErrorStack({ stack: jsStackTrace } as any);
+                                                let mechanism = event.getThrowable && event.getThrowable();
+                                                if (!mechanism) {
+                                                    const privateMethod = io.sentry.SentryEvent.class.getDeclaredMethod('getThrowable', null);
+                                                    privateMethod.setAccessible(true);
+                                                    mechanism = privateMethod.invoke(event, null);
+                                                }
+                                                let throwable;
+                                                if (mechanism instanceof io.sentry.exception.ExceptionMechanismException) {
+                                                    throwable = mechanism.getThrowable();
+                                                } else if (mechanism instanceof (com as any).tns.NativeScriptException) {
+                                                    throwable = mechanism;
+                                                }
+                                                if (throwable ) {
+                                                    const jsStackTrace: string = (throwable as any).getIncomingStackTrace();
+                                                    if (jsStackTrace) {
+                                                        const stack = parseErrorStack({ stack: jsStackTrace } as any);
 
-                                                            const convertedFrames = convertNativescriptFramesToSentryFrames(stack as any);
-                                                            convertedFrames.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
-                                                            addExceptionInterface(event, 'Error', throwable.getMessage(), convertedFrames.reverse());
-                                                        }
+                                                        const convertedFrames = convertNativescriptFramesToSentryFrames(stack as any);
+                                                        convertedFrames.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
+                                                        addExceptionInterface(event, 'Error', throwable.getMessage(), convertedFrames.reverse());
                                                     }
                                                 }
                                             }
