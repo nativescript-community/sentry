@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.1](https://github.com/nativescript-community/sentry/compare/v3.0.0...v3.0.1) (2021-10-31)
+
+
+### Bug Fixes
+
+* **android:** gradle 7.0 support ([23a60b4](https://github.com/nativescript-community/sentry/commit/23a60b49b6ac26c4930ef153d38026a2ceadf522))
+
+
+
+
+
 # [3.0.0](https://github.com/nativescript-community/sentry/compare/v2.1.1...v3.0.0) (2021-09-21)
 
 **Note:** Version bump only for package @nativescript-community/sentry
