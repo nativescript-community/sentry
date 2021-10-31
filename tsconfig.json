@@ -6,7 +6,7 @@
         "declaration": true,
         "removeComments": false,
         "noLib": false,
-        "emitDecoratorMetadata": true,
+        "emitDecoratorMetadata": false,
         "experimentalDecorators": true,
         "lib": ["es6", "dom"],
         "sourceMap": true,
