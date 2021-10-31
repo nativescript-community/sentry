@@ -4,5 +4,5 @@ repositories {
     google()
 }
 dependencies {
-    classpath 'io.sentry:sentry-android-gradle-plugin:1.7.28'
+    classpath 'io.sentry:sentry-android-gradle-plugin:2.1.5'
 }
