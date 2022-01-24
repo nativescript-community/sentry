@@ -78,7 +78,7 @@ export namespace NSSentry {
     }
     let sentryOptions: NativescriptOptions;
     let nSentryOptions: SentryOptions;
-    export function startWithDsnString(dsnString: string, options: NativescriptOptions): Promise<Response> {
+    export function startWithDsnString(dsnString: string, options: NativescriptOptions = {}): Promise<Response> {
         return new Promise((resolve) => {
             sentryOptions = options;
             NSSentrySDK.startWithConfigureOptions((obj) => {
