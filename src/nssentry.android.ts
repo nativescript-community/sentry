@@ -228,7 +228,7 @@ export namespace NSSentry {
             event.setSdk(eventSdk);
         }
     }
-    export function startWithDsnString(dsnString: string, options: NativescriptOptions): Promise<Response> {
+    export function startWithDsnString(dsnString: string, options: NativescriptOptions = {}): Promise<Response> {
         return new Promise((resolve, reject) => {
             if (initialized) {
                 console.info('Already started, use existing client', dsnString);
