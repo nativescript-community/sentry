@@ -22,17 +22,15 @@ export class NativescriptClient extends BaseClient<NativescriptBackend, Nativesc
    * If native client is available it will trigger a native crash.
    * Use this only for testing purposes.
    */
-  public nativeCrash(): void {
-    this._getBackend().nativeCrash();
-  }
+    public nativeCrash(): void {
+        this._getBackend().nativeCrash();
+    }
 
-  /**
+    /**
    * @inheritDoc
    */
-  public close(): PromiseLike<boolean> {
+    public close(): PromiseLike<boolean> {
     // As super.close() flushes queued events, we wait for that to finish before closing the native SDK.
-    return super.close().then((result: boolean) => {
-      return NSSentry.closeNativeSdk().then(() => result) as PromiseLike<boolean>;
-    });
-  }
+        return super.close().then((result: boolean) => NSSentry.closeNativeSdk().then(() => result) as PromiseLike<boolean>);
+    }
 }
