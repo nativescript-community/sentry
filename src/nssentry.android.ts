@@ -1,11 +1,10 @@
 import { Application } from '@nativescript/core';
-import { Event, Response, Status } from '@sentry/types';
+import { android as androidApp } from '@nativescript/core/application';
+import { Breadcrumb, Event, Response, Status, User } from '@sentry/types';
 import { NativescriptOptions, _processLevel } from './backend';
-import { rewriteFrameIntegration } from './sdk';
 import { convertNativescriptFramesToSentryFrames, parseErrorStack } from './integrations/debugsymbolicator';
 import { UserFeedback } from './nssentry';
-import { android as androidApp } from '@nativescript/core/application';
-import { Breadcrumb, User } from '@sentry/types';
+import { rewriteFrameIntegration } from './sdk';
 
 export namespace NSSentry {
     export const nativeClientAvailable = true;
@@ -82,10 +81,10 @@ export namespace NSSentry {
         }
         return nUser;
     }
-    const mJsModuleIdPattern = new RegExp('(?:^|[/\\\\])(\\d+\\.js)$').compile();
+    const mJsModuleIdPattern = new RegExp('(?:^|[/\\\\])(\\d+\\.js)$');
     function stackFrameToModuleId(frame: { file?: string }) {
         if (!!frame.file) {
-            const matcher = frame.file.match(mJsModuleIdPattern);
+            const matcher = mJsModuleIdPattern.exec(frame.file);
             if (matcher) {
                 return matcher[1] + ':';
             }
@@ -209,20 +208,20 @@ export namespace NSSentry {
 
     function addPackages( event: io.sentry.SentryEvent,  sdk: io.sentry.protocol.SdkVersion) {
         const eventSdk = event.getSdk();
-        if (eventSdk != null && eventSdk.getName() === "sentry.javascript.react-native" && sdk != null) {
+        if (eventSdk != null && eventSdk.getName() === 'sentry.javascript.react-native' && sdk != null) {
             const sentryPackages = sdk.getPackages();
             if (sentryPackages != null) {
                 for (let index = 0; index < sentryPackages.size(); index++) {
                     const sentryPackage = sentryPackages.get(index);
                     eventSdk.addPackage(sentryPackage.getName(), sentryPackage.getVersion());
-                    
+
                 }
             }
             const integrations = sdk.getIntegrations();
             if (integrations != null) {
                 for (let index = 0; index < integrations.size(); index++) {
                     eventSdk.addIntegration(integrations.get(index));
-                    
+
                 }
             }
             event.setSdk(eventSdk);
@@ -326,7 +325,7 @@ export namespace NSSentry {
                                                     throwable = mechanism;
                                                 }
                                                 if (throwable ) {
-                                                    const jsStackTrace: string = (throwable as any).getIncomingStackTrace();
+                                                    const jsStackTrace: string = (throwable ).getIncomingStackTrace();
                                                     if (jsStackTrace) {
                                                         const stack = parseErrorStack({ stack: jsStackTrace } as any);
 
@@ -337,8 +336,8 @@ export namespace NSSentry {
                                                 }
                                             }
                                         } catch (e) {}
-                                        event.setTag("event.origin", "android");
-                                        event.setTag("event.environment", "nativescript");
+                                        event.setTag('event.origin', 'android');
+                                        event.setTag('event.environment', 'nativescript');
                                         addPackages(event, config.getSdkVersion());
                                         return event;
                                     },
@@ -378,17 +377,17 @@ export namespace NSSentry {
     // }
 
     export function fetchNativeSdkInfo () {
-        return {}
+        return {};
     }
 
     export function fetchNativeRelease () {
         const context = androidApp.context;
         const packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
         return {
-            "id": packageInfo.packageName,
-            "version": packageInfo.versionName,
-            "build": packageInfo.versionCode + ''
-        }
+            'id': packageInfo.packageName,
+            'version': packageInfo.versionName,
+            'build': packageInfo.versionCode + ''
+        };
     }
 
     export function closeNativeSdk () {
@@ -437,25 +436,25 @@ export namespace NSSentry {
                     scope.setUser(null);
                 } else {
                     const userInstance = new io.sentry.protocol.User();
-    
+
                     if (user) {
                         if (user.email) {
                             userInstance.setEmail(user.email);
                         }
-    
+
                         if (user.id) {
                             userInstance.setId(user.id);
                         }
-    
+
                         if (user.username) {
                             userInstance.setUsername(user.username);
                         }
-    
+
                         if (user.ip_address) {
                             userInstance.setIpAddress(user.ip_address);
                         }
                     }
-    
+
                     if (otherUserKeys ) {
                         userInstance.setOthers(getNativeHashMap(otherUserKeys));
                     }
@@ -463,7 +462,7 @@ export namespace NSSentry {
                 }
             }
         }));
-        
+
     }
     export function setTag(key: string, value: string) {
         io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
@@ -486,29 +485,29 @@ export namespace NSSentry {
             run(scope) {
                 const breadcrumbInstance = new io.sentry.Breadcrumb();
 
-            if (breadcrumb.message) {
-                breadcrumbInstance.setMessage(breadcrumb.message);
-            }
+                if (breadcrumb.message) {
+                    breadcrumbInstance.setMessage(breadcrumb.message);
+                }
 
-            if (breadcrumb.type) {
-                breadcrumbInstance.setType(breadcrumb.type);
-            }
+                if (breadcrumb.type) {
+                    breadcrumbInstance.setType(breadcrumb.type);
+                }
 
-            if (breadcrumb.category) {
-                breadcrumbInstance.setCategory(breadcrumb.category);
-            }
+                if (breadcrumb.category) {
+                    breadcrumbInstance.setCategory(breadcrumb.category);
+                }
 
-            if (breadcrumb.level) {
-                breadcrumbInstance.setLevel(eventLevel(breadcrumb.level));
-            }
+                if (breadcrumb.level) {
+                    breadcrumbInstance.setLevel(eventLevel(breadcrumb.level));
+                }
 
-            if (breadcrumb.data) {
-                Object.keys(breadcrumb.data).forEach(key => {
-                    breadcrumbInstance.setData(key, breadcrumb.data[key]);
-                })
-            }
+                if (breadcrumb.data) {
+                    Object.keys(breadcrumb.data).forEach(key => {
+                        breadcrumbInstance.setData(key, breadcrumb.data[key]);
+                    });
+                }
 
-            scope.addBreadcrumb(breadcrumbInstance);
+                scope.addBreadcrumb(breadcrumbInstance);
             }
         }));
     }

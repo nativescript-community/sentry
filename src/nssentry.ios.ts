@@ -1,8 +1,7 @@
 import { getClass } from '@nativescript/core/utils/types';
-import { Event, Response, Severity, Status } from '@sentry/types';
+import { Breadcrumb, Event, Response, Severity, Status, User } from '@sentry/types';
 import { NativescriptOptions, _processLevel } from './backend';
 import { UserFeedback } from './nssentry';
-import { Breadcrumb, User } from '@sentry/types';
 
 export namespace NSSentry {
     export const nativeClientAvailable = true;
@@ -42,8 +41,8 @@ export namespace NSSentry {
             };
             payload.tags = payload.tags || {};
 
-            payload.tags["event.origin"] = "ios";
-            payload.tags["event.environment"] = "nativescript";
+            payload.tags['event.origin'] = 'ios';
+            payload.tags['event.environment'] = 'nativescript';
             // Serialize and remove any instances that will crash the native bridge such as Spans
             const serializedPayload = JSON.parse(JSON.stringify(payload));
             const eventId = SentryId.alloc().initWithUUIDString(event.event_id);
@@ -70,7 +69,7 @@ export namespace NSSentry {
                 NSSentrySDK.captureEnvelope(envelope);
             }
             // if (sentryOptions.flushSendEvent === true) {
-                
+
             // }
         } catch (err) {
             console.error(err);
