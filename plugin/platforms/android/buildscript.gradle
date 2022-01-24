@@ -1,6 +1,5 @@
 
 repositories {
-    jcenter()
     google()
 }
 dependencies {
