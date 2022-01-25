@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.3](https://github.com/nativescript-community/sentry/compare/v3.0.2...v3.0.3) (2022-01-25)
+
+
+### Bug Fixes
+
+* **android:** build fix by adding mavenCentral ([2d61ffc](https://github.com/nativescript-community/sentry/commit/2d61ffc755ef7fe396ae7a16e585d461bd025eb3))
+
+
+
+
+
 ## [3.0.2](https://github.com/nativescript-community/sentry/compare/v3.0.1...v3.0.2) (2022-01-24)
 
 **Note:** Version bump only for package @nativescript-community/sentry
