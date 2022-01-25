@@ -179,7 +179,7 @@ export namespace NSSentry {
 
             const envelopeString = `${headerString}\n${itemString}\n${payloadString}`;
             captureEnvelope(envelopeString);
-            if (sentryOptions.flushSendEvent === true) {
+            if (sentryOptions?.flushSendEvent === true) {
                 io.sentry.Sentry.flush(0);
             }
             resolve({ status: Status.Success });
