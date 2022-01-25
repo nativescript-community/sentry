@@ -84,16 +84,6 @@ export class NativescriptBackend extends BaseBackend<BrowserOptions> {
 
         if (_options.enableNative !== false) {
             NSSentry.startWithDsnString(_options.dsn, _options);
-            // .then(() => {
-            //     // NSSentry.setLogLevel(_options.debug ? 2 : 1);
-            // });
-        } else {
-            // if (__DEV__ && _options.enableNativeNagger) {
-            //     Alert.alert(
-            //         'Sentry',
-            //         'Warning, could not connect to Sentry native SDK.\nIf you do not want to use the native component please pass `enableNative: false` in the options.\nVisit: https://docs.sentry.io/clients/react-native/ for more details.'
-            //     );
-            // }
         }
     }
 
