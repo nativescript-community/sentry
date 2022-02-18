@@ -1,7 +1,7 @@
 import { BrowserOptions, Transports } from '@sentry/browser';
 import { BrowserBackend } from '@sentry/browser/dist/backend';
 import { BaseBackend, NoopTransport } from '@sentry/core';
-import { Event, EventHint, Severity, Transport } from '@sentry/types';
+import { CaptureContext, Event, EventHint, Severity, Transport } from '@sentry/types';
 import { SyncPromise } from '@sentry/utils';
 
 import { NativeTransport } from './transports/native';
@@ -71,6 +71,26 @@ export interface NativescriptOptions extends BrowserOptions {
     enableAutoPerformanceTracking?: boolean;
 
     flushSendEvent?: boolean;
+
+    /**
+   * Enables Out of Memory Tracking for iOS and macCatalyst.
+   * See the following link for more information and possible restrictions:
+   * https://docs.sentry.io/platforms/apple/guides/ios/configuration/out-of-memory/
+   *
+   * @default true
+   * */
+    enableOutOfMemoryTracking?: boolean;
+
+    /**
+     * Set data to the inital scope
+     * @deprecated Use `Sentry.configureScope(...)`
+     */
+    initialScope?: CaptureContext;
+
+    headers?: {[k: string]: string};
+
+
+    beforeSend?(event: any, hint?);
 }
 
 /** The Sentry Nativescript SDK Backend. */
