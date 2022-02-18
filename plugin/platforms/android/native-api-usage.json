@@ -1,0 +1,26 @@
+{
+    "uses":[
+        "io.sentry:Sentry*",
+        "io.sentry:Breadcrumb*",
+        "io.sentry:SentryLevel*",
+        "io.sentry:SentryEvent*",
+        "io.sentry:SentryOptions*",
+        "io.sentry:UserFeedback*",
+        "io.sentry:RequestDetails*",
+        "io.sentry.SentryOptions:BeforeSendCallback*",
+        "io.sentry.protocol:User*",
+        "io.sentry.protocol:SentryStackTrace*",
+        "io.sentry.protocol:SentryStackFrame*",
+        "io.sentry.protocol:SentryException*",
+        "io.sentry.protocol:SdkVersion*",
+        "io.sentry.protocol:SentryId*",
+        "io.sentry.transport:AsyncHttpTransport*",
+        "io.sentry.transport:RateLimiter*",
+        "io.sentry.android.core:SentryAndroid*",
+        "io.sentry:UncaughtExceptionHandlerIntegration*",
+        "io.sentry.android.core:AnrIntegration*",
+        "io.sentry.android.core:NdkIntegration*",
+        "io.sentry.exception:ExceptionMechanismException*",
+        "io.sentry:ScopeCallback*"
+    ]
+}

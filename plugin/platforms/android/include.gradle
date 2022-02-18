@@ -7,6 +7,6 @@ android {
     }
 }
 dependencies {
-    def sentryVersion =  project.hasProperty("sentryVersion") ? project.sentryVersion : "5.2.0"
+    def sentryVersion =  project.hasProperty("sentryVersion") ? project.sentryVersion : "5.6.1"
     implementation "io.sentry:sentry-android:$sentryVersion"
 }

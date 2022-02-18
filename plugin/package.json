@@ -32,16 +32,17 @@
         "url": "https://github.com/nativescript-community/sentry"
     },
     "dependencies": {
-        "@sentry/browser": "6.2.0",
-        "@sentry/core": "6.2.0",
-        "@sentry/hub": "6.2.0",
-        "@sentry/integrations": "6.2.0",
-        "@sentry/minimal": "6.2.0",
-        "@sentry/tracing": "6.2.0",
-        "@sentry/types": "6.2.0",
-        "@sentry/utils": "6.2.0",
-        "@sentry/wizard": "^1.1.4",
-        "stacktrace-parser": "0.1.10"
+        "@sentry/browser": "6.12.0",
+        "@sentry/cli": "1.72.1",
+        "@sentry/core": "6.12.0",
+        "@sentry/hub": "6.12.0",
+        "@sentry/integrations": "6.12.0",
+        "@sentry/react": "6.12.0",
+        "@sentry/tracing": "6.12.0",
+        "@sentry/types": "6.12.0",
+        "@sentry/utils": "6.12.0",
+        "@sentry/wizard": "^1.2.17",
+        "stacktrace-parser": "^0.1.10"
     },
     "gitHead": "1e799d9f3a3eeb19c0fc4188be82a6cded4ea727"
 }

@@ -81,7 +81,14 @@ export namespace NSSentry {
         return new Promise((resolve) => {
             sentryOptions = options;
             NSSentrySDK.startWithConfigureOptions((obj) => {
-                // obj.logLevel = SentryLogLevel.kSentryLogLevelVerbose;
+                const beforeSend = options.beforeSend;
+                delete options.beforeSend;
+                obj.beforeSend = (event: SentryEvent)=>{
+                    if (beforeSend) {
+                        beforeSend(event as any);
+                    }
+                    return event;
+                };
                 Object.keys(options).forEach((k) => {
                     obj[k] = options[k];
                 });
@@ -168,11 +175,6 @@ export namespace NSSentry {
                 return new Date(val);
 
             default:
-                console.log(
-                    "Please report this at https://github.com/farfromrefug/nativescript-gesturehandler-febase/issues: iOS toJsObject is missing a converter for class '" +
-                        getClass(val) +
-                        "'. Casting to String as a fallback."
-                );
                 return String(val);
         }
     }
