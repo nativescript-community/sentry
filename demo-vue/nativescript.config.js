@@ -1,6 +1,5 @@
-import { NativeScriptConfig } from '@nativescript/core';
 
-export default {
+module.exports = {
     id: 'org.nativescript.demovuesentry',
     appPath: 'app',
     appResourcesPath: 'app/App_Resources',
@@ -8,4 +7,4 @@ export default {
         v8Flags: '--expose_gc',
         markingMode: 'none',
     },
-} as NativeScriptConfig;
+};
