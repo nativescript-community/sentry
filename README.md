@@ -52,6 +52,16 @@ if (!!sentry && !!uploadSentry) {
 }
 ```
 
+###debug 
+
+For debug mode to work correctly you will need to add this to your webpack (see demo app)
+
+```js
+nsWebpack.chainWebpack(config=>{
+    config.entry('bundle').prepend('@nativescript-community/sentry/process');
+});
+```
+
 ## Fastlane
 
 If you use fastlane you can use it to create release and upload dsyms
@@ -88,18 +98,20 @@ sentry_upload_dsym
 
 ```typescript
 import * as Sentry from '@nativescript-community/sentry';
-import { getBuildNumber } from '@nativescript-community/extendedinfo';
+import { getAppId, getBuildNumber, getVersionName } from 'nativescript-extendedinfo';
 
 const buildNumber = await getBuildNumber();
-// setting the platform in dist allows to have 
-// android and ios dist inside the same release
-const dist = `${buildNumber}.${global.isAndroid ? 'android' : 'ios'}`;
+const versionName = await getVersionName();
+const buildNumber = await getBuildNumber();
+const appId = await getAppId();
 Sentry.init({
-        dsn: "__DSN__",
-        // SENTRY_PREFIX is the same as the one you use in webpack config
-        appPrefix: SENTRY_PREFIX,
-        dist
-    });
+    dsn: SENTRY_DSN,
+    debug: true,
+    enableAutoPerformanceTracking: true,
+    appPrefix: SENTRY_PREFIX,
+    release: `${appId}@${versionName}+${buildNumber}`,
+    dist: `${buildNumber}.${__ANDROID__ ? 'android' : 'ios'}`
+});
 ```
 
 ## Reporting NativeScript errors

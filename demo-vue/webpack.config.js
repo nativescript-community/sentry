@@ -38,24 +38,24 @@ module.exports = (env, params = {}) => {
         buildNumber = plistData.match(/<key>CFBundleVersion<\/key>[\s\n]*<string>([0-9]*)<\/string>/)[1];
     }
     config.resolve.symlinks = false;
-    // config.devtool = false;
-    // config.plugins.push(
-    //     new webpack.SourceMapDevToolPlugin({
-    //         append: `\n//# sourceMappingURL=${SENTRY_PREFIX}[file].map`,
-    //         filename: join(SOURCEMAP_REL_DIR, '[file].map')
-    //     })
-    // );
-    // config.plugins.push(
-    //     new SentryCliPlugin({
-    //         release: appVersion,
-    //         urlPrefix: SENTRY_PREFIX,
-    //         rewrite: true,
-    //         cleanArtifacts: true,
-    //         release: `${nconfig.id}@${appVersion}+${buildNumber}`,
-    //         dist: `${buildNumber}.${platform}`,
-    //         ignoreFile: '.sentrycliignore',
-    //         include: [dist, join(dist, SOURCEMAP_REL_DIR)]
-    //     })
-    // );
+    config.devtool = false;
+    config.plugins.push(
+        new webpack.SourceMapDevToolPlugin({
+            append: `\n//# sourceMappingURL=${SENTRY_PREFIX}[file].map`,
+            filename: join(SOURCEMAP_REL_DIR, '[file].map')
+        })
+    );
+    config.plugins.push(
+        new SentryCliPlugin({
+            release: appVersion,
+            urlPrefix: SENTRY_PREFIX,
+            rewrite: true,
+            cleanArtifacts: true,
+            release: `${nconfig.id}@${appVersion}+${buildNumber}`,
+            dist: `${buildNumber}.${platform}`,
+            ignoreFile: '.sentrycliignore',
+            include: [dist, join(dist, SOURCEMAP_REL_DIR)]
+        })
+    );
     return config;
 };
