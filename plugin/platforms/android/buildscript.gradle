@@ -4,5 +4,5 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    classpath 'io.sentry:sentry-android-gradle-plugin:3.0.0-rc.1'
+    classpath 'io.sentry:sentry-android-gradle-plugin:2.1.5'
 }
