@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.1.1](https://github.com/nativescript-community/sentry/compare/v3.1.0...v3.1.1) (2022-03-03)
+
+
+### Bug Fixes
+
+* **android:** rollback gradle plugin version as it breaks build in some apps ([c1ccbb2](https://github.com/nativescript-community/sentry/commit/c1ccbb231ddf6f6b00816e8aeb4896e43e1368be))
+
+
+
+
+
 # [3.1.0](https://github.com/nativescript-community/sentry/compare/v3.0.3...v3.1.0) (2022-02-18)
 
 
