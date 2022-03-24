@@ -500,6 +500,7 @@ export namespace NSSentry {
                                 sentryOptions = options;
                             } catch(err) {
                                 console.error('Error starting Sentry', err);
+                                throw err;
                             }
 
                         },
@@ -507,7 +508,7 @@ export namespace NSSentry {
                 );
                 initialized = true;
             } catch (e) {
-                console.error('Catching on startWithDsnString, calling callback', e.getMessage());
+                console.error('Catching on startWithDsnString, calling callback', e);
                 reject(e);
                 return;
             }
