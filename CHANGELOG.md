@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.1.3](https://github.com/nativescript-community/sentry/compare/v3.1.2...v3.1.3) (2022-03-24)
+
+
+### Bug Fixes
+
+* **android:** error fix on N 8.2 ([6bd880f](https://github.com/nativescript-community/sentry/commit/6bd880f1498d0cae7f76c2dcd796504a323e3f24))
+* **android:** handle `undefined` stack in `convertToNativeStacktrace` ([aa77902](https://github.com/nativescript-community/sentry/commit/aa779022ed2a9217a75dffc0b264cd7d6cbcc5a1))
+* **android:** non handled error fix on startWithDsnString ([58322c6](https://github.com/nativescript-community/sentry/commit/58322c6dda787ba7699cb4683cb80c984530a07f))
+
+
+
+
+
 ## [3.1.2](https://github.com/nativescript-community/sentry/compare/v3.1.1...v3.1.2) (2022-03-24)
 
 
