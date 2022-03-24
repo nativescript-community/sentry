@@ -107,6 +107,9 @@ export namespace NSSentry {
             in_app?: boolean;
         }[]
     ) {
+        if (!stack) {
+            return null;
+        }
         const nStackTrace = new io.sentry.protocol.SentryStackTrace();
         const frames = new java.util.ArrayList<io.sentry.protocol.SentryStackFrame>();
         for (let i = 0; i < stack.length; i++) {
