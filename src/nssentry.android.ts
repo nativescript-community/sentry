@@ -1,4 +1,4 @@
-import { Application } from '@nativescript/core';
+import { Application, Utils } from '@nativescript/core';
 import { android as androidApp } from '@nativescript/core/application';
 import { Breadcrumb, Event, Response, Status, User } from '@sentry/types';
 import { NativescriptOptions, _processLevel } from './backend';
@@ -358,7 +358,7 @@ export namespace NSSentry {
 
             try {
                 io.sentry.android.core.SentryAndroid.init(
-                    Application.android.context,
+                    Utils.android.getApplicationContext(),
                     new io.sentry.Sentry.OptionsConfiguration({
                         configure(config: io.sentry.SentryOptions) {
                             // config.setLogger(new io.sentry.SystemOutLogger());
