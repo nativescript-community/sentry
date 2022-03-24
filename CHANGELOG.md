@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.1.2](https://github.com/nativescript-community/sentry/compare/v3.1.1...v3.1.2) (2022-03-24)
+
+
+### Bug Fixes
+
+* **android:** Fix breadcrumb data for non-string types ([4a7396c](https://github.com/nativescript-community/sentry/commit/4a7396cd3ed2a2c038ac8863836df01765dcd3d8))
+
+
+
+
+
 ## [3.1.1](https://github.com/nativescript-community/sentry/compare/v3.1.0...v3.1.1) (2022-03-03)
 
 
