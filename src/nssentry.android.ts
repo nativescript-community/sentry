@@ -179,13 +179,21 @@ export namespace NSSentry {
                     try {
                         if (breadcrumb.data) {
                             Object.keys(breadcrumb.data).forEach((k) => {
-                                const value = breadcrumb.data[k];
+                                let value = breadcrumb.data[k];
                                 // in case a `status_code` entry got accidentally stringified as a float
-                                if (k === 'status_code') {
-                                    nBreadcumb.setData(k, value && value.endsWith('.0') ? value.replace('.0', '') : value);
-                                } else {
-                                    nBreadcumb.setData(k, value);
+                                if (k === 'status_code' && typeof value === 'string' && value.endsWith('.0')) {
+                                    value = value.replace('.0', '');
+                                } else if (typeof value === 'boolean') {
+                                    value = new java.lang.Boolean(value);
+                                } else if (typeof value === 'number') {
+                                    value = value.toString();
+                                } else if (Array.isArray(value)) {
+                                    value = new org.json.JSONArray(JSON.stringify(value));
+                                } else if (value && typeof value === 'object') {
+                                    value = new org.json.JSONObject(JSON.stringify(value));
                                 }
+
+                                nBreadcumb.setData(k, value);
                             });
                         }
                     } catch (e) {
