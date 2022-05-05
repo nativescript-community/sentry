@@ -1,5 +1,9 @@
 {
     "uses":[
+        "java.lang:Long*",
+        "java.lang:Boolean*",
+        "java.util:Map*",
+        "java.lang:Thread*",
         "io.sentry:Sentry*",
         "io.sentry:Breadcrumb*",
         "io.sentry:SentryLevel*",
