@@ -2,6 +2,7 @@
     "uses":[
         "java.lang:Long*",
         "java.lang:Boolean*",
+        "java.lang:Integer*",
         "java.util:Map*",
         "java.lang:Thread*",
         "io.sentry:Sentry*",
