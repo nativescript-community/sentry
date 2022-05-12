@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.1.5](https://github.com/nativescript-community/sentry/compare/v3.1.4...v3.1.5) (2022-05-12)
+
+
+### Bug Fixes
+
+* **android:** native-api-usage fix ([a4075e6](https://github.com/nativescript-community/sentry/commit/a4075e66853149a2d291158684646abb8f96e271))
+
+
+
+
+
 ## [3.1.4](https://github.com/nativescript-community/sentry/compare/v3.1.3...v3.1.4) (2022-05-05)
 
 
