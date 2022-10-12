@@ -20,7 +20,7 @@ export {
     setUser,
     withScope
 } from '@sentry/core';
-export { Breadcrumb, Event, Exception, Request, Response, SdkInfo, Severity, StackFrame, Stacktrace, Status, Thread, User } from '@sentry/types';
+export { Breadcrumb, Event, Exception, Request, SdkInfo, Severity, StackFrame, Stacktrace, Thread, User } from '@sentry/types';
 export { NativescriptBackend, NativescriptOptions } from './backend';
 export { NativescriptClient as NativescriptClient } from './client';
 export { init, nativeCrash, setDist, setRelease } from './sdk';

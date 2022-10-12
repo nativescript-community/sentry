@@ -352,7 +352,7 @@ export namespace NSSentry {
             event.setSdk(eventSdk);
         }
     }
-    export function startWithDsnString(dsnString: string, options: NativescriptOptions = {}): Promise<Response> {
+    export function startWithOptions(dsnString: string, options: NativescriptOptions = {}): Promise<Response> {
         return new Promise((resolve, reject) => {
             if (initialized) {
                 resolve({ status: Status.Failed });
@@ -511,7 +511,7 @@ export namespace NSSentry {
                 );
                 initialized = true;
             } catch (e) {
-                console.error('Catching on startWithDsnString, calling callback', e);
+                console.error('Catching on startWithOptions, calling callback', e);
                 reject(e);
                 return;
             }

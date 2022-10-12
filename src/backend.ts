@@ -103,7 +103,7 @@ export class NativescriptBackend extends BaseBackend<BrowserOptions> {
         this._browserBackend = new BrowserBackend(_options);
 
         if (_options.enableNative !== false) {
-            NSSentry.startWithDsnString(_options.dsn, _options);
+            NSSentry.startWithOptions(_options.dsn, _options);
         }
     }
 

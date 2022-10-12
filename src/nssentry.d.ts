@@ -12,7 +12,7 @@ export interface UserFeedback {
 export namespace NSSentry {
     function sendEvent(event: Event): Promise<Response>;
     // function captureException(exception: any /* nativeException*/): Promise<Response>;
-    function startWithDsnString(dsn: string, options: NativescriptOptions): Promise<Response>;
+    function startWithOptions(dsn: string, options: NativescriptOptions): Promise<Response>;
     // function setLogLevel(level: number);
     function crash();
     function flush(timeout: number);
