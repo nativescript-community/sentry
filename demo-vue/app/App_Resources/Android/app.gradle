@@ -1,10 +1,10 @@
 android {
  defaultConfig {  
-    compileSdkVersion 28
+    compileSdkVersion 31
     multiDexEnabled true
     minSdkVersion 18
-    targetSdkVersion 28
-    versionCode 102
+    targetSdkVersion 31
+    versionCode 104
     versionName "2.0"
     ndk {
       abiFilters.clear()
