@@ -2,7 +2,7 @@ import { addGlobalEventProcessor, getCurrentHub } from '@sentry/core';
 import { Event, EventHint, Integration, StackFrame } from '@sentry/types';
 import { logger } from '@sentry/utils';
 
-const INTERNAL_CALLSITES_REGEX = new RegExp(['/Libraries/Renderer/oss/NativescriptRenderer-dev\\.js$', '/Libraries/BatchedBridge/MessageQueue\\.js$'].join('|'));
+// const INTERNAL_CALLSITES_REGEX = new RegExp(['/Libraries/Renderer/oss/NativescriptRenderer-dev\\.js$', '/Libraries/BatchedBridge/MessageQueue\\.js$'].join('|'));
 
 /**
  * React Native Stack Frame
@@ -33,7 +33,7 @@ type NativescriptError = Error & {
 //   ...
 // };
 
-export function parseErrorStack(e: NativescriptError): StackFrame[] {
+export function parseErrorStack(e: NativescriptError): NativescriptFrame[] {
     if (!e || !e.stack) {
         return [];
     }
@@ -99,17 +99,11 @@ export class DebugSymbolicator implements Integration {
             // Ideally this should go into contexts but android sdk doesn't support it
             event.extra = {
                 ...event.extra,
-                componentStack: error.componentStack
-                // jsEngine: error.jsEngine
+                componentStack: error.componentStack,
+                jsEngine: error.jsEngine
             };
 
-            // if (global.__DEV__) {
-            //     await self._symbolicate(event, stack);
-            // }
-            // if (reactError.jsEngine === 'hermes') {
-            const convertedFrames = convertNativescriptFramesToSentryFrames(stack as any);
-            this._replaceFramesInEvent(event, convertedFrames);
-            // }
+            await self._symbolicate(event, stack);
 
             event.platform = 'node'; // Setting platform node makes sure we do not show source maps errors
 
@@ -118,22 +112,21 @@ export class DebugSymbolicator implements Integration {
     }
 
     /**
-     * Symbolicates the stack on the device talking to local dev server.
-     * Mutates the passed event.
-     */
-    private async _symbolicate(event: Event, stack: string | undefined): Promise<void> {
+   * Symbolicates the stack on the device talking to local dev server.
+   * Mutates the passed event.
+   */
+    private async _symbolicate(
+        event: Event,
+        stack: NativescriptFrame[]
+    ): Promise<void> {
         try {
-            // const symbolicateStackTrace = require('react-native/Libraries/Core/Devtools/symbolicateStackTrace');
-            // const prettyStack = await symbolicateStackTrace(stack);
-            // if (prettyStack) {
-            //     const stackWithoutInternalCallsites = prettyStack.filter((frame: any) => frame.file && frame.file.match(INTERNAL_CALLSITES_REGEX) === null);
-            //     const symbolicatedFrames = this._convertNativescriptFramesToSentryFrames(stackWithoutInternalCallsites);
-            //     this._replaceFramesInEvent(event, symbolicatedFrames);
-            // } else {
-            //     logger.error('The stack is null');
-            // }
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            const convertedFrames = convertNativescriptFramesToSentryFrames(stack);
+            this._replaceFramesInEvent(event, convertedFrames);
         } catch (error) {
-            logger.warn(`Unable to symbolicate stack trace: ${error.message}`);
+            if (error instanceof Error) {
+                logger.warn(`Unable to symbolicate stack trace: ${error.message}`);
+            }
         }
     }
 

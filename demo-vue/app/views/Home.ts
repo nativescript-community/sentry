@@ -15,6 +15,7 @@ export default {
         <Button text="throwError" @tap="throwError"/>
         <Button text="crashTest" @tap="crashTest"/>
         <Button text="nativeCrashTest" @tap="nativeCrashTest"/>
+        <Button text="flush" @tap="flush"/>
       </StackLayout>
     </Page>
     `,
@@ -37,6 +38,9 @@ export default {
         },
         nativeCrashTest() {
             TestClass.someMethod();
+        },
+        flush() {
+            Sentry.flush();
         }
     }
 };

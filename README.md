@@ -15,7 +15,7 @@ Be sure to run a new build after adding plugins to avoid any issues.
 
 You will need to add something like this to your webpack config so that the source maps gets uploaded. I dont set `auth` or `project` in the options as i use a `.sentryclirc` config file.
 * `SOURCEMAP_REL_DIR`: i almost always set it to `../../sourcemaps`
-* `SENTRY_PREFIX`: i almost always set it to `app:///`
+* `SENTRY_PREFIX`: the default is `app:///`
 ```javascript
 if (!!sentry && !!uploadSentry) {
   config.devtool = false;
@@ -98,7 +98,6 @@ sentry_upload_dsym
 
 ```typescript
 import * as Sentry from '@nativescript-community/sentry';
-import { getAppId, getBuildNumber, getVersionName } from 'nativescript-extendedinfo';
 
 const buildNumber = await getBuildNumber();
 const versionName = await getVersionName();
@@ -108,15 +107,12 @@ Sentry.init({
     dsn: SENTRY_DSN,
     debug: true,
     enableAutoPerformanceTracking: true,
-    appPrefix: SENTRY_PREFIX,
-    release: `${appId}@${versionName}+${buildNumber}`,
-    dist: `${buildNumber}.${__ANDROID__ ? 'android' : 'ios'}`
 });
 ```
 
 ## Reporting NativeScript errors
 
-The `handleUncaughtErrors` method ensures all unhandled NativeScript errors will be caught by Sentry in production, using a [custom error handler](https://docs.nativescript.org/core-concepts/error-handling).
+The `onerror` method ensures all unhandled NativeScript errors will be caught by Sentry in production, using a [custom error handler](https://docs.nativescript.org/core-concepts/error-handling).
 
 
 ## Reporting handled errors

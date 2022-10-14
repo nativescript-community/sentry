@@ -1,22 +1,42 @@
-import { Integrations, defaultIntegrations, getCurrentHub } from '@sentry/browser';
-import { initAndBind, setExtra } from '@sentry/core';
+import { Integrations, defaultStackParser, getCurrentHub, defaultIntegrations as sentryDefaultIntegrations } from '@sentry/browser';
+import { getIntegrationsToSetup, initAndBind, setExtra } from '@sentry/core';
 import { Hub, makeMain } from '@sentry/hub';
 import { RewriteFrames } from '@sentry/integrations';
-import { StackFrame } from '@sentry/types';
+import { Integration, Scope, StackFrame, UserFeedback } from '@sentry/types';
+import { getGlobalObject, logger, stackParserFromStackParserOptions } from '@sentry/utils';
 
-import { NativescriptOptions } from './backend';
+import { NativescriptClientOptions, NativescriptOptions, NativescriptWrapperOptions } from './options';
+
 import { NativescriptClient } from './client';
 import { NativescriptScope } from './scope';
 import { DebugSymbolicator, DeviceContext, NativescriptErrorHandlers, Release } from './integrations';
 import { EventOrigin } from './integrations/eventorigin';
 import { SdkInfo } from './integrations/sdkinfo';
+import { makeNativescriptTransport } from './transports/native';
+import { NativescriptErrorHandlersOptions } from './integrations/nativescripterrorhandlers';
+import { makeUtf8TextEncoder } from './transports/TextEncoder';
+import { safeFactory, safeTracesSampler } from './utils/safe';
+import { NativescriptTracing } from './tracing';
 
 const IGNORED_DEFAULT_INTEGRATIONS = [
     'GlobalHandlers', // We will use the react-native internal handlers
-    'Breadcrumbs', // We add it later, just not patching fetch
-    'CaptureConsole', // We add it later, just not patching fetch
+    // 'Breadcrumbs', // We add it later, just not patching fetch
+    // 'CaptureConsole', // We add it later, just not patching fetch
     'TryCatch' // We don't need this
 ];
+const DEFAULT_OPTIONS: NativescriptOptions & NativescriptErrorHandlersOptions = {
+    enableNative: true,
+    enableNativeCrashHandling: true,
+    enableNativeNagger: true,
+    autoInitializeNativeSdk: true,
+    enableAutoPerformanceTracking: true,
+    enableOutOfMemoryTracking: true,
+    patchGlobalPromise: true,
+    transportOptions: {
+        textEncoder: makeUtf8TextEncoder(),
+    },
+    sendClientReports: true,
+};
 
 export let rewriteFrameIntegration: {
     _iteratee: (frame: StackFrame) => StackFrame;
@@ -24,18 +44,34 @@ export let rewriteFrameIntegration: {
 /**
  * Inits the SDK
  */
-export function init(
-    options: NativescriptOptions = {
-        flushSendEvent: true,
-        enableNative: true,
-        enableNativeCrashHandling: true,
-        enableAutoPerformanceTracking: true
-    }
-): void {
-    const nativescriptHub = new Hub(undefined, new NativescriptScope());
-    makeMain(nativescriptHub);
-    // tslint:disable: strict-comparisons
-    if (options.defaultIntegrations === undefined) {
+export function init(passedOptions: NativescriptOptions): void {
+
+    const NativescriptHub = new Hub(undefined, new NativescriptScope());
+    makeMain(NativescriptHub);
+
+    const options: NativescriptClientOptions & NativescriptOptions = {
+        ...DEFAULT_OPTIONS,
+        ...passedOptions,
+        // If custom transport factory fails the SDK won't initialize
+        transport: passedOptions.transport || makeNativescriptTransport,
+        transportOptions: {
+            ...DEFAULT_OPTIONS.transportOptions,
+            ...(passedOptions.transportOptions ?? {}),
+        },
+        integrations: [],
+        // integrations: getIntegrationsToSetup(passedOptions),
+        stackParser: stackParserFromStackParserOptions(passedOptions.stackParser || defaultStackParser),
+        beforeBreadcrumb: safeFactory(passedOptions.beforeBreadcrumb, { loggerMessage: 'The beforeBreadcrumb threw an error' }),
+        initialScope: safeFactory(passedOptions.initialScope, { loggerMessage: 'The initialScope threw an error' }),
+        tracesSampler: safeTracesSampler(passedOptions.tracesSampler),
+    };
+    // As long as tracing is opt in with either one of these options, then this is how we determine tracing is enabled.
+    const tracingEnabled =
+      typeof options.tracesSampler !== 'undefined' ||
+      typeof options.tracesSampleRate !== 'undefined';
+
+    const defaultIntegrations: Integration[] = passedOptions.defaultIntegrations || [];
+    if (passedOptions.defaultIntegrations === undefined) {
         rewriteFrameIntegration = new RewriteFrames({
             iteratee: (frame: StackFrame) => {
                 if (frame.filename) {
@@ -46,7 +82,7 @@ export function init(
 
                     // const appPrefix = 'app://';
                     if (frame.filename.indexOf('[native code]') === -1) {
-                        const appPrefix = options.appPrefix || '';
+                        const appPrefix = options.appPrefix || 'app:///';
                         if (appPrefix.endsWith('//') && !appPrefix.endsWith('///')) {
                             filename = frame.filename.indexOf('/') === 0 ? `${appPrefix}${frame.filename}` : `${appPrefix}/${frame.filename}`;
                         } else {
@@ -60,10 +96,10 @@ export function init(
                 return frame;
             }
         }) as any;
-        options.defaultIntegrations = [
+        defaultIntegrations.push(...[
             new NativescriptErrorHandlers(options),
             new Release(),
-            ...defaultIntegrations.filter((i) => !IGNORED_DEFAULT_INTEGRATIONS.includes(i.name)),
+            ...sentryDefaultIntegrations.filter((i) => !IGNORED_DEFAULT_INTEGRATIONS.includes(i.name)),
             new Integrations.Breadcrumbs({
                 console: false,
                 xhr: false,
@@ -74,17 +110,20 @@ export function init(
             rewriteFrameIntegration as any,
             new EventOrigin(),
             new SdkInfo()
-        ];
+        ]);
+        if (!!options.enableNative) {
+            defaultIntegrations.push(new DeviceContext());
+        }
+        if (tracingEnabled) {
+            if (options.enableAutoPerformanceTracking) {
+                defaultIntegrations.push(new NativescriptTracing());
+            }
+        }
     }
-    if (options.enableNative === undefined) {
-        options.enableNative = true;
-    }
-    if (options.enableNativeCrashHandling === undefined) {
-        options.enableNativeCrashHandling = true;
-    }
-    // if (options.enableNativeNagger === undefined) {
-    //     options.enableNativeNagger = true;
-    // }
+    options.integrations = getIntegrationsToSetup({
+        integrations: safeFactory(passedOptions.integrations, { loggerMessage: 'The integrations threw an error' }),
+        defaultIntegrations,
+    });
     initAndBind(NativescriptClient, options);
 }
 
@@ -147,4 +186,50 @@ export async function close(): Promise<void> {
     } catch (e) {
         console.error('Failed to close the SDK');
     }
+}
+/**
+ * Captures user feedback and sends it to Sentry.
+ */
+export function captureUserFeedback(feedback: UserFeedback): void {
+    getCurrentHub().getClient<NativescriptClient>()?.captureUserFeedback(feedback);
+}
+
+
+/**
+ * Creates a new scope with and executes the given operation within.
+ * The scope is automatically removed once the operation
+ * finishes or throws.
+ *
+ * This is essentially a convenience function for:
+ *
+ *     pushScope();
+ *     callback();
+ *     popScope();
+ *
+ * @param callback that will be enclosed into push/popScope.
+ */
+export function withScope(callback: (scope: Scope) => void): ReturnType<Hub['withScope']> {
+    const safeCallback = (scope: Scope): void => {
+        try {
+            callback(scope);
+        } catch (e) {
+            logger.error('Error while running withScope callback', e);
+        }
+    };
+    getCurrentHub().withScope(safeCallback);
+}
+
+/**
+   * Callback to set context information onto the scope.
+   * @param callback Callback function that receives Scope.
+   */
+export function configureScope(callback: (scope: Scope) => void): ReturnType<Hub['configureScope']> {
+    const safeCallback = (scope: Scope): void => {
+        try {
+            callback(scope);
+        } catch (e) {
+            logger.error('Error while running configureScope callback', e);
+        }
+    };
+    getCurrentHub().configureScope(safeCallback);
 }

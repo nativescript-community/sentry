@@ -22,14 +22,15 @@
 			android:name="com.tns.NativeScriptActivity"
 			android:label="@string/title_activity_kimera"
 			android:configChanges="keyboardHidden|orientation|screenSize"
-			android:theme="@style/LaunchScreenTheme">
+			android:theme="@style/LaunchScreenTheme"
+            android:exported="true">
             <meta-data android:name="SET_THEME_ON_LAUNCH" android:resource="@style/AppTheme" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.tns.ErrorReportActivity"/>
+        <activity android:name="com.tns.ErrorReportActivity"  android:exported="false"/>
         <meta-data android:name="io.sentry.dsn" android:value="https://d248254c54f34d3abc5c68055a7f43d3@bugs.akylas.fr/5" />
              </application>
 </manifest>

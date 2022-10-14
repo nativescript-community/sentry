@@ -9,7 +9,17 @@ declare class PrivateSentrySDKOnly extends NSObject {
 
     static envelopeWithData(data: NSData): SentryEnvelope;
 
+    static getDebugImages(): NSArray<SentryDebugMeta>;
+
+    static getSdkName(): string;
+
+    static getSdkVersionString(): string;
+
     static new(): PrivateSentrySDKOnly; // inherited from NSObject
+
+    static setSdkName(sdkName: string): void;
+
+    static setSdkNameAndVersionString(sdkName: string, versionString: string): void;
 
     static storeEnvelope(envelope: SentryEnvelope): void;
 
@@ -19,11 +29,15 @@ declare class PrivateSentrySDKOnly extends NSObject {
 
     static readonly currentScreenFrames: SentryScreenFrames;
 
+    static framesTrackingMeasurementHybridSDKMode: boolean;
+
+    static readonly installationID: string;
+
     static readonly isFramesTrackingRunning: boolean;
 
     static onAppStartMeasurementAvailable: (p1: SentryAppStartMeasurement) => void;
 
-    getDebugImages(): NSArray<SentryDebugMeta>;
+    static readonly options: SentryOptions;
 }
 
 declare class SentryAppStartMeasurement extends NSObject {
@@ -38,13 +52,19 @@ declare class SentryAppStartMeasurement extends NSObject {
 
     readonly duration: number;
 
+    readonly moduleInitializationTimestamp: Date;
+
     readonly runtimeInitTimestamp: Date;
 
     readonly type: SentryAppStartType;
 
     constructor(o: { type: SentryAppStartType; appStartTimestamp: Date; duration: number; runtimeInitTimestamp: Date; didFinishLaunchingTimestamp: Date });
 
+    constructor(o: { type: SentryAppStartType; appStartTimestamp: Date; duration: number; runtimeInitTimestamp: Date; moduleInitializationTimestamp: Date; didFinishLaunchingTimestamp: Date });
+
     initWithTypeAppStartTimestampDurationRuntimeInitTimestampDidFinishLaunchingTimestamp(type: SentryAppStartType, appStartTimestamp: Date, duration: number, runtimeInitTimestamp: Date, didFinishLaunchingTimestamp: Date): this;
+
+    initWithTypeAppStartTimestampDurationRuntimeInitTimestampModuleInitializationTimestampDidFinishLaunchingTimestamp(type: SentryAppStartType, appStartTimestamp: Date, duration: number, runtimeInitTimestamp: Date, moduleInitializationTimestamp: Date, didFinishLaunchingTimestamp: Date): this;
 }
 
 declare const enum SentryAppStartType {
@@ -186,6 +206,8 @@ declare class SentryClient extends NSObject {
 
     captureUserFeedback(userFeedback: SentryUserFeedback): void;
 
+    flush(timeout: number): void;
+
     initWithOptions(options: SentryOptions): this;
 }
 
@@ -203,6 +225,8 @@ declare class SentryDebugImageProvider extends NSObject {
     static new(): SentryDebugImageProvider; // inherited from NSObject
 
     getDebugImages(): NSArray<SentryDebugMeta>;
+
+    getDebugImagesForThreads(threads: NSArray<SentryThread> | SentryThread[]): NSArray<SentryDebugMeta>;
 }
 
 declare class SentryDebugMeta extends NSObject implements SentrySerializable {
@@ -649,8 +673,6 @@ declare class SentryHub extends NSObject {
 
     static new(): SentryHub; // inherited from NSObject
 
-    installedIntegrations: NSMutableArray<NSObject>;
-
     readonly scope: SentryScope;
 
     readonly session: SentrySession;
@@ -687,9 +709,11 @@ declare class SentryHub extends NSObject {
 
     endSessionWithTimestamp(timestamp: Date): void;
 
+    flush(timeout: number): void;
+
     getClient(): SentryClient;
 
-    getIntegration(integrationName: string): any;
+    hasIntegration(integrationName: string): boolean;
 
     initWithClientAndScope(client: SentryClient, scope: SentryScope): this;
 
@@ -733,7 +757,7 @@ declare class SentryId extends NSObject {
 
 interface SentryIntegrationProtocol extends NSObjectProtocol {
 
-    installWithOptions(options: SentryOptions): void;
+    installWithOptions(options: SentryOptions): boolean;
 
     uninstall?(): void;
 }
@@ -988,7 +1012,13 @@ declare class SentryOptions extends NSObject {
 
     static new(): SentryOptions; // inherited from NSObject
 
+    appHangTimeoutInterval: number;
+
+    attachScreenshot: boolean;
+
     attachStacktrace: boolean;
+
+    attachViewHierarchy: boolean;
 
     beforeBreadcrumb: (p1: SentryBreadcrumb) => SentryBreadcrumb;
 
@@ -1002,9 +1032,17 @@ declare class SentryOptions extends NSObject {
 
     dsn: string;
 
+    enableAppHangTracking: boolean;
+
+    enableAutoBreadcrumbTracking: boolean;
+
     enableAutoPerformanceTracking: boolean;
 
     enableAutoSessionTracking: boolean;
+
+    enableCoreDataTracking: boolean;
+
+    enableCrashHandler: boolean;
 
     enableFileIOTracking: boolean;
 
@@ -1014,19 +1052,27 @@ declare class SentryOptions extends NSObject {
 
     enableOutOfMemoryTracking: boolean;
 
+    enableProfiling: boolean;
+
     enableSwizzling: boolean;
+
+    enableUIViewControllerTracking: boolean;
+
+    enableUserInteractionTracing: boolean;
 
     enabled: boolean;
 
     environment: string;
 
-    experimentalEnableTraceSampling: boolean;
+    idleTimeout: number;
 
     readonly inAppExcludes: NSArray<string>;
 
     readonly inAppIncludes: NSArray<string>;
 
     integrations: NSArray<string>;
+
+    readonly isProfilingEnabled: boolean;
 
     readonly isTracingEnabled: boolean;
 
@@ -1040,17 +1086,25 @@ declare class SentryOptions extends NSObject {
 
     parsedDsn: SentryDsn;
 
+    profilesSampleRate: number;
+
+    profilesSampler: (p1: SentrySamplingContext) => number;
+
     releaseName: string;
 
     sampleRate: number;
 
     readonly sdkInfo: SentrySdkInfo;
 
+    sendClientReports: boolean;
+
     sendDefaultPii: boolean;
 
     sessionTrackingIntervalMillis: number;
 
     stitchAsyncCode: boolean;
+
+    tracePropagationTargets: NSArray<any>;
 
     tracesSampleRate: number;
 
@@ -1065,6 +1119,17 @@ declare class SentryOptions extends NSObject {
     addInAppInclude(inAppInclude: string): void;
 
     initWithDictDidFailWithError(options: NSDictionary<string, any>): this;
+}
+
+declare const enum SentryPermissionStatus {
+
+    kSentryPermissionStatusUnknown = 0,
+
+    kSentryPermissionStatusGranted = 1,
+
+    kSentryPermissionStatusPartial = 2,
+
+    kSentryPermissionStatusDenied = 3
 }
 
 declare class SentrySDK extends NSObject {
@@ -1106,6 +1171,8 @@ declare class SentrySDK extends NSObject {
     static crash(): void;
 
     static endSession(): void;
+
+    static flush(timeout: number): void;
 
     static new(): SentrySDK; // inherited from NSObject
 
@@ -1267,6 +1334,10 @@ declare class SentryScreenFrames extends NSObject {
 
     static new(): SentryScreenFrames; // inherited from NSObject
 
+    readonly frameRateTimestamps: NSArray<NSDictionary<string, number>>;
+
+    readonly frameTimestamps: NSArray<NSDictionary<string, number>>;
+
     readonly frozen: number;
 
     readonly slow: number;
@@ -1275,7 +1346,11 @@ declare class SentryScreenFrames extends NSObject {
 
     constructor(o: { total: number; frozen: number; slow: number });
 
+    constructor(o: { total: number; frozen: number; slow: number; frameTimestamps: NSArray<NSDictionary<string, number>> | NSDictionary<string, number>[]; frameRateTimestamps: NSArray<NSDictionary<string, number>> | NSDictionary<string, number>[] });
+
     initWithTotalFrozenSlow(total: number, frozen: number, slow: number): this;
+
+    initWithTotalFrozenSlowFrameTimestampsFrameRateTimestamps(total: number, frozen: number, slow: number, frameTimestamps: NSArray<NSDictionary<string, number>> | NSDictionary<string, number>[], frameRateTimestamps: NSArray<NSDictionary<string, number>> | NSDictionary<string, number>[]): this;
 }
 
 declare class SentrySdkInfo extends NSObject implements SentrySerializable {
@@ -1302,6 +1377,8 @@ declare class SentrySdkInfo extends NSObject implements SentrySerializable {
 
     constructor(o: { dict: NSDictionary<any, any> });
 
+    constructor(o: { dict: NSDictionary<any, any>; orDefaults: SentrySdkInfo });
+
     constructor(o: { name: string; andVersion: string });
 
     class(): typeof NSObject;
@@ -1309,6 +1386,8 @@ declare class SentrySdkInfo extends NSObject implements SentrySerializable {
     conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
     initWithDict(dict: NSDictionary<any, any>): this;
+
+    initWithDictOrDefaults(dict: NSDictionary<any, any>, info: SentrySdkInfo): this;
 
     initWithNameAndVersion(name: string, version: string): this;
 
@@ -1751,7 +1830,11 @@ declare class SentryTransactionContext extends SentrySpanContext {
 
     readonly name: string;
 
+    readonly nameSource: SentryTransactionNameSource;
+
     parentSampled: SentrySampleDecision;
+
+    sampleRate: number;
 
     constructor(o: { name: string; operation: string });
 
@@ -1766,6 +1849,21 @@ declare class SentryTransactionContext extends SentrySpanContext {
     initWithNameOperationTraceIdSpanIdParentSpanIdParentSampled(name: string, operation: string, traceId: SentryId, spanId: SentrySpanId, parentSpanId: SentrySpanId, parentSampled: SentrySampleDecision): this;
 }
 
+declare const enum SentryTransactionNameSource {
+
+    kSentryTransactionNameSourceCustom = 0,
+
+    kSentryTransactionNameSourceUrl = 1,
+
+    kSentryTransactionNameSourceRoute = 2,
+
+    kSentryTransactionNameSourceView = 3,
+
+    kSentryTransactionNameSourceComponent = 4,
+
+    kSentryTransactionNameSourceTask = 5
+}
+
 declare class SentryUser extends NSObject implements NSCopying, SentrySerializable {
 
     static alloc(): SentryUser; // inherited from NSObject
@@ -1777,6 +1875,8 @@ declare class SentryUser extends NSObject implements NSCopying, SentrySerializab
     email: string;
 
     ipAddress: string;
+
+    segment: string;
 
     userId: string;
 
@@ -1893,3 +1993,49 @@ declare let SentryVersionString: interop.Reference<number>;
 declare let SentryVersionStringVar: interop.Reference<number>;
 
 declare let defaultMaxBreadcrumbs: number;
+
+declare let kSentrySampleDecisionNameNo: string;
+
+declare let kSentrySampleDecisionNameUndecided: string;
+
+declare let kSentrySampleDecisionNameYes: string;
+
+declare let kSentrySpanStatusNameAborted: string;
+
+declare let kSentrySpanStatusNameAlreadyExists: string;
+
+declare let kSentrySpanStatusNameCancelled: string;
+
+declare let kSentrySpanStatusNameDataLoss: string;
+
+declare let kSentrySpanStatusNameDeadlineExceeded: string;
+
+declare let kSentrySpanStatusNameFailedPrecondition: string;
+
+declare let kSentrySpanStatusNameInternalError: string;
+
+declare let kSentrySpanStatusNameInvalidArgument: string;
+
+declare let kSentrySpanStatusNameNotFound: string;
+
+declare let kSentrySpanStatusNameOk: string;
+
+declare let kSentrySpanStatusNameOutOfRange: string;
+
+declare let kSentrySpanStatusNamePermissionDenied: string;
+
+declare let kSentrySpanStatusNameResourceExhausted: string;
+
+declare let kSentrySpanStatusNameUnauthenticated: string;
+
+declare let kSentrySpanStatusNameUnavailable: string;
+
+declare let kSentrySpanStatusNameUndefined: string;
+
+declare let kSentrySpanStatusNameUnimplemented: string;
+
+declare let kSentrySpanStatusNameUnknownError: string;
+
+declare function nameForSentrySampleDecision(decision: SentrySampleDecision): string;
+
+declare function nameForSentrySpanStatus(status: SentrySpanStatus): string;

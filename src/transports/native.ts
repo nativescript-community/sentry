@@ -1,26 +1,38 @@
-import { Event, Response, Transport } from '@sentry/types';
-import { PromiseBuffer, SentryError } from '@sentry/utils';
-import { NSSentry } from '../nssentry';
+import { BaseTransportOptions, Envelope, Event, Transport } from '@sentry/types';
+import { PromiseBuffer, makePromiseBuffer } from '@sentry/utils';
+
+import { NATIVE } from '../wrapper';
+
+export type BaseNativeTransport = BaseTransportOptions;
 
 /** Native Transport class implementation */
 export class NativeTransport implements Transport {
     /** A simple buffer holding all requests. */
-    protected readonly _buffer: PromiseBuffer<Response> = new PromiseBuffer(30);
+    protected readonly _buffer: PromiseBuffer<void> = makePromiseBuffer(30);
 
     /**
-     * @inheritDoc
-     */
-    public sendEvent(event: Event): Promise<Response> {
-        if (!this._buffer.isReady()) {
-            return Promise.reject(new SentryError('Not adding Promise due to buffer limit reached.'));
-        }
-        return this._buffer.add(() => NSSentry.sendEvent(event)) as any;
+   * Sends the envelope to the Store endpoint in Sentry.
+   *
+   * @param envelope Envelope that should be sent to Sentry.
+   */
+    public send(envelope: Envelope): PromiseLike<void> {
+        return this._buffer.add(() => NATIVE.sendEnvelope(envelope));
     }
 
     /**
-     * @inheritDoc
-     */
-    public close(timeout?: number): Promise<boolean> {
-        return this._buffer.drain(timeout) as any;
+   * Wait for all envelopes to be sent or the timeout to expire, whichever comes first.
+   *
+   * @param timeout Maximum time in ms the transport should wait for envelopes to be flushed. Omitting this parameter will
+   *   cause the transport to wait until all events are sent before resolving the promise.
+   * @returns A promise that will resolve with `true` if all events are sent before the timeout, or `false` if there are
+   * still events in the queue when the timeout is reached.
+   */
+    public flush(timeout?: number): PromiseLike<boolean> {
+        return this._buffer.drain(timeout);
     }
 }
+
+/**
+ * Creates a Native Transport.
+ */
+export function makeNativescriptTransport(): NativeTransport { return new NativeTransport(); }

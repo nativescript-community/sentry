@@ -1,196 +1,377 @@
+/* eslint-disable max-lines */
+import { Hub } from '@sentry/hub';
 import {
-    RequestInstrumentationOptions,
-    defaultRequestInstrumentationOptions,
-    registerRequestInstrumentation,
-    startIdleTransaction,
+    IdleTransaction, RequestInstrumentationOptions, Transaction, defaultRequestInstrumentationOptions, instrumentOutgoingRequests, startIdleTransaction
 } from '@sentry/tracing';
 import {
     EventProcessor,
-    Hub,
-    Integration,
-    TransactionContext,
-    Transaction as TransactionType,
+    Integration, TransactionContext, Transaction as TransactionType
 } from '@sentry/types';
 import { logger } from '@sentry/utils';
 
-// import { RoutingInstrumentationInstance } from '../tracing/routingInstrumentation';
-import { adjustTransactionDuration } from './utils';
+import { RoutingInstrumentationInstance } from '../tracing/routingInstrumentation';
+import { NATIVE, NativeAppStartResponse } from '../wrapper';
+import { NativeFramesInstrumentation } from './nativeframes';
+import { StallTrackingInstrumentation } from './stalltracking';
+import { BeforeNavigate, RouteChangeContextData } from './types';
+import {
+    adjustTransactionDuration,
+    getTimeOriginMilliseconds,
+    isNearToNow
+} from './utils';
 
-export interface NSTracingOptions
+export interface NativescriptTracingOptions
     extends RequestInstrumentationOptions {
     /**
-     * The time to wait in ms until the transaction will be finished. The transaction will use the end timestamp of
-     * the last finished span as the endtime for the transaction.
-     * Time is in ms.
-     *
-     * Default: 1000
-     */
+   * The time to wait in ms until the transaction will be finished. The transaction will use the end timestamp of
+   * the last finished span as the endtime for the transaction.
+   * Time is in ms.
+   *
+   * Default: 1000
+   */
     idleTimeout: number;
 
     /**
-     * The maximum duration of a transaction before it will be marked as "deadline_exceeded".
-     * If you never want to mark a transaction set it to 0.
-     * Time is in seconds.
-     *
-     * Default: 600
-     */
+   * The maximum duration of a transaction before it will be marked as "deadline_exceeded".
+   * If you never want to mark a transaction set it to 0.
+   * Time is in seconds.
+   *
+   * Default: 600
+   */
     maxTransactionDuration: number;
 
     /**
-     * The routing instrumentation to be used with the tracing integration.
-     * There is no routing instrumentation if nothing is passed.
-     */
-    // routingInstrumentation?: RoutingInstrumentationInstance;
+   * The routing instrumentation to be used with the tracing integration.
+   * There is no routing instrumentation if nothing is passed.
+   */
+    routingInstrumentation?: RoutingInstrumentationInstance;
 
     /**
-     * Does not sample transactions that are from routes that have been seen any more and don't have any spans.
-     * This removes a lot of the clutter as most back navigation transactions are now ignored.
-     *
-     * Default: true
-     */
-    ignoreEmptyBackNavigationTransactions?: boolean;
+   * Does not sample transactions that are from routes that have been seen any more and don't have any spans.
+   * This removes a lot of the clutter as most back navigation transactions are now ignored.
+   *
+   * Default: true
+   */
+    ignoreEmptyBackNavigationTransactions: boolean;
 
     /**
-     * beforeNavigate is called before a navigation transaction is created and allows users to modify transaction
-     * context data, or drop the transaction entirely (by setting `sampled = false` in the context).
-     *
-     * @param context: The context data which will be passed to `startTransaction` by default
-     *
-     * @returns A (potentially) modified context object, with `sampled = false` if the transaction should be dropped.
-     */
-    beforeNavigate?(context: TransactionContext): TransactionContext;
+   * beforeNavigate is called before a navigation transaction is created and allows users to modify transaction
+   * context data, or drop the transaction entirely (by setting `sampled = false` in the context).
+   *
+   * @param context: The context data which will be passed to `startTransaction` by default
+   *
+   * @returns A (potentially) modified context object, with `sampled = false` if the transaction should be dropped.
+   */
+    beforeNavigate: BeforeNavigate;
+
+    /**
+   * Track the app start time by adding measurements to the first route transaction. If there is no routing instrumentation
+   * an app start transaction will be started.
+   *
+   * Default: true
+   */
+    enableAppStartTracking: boolean;
+
+    /**
+   * Track slow/frozen frames from the native layer and adds them as measurements to all transactions.
+   */
+    enableNativeFramesTracking: boolean;
+
+    /**
+   * Track when and how long the JS event loop stalls for. Adds stalls as measurements to all transactions.
+   */
+    enableStallTracking: boolean;
 }
 
-const defaultNSTracingOptions: NSTracingOptions = {
+const defaultNativescriptTracingOptions: NativescriptTracingOptions = {
     ...defaultRequestInstrumentationOptions,
     idleTimeout: 1000,
     maxTransactionDuration: 600,
     ignoreEmptyBackNavigationTransactions: true,
+    beforeNavigate: (context) => context,
+    enableAppStartTracking: true,
+    enableNativeFramesTracking: true,
+    enableStallTracking: true,
 };
 
 /**
-   * Tracing integration for React Native.
+ * Tracing integration for React Native.
+ */
+export class NativescriptTracing implements Integration {
+    /**
+   * @inheritDoc
    */
-export class NSTracing implements Integration {
+    public static id: string = 'NativescriptTracing';
     /**
-     * @inheritDoc
-     */
-    public static id: string = 'NSTracing';
-    /**
-     * @inheritDoc
-     */
-    public name: string = NSTracing.id;
+   * @inheritDoc
+   */
+    public name: string = NativescriptTracing.id;
 
-    /** NSTracing options */
-    public options: NSTracingOptions;
+    /** NativescriptTracing options */
+    public options: NativescriptTracingOptions;
+
+    public nativeFramesInstrumentation?: NativeFramesInstrumentation;
+    public stallTrackingInstrumentation?: StallTrackingInstrumentation;
+    public useAppStartWithProfiler: boolean = false;
 
     private _getCurrentHub?: () => Hub;
+    private _awaitingAppStartData?: NativeAppStartResponse;
+    private _appStartFinishTimestamp?: number;
 
-    constructor(options: Partial<NSTracingOptions> = {}) {
+    public constructor(options: Partial<NativescriptTracingOptions> = {}) {
         this.options = {
-            ...defaultNSTracingOptions,
+            ...defaultNativescriptTracingOptions,
             ...options,
         };
     }
 
     /**
-     *  Registers routing and request instrumentation.
-     */
+   *  Registers routing and request instrumentation.
+   */
     public setupOnce(
-        // @ts-ignore TODO
+    // @ts-ignore TODO
         addGlobalEventProcessor: (callback: EventProcessor) => void,
         getCurrentHub: () => Hub
     ): void {
-        // eslint-disable-next-line @typescript-eslint/unbound-method
+    // eslint-disable-next-line @typescript-eslint/unbound-method
         const {
             traceFetch,
             traceXHR,
             tracingOrigins,
             // @ts-ignore TODO
             shouldCreateSpanForRequest,
-            // routingInstrumentation,
+            routingInstrumentation,
+            enableAppStartTracking,
+            enableNativeFramesTracking,
+            enableStallTracking,
         } = this.options;
 
         this._getCurrentHub = getCurrentHub;
 
-        // routingInstrumentation?.registerRoutingInstrumentation(
-        //     this._onRouteWillChange.bind(this)
-        // );
+        if (enableAppStartTracking) {
+            void this._instrumentAppStart();
+        }
 
-        // if (!routingInstrumentation) {
-        //     logger.log(
-        //         '[NSTracing] Not instrumenting route changes as routingInstrumentation has not been set.'
-        //     );
-        // }
+        if (enableNativeFramesTracking) {
+            this.nativeFramesInstrumentation = new NativeFramesInstrumentation(
+                addGlobalEventProcessor,
+                () => {
+                    const self = getCurrentHub().getIntegration(NativescriptTracing);
 
-        registerRequestInstrumentation({
+                    if (self) {
+                        return !!self.nativeFramesInstrumentation;
+                    }
+
+                    return false;
+                }
+            );
+        } else {
+            NATIVE.disableNativeFramesTracking();
+        }
+
+        if (enableStallTracking) {
+            this.stallTrackingInstrumentation = new StallTrackingInstrumentation();
+        }
+
+        if (routingInstrumentation) {
+            routingInstrumentation.registerRoutingInstrumentation(
+                this._onRouteWillChange.bind(this),
+                this.options.beforeNavigate,
+                this._onConfirmRoute.bind(this)
+            );
+        } else {
+            logger.log(
+                '[NativescriptTracing] Not instrumenting route changes as routingInstrumentation has not been set.'
+            );
+        }
+
+        instrumentOutgoingRequests({
             traceFetch,
             traceXHR,
             tracingOrigins,
             shouldCreateSpanForRequest,
         });
+    }
 
-        addGlobalEventProcessor((event) => {
-        // eslint-disable-next-line no-empty
-            if (event.type === 'transaction') {
+    /**
+   * To be called on a transaction start. Can have async methods
+   */
+    public onTransactionStart(transaction: Transaction): void {
+        if (isNearToNow(transaction.startTimestamp)) {
+            // Only if this method is called at or within margin of error to the start timestamp.
+            this.nativeFramesInstrumentation?.onTransactionStart(transaction);
+            this.stallTrackingInstrumentation?.onTransactionStart(transaction);
+        }
+    }
+
+    /**
+   * To be called on a transaction finish. Cannot have async methods.
+   */
+    public onTransactionFinish(
+        transaction: Transaction,
+        endTimestamp?: number
+    ): void {
+        this.nativeFramesInstrumentation?.onTransactionFinish(transaction);
+        this.stallTrackingInstrumentation?.onTransactionFinish(
+            transaction,
+            endTimestamp
+        );
+    }
+
+    /**
+   * Called by the NativescriptProfiler component on first component mount.
+   */
+    public onAppStartFinish(endTimestamp: number): void {
+        this._appStartFinishTimestamp = endTimestamp;
+    }
+
+    /**
+   * Instruments the app start measurements on the first route transaction.
+   * Starts a route transaction if there isn't routing instrumentation.
+   */
+    private async _instrumentAppStart(): Promise<void> {
+        if (!this.options.enableAppStartTracking || !NATIVE.enableNative) {
+            return;
+        }
+
+        const appStart = await NATIVE.fetchNativeAppStart();
+
+        if (!appStart || appStart.didFetchAppStart) {
+            return;
+        }
+
+        if (!this.useAppStartWithProfiler) {
+            this._appStartFinishTimestamp = getTimeOriginMilliseconds() / 1000;
+        }
+
+        if (this.options.routingInstrumentation) {
+            this._awaitingAppStartData = appStart;
+        } else {
+            const appStartTimeSeconds = appStart.appStartTime / 1000;
+
+            const idleTransaction = this._createRouteTransaction({
+                name: 'App Start',
+                op: 'ui.load',
+                startTimestamp: appStartTimeSeconds,
+            });
+
+            if (idleTransaction) {
+                this._addAppStartData(idleTransaction, appStart);
             }
+        }
+    }
 
-            return event;
+    /**
+   * Adds app start measurements and starts a child span on a transaction.
+   */
+    private _addAppStartData(
+        transaction: IdleTransaction,
+        appStart: NativeAppStartResponse
+    ): void {
+        if (!this._appStartFinishTimestamp) {
+            logger.warn('App start was never finished.');
+            return;
+        }
+
+        const appStartTimeSeconds = appStart.appStartTime / 1000;
+
+        const appStartMode = appStart.isColdStart ? 'app_start_cold' : 'app_start_warm';
+        transaction.startChild({
+            description: appStart.isColdStart ? 'Cold App Start' : 'Warm App Start',
+            op: appStartMode,
+            startTimestamp: appStartTimeSeconds,
+            endTimestamp: this._appStartFinishTimestamp,
         });
+
+        const appStartDurationMilliseconds =
+      this._appStartFinishTimestamp * 1000 - appStart.appStartTime;
+
+        transaction.setMeasurement(appStartMode, appStartDurationMilliseconds);
     }
 
     /** To be called when the route changes, but BEFORE the components of the new route mount. */
     private _onRouteWillChange(
         context: TransactionContext
     ): TransactionType | undefined {
-        // TODO: Consider more features on route change, one example is setting a tag of what route the user is on
         return this._createRouteTransaction(context);
+    }
+
+    /**
+   * Creates a breadcrumb and sets the current route as a tag.
+   */
+    private _onConfirmRoute(context: TransactionContext): void {
+        this._getCurrentHub?.().configureScope((scope) => {
+            if (context.data) {
+                const contextData = context.data as RouteChangeContextData;
+
+                scope.addBreadcrumb({
+                    category: 'navigation',
+                    type: 'navigation',
+                    // We assume that context.name is the name of the route.
+                    message: `Navigation to ${context.name}`,
+                    data: {
+                        from: contextData.previousRoute?.name,
+                        to: contextData.route.name,
+                    },
+                });
+            }
+
+            scope.setTag('routing.route.name', context.name);
+        });
     }
 
     /** Create routing idle transaction. */
     private _createRouteTransaction(
         context: TransactionContext
-    ): TransactionType | undefined {
+    ): IdleTransaction | undefined {
         if (!this._getCurrentHub) {
             logger.warn(
-                `[NSTracing] Did not create ${context.op} transaction because _getCurrentHub is invalid.`
+                `[NativescriptTracing] Did not create ${context.op} transaction because _getCurrentHub is invalid.`
             );
             return undefined;
         }
 
         // eslint-disable-next-line @typescript-eslint/unbound-method
-        const {
-            beforeNavigate,
-            idleTimeout,
-            maxTransactionDuration,
-        } = this.options;
+        const { idleTimeout, maxTransactionDuration } = this.options;
 
         const expandedContext = {
             ...context,
             trimEnd: true,
         };
 
-        const modifiedContext =
-        typeof beforeNavigate === 'function'
-            ? beforeNavigate(expandedContext)
-            : expandedContext;
-
-        if (modifiedContext.sampled === false) {
-            logger.log(
-                `[NSTracing] Will not send ${context.op} transaction.`
-            );
-        }
-
         const hub = this._getCurrentHub();
         const idleTransaction = startIdleTransaction(
-            hub as any,
-            context,
+            hub ,
+            expandedContext,
             idleTimeout,
+            idleTimeout, // BREAKCHANGE: check the correct parameter here
             true
         );
+
+        this.onTransactionStart(idleTransaction);
+
         logger.log(
-            `[NSTracing] Starting ${context.op} transaction on scope`
+            `[NativescriptTracing] Starting ${context.op} transaction "${context.name}" on scope`
         );
+
+        idleTransaction.registerBeforeFinishCallback(
+            (transaction, endTimestamp) => {
+                this.onTransactionFinish(transaction, endTimestamp);
+            }
+        );
+
+        idleTransaction.registerBeforeFinishCallback((transaction) => {
+            if (this.options.enableAppStartTracking && this._awaitingAppStartData) {
+                transaction.startTimestamp =
+          this._awaitingAppStartData.appStartTime / 1000;
+                transaction.op = 'ui.load';
+
+                this._addAppStartData(transaction, this._awaitingAppStartData);
+
+                this._awaitingAppStartData = undefined;
+            }
+        });
+
         idleTransaction.registerBeforeFinishCallback(
             (transaction, endTimestamp) => {
                 adjustTransactionDuration(
@@ -204,18 +385,22 @@ export class NSTracing implements Integration {
         if (this.options.ignoreEmptyBackNavigationTransactions) {
             idleTransaction.registerBeforeFinishCallback((transaction) => {
                 if (
-                    transaction.data['routing.route.hasBeenSeen'] &&
-            (!transaction.spanRecorder ||
-              transaction.spanRecorder.spans.filter(
-                  (span) => span.spanId !== transaction.spanId
-              ).length === 0)
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    transaction.data?.route?.hasBeenSeen &&
+          (!transaction.spanRecorder ||
+            transaction.spanRecorder.spans.filter(
+                (span) => span.spanId !== transaction.spanId
+            ).length === 0)
                 ) {
+                    logger.log(
+                        '[NativescriptTracing] Not sampling transaction as route has been seen before. Pass ignoreEmptyBackNavigationTransactions = false to disable this feature.'
+                    );
                     // Route has been seen before and has no child spans.
                     transaction.sampled = false;
                 }
             });
         }
 
-        return idleTransaction as TransactionType;
+        return idleTransaction;
     }
 }

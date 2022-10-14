@@ -1,6 +1,7 @@
 import { addGlobalEventProcessor, getCurrentHub } from '@sentry/core';
-import { Event, Integration } from '@sentry/types';
-import { NSSentry } from '../nssentry';
+import { Contexts, Event, Integration } from '@sentry/types';
+import { logger } from '@sentry/utils';
+import { NATIVE } from '../wrapper';
 
 /** Load device context from native. */
 export class DeviceContext implements Integration {
@@ -24,10 +25,18 @@ export class DeviceContext implements Integration {
             }
 
             try {
-                const deviceContexts = await NSSentry.deviceContexts();
-                event.contexts = { ...deviceContexts, ...event.contexts };
-            } catch (_Oo) {
-                // Something went wrong, we just continue
+                const contexts = await NATIVE.fetchNativeDeviceContexts();
+
+                const context = contexts['context'] as Contexts ?? {};
+                const user = contexts['user'] ?? {};
+
+                event.contexts = { ...context, ...event.contexts };
+
+                if (!event.user) {
+                    event.user = { ...user };
+                }
+            } catch (e) {
+                logger.log(`Failed to get device context from native: ${e}`);
             }
 
             return event;
