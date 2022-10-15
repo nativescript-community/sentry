@@ -18,4 +18,6 @@ declare class NSSentrySDK extends SentrySDK {
     static readonly installationID: string;
 
     static readonly isFramesTrackingRunning: boolean;
+    static appStartMeasurementHybridSDKMode: boolean;
+    static framesTrackingMeasurementHybridSDKMode: boolean;
 }

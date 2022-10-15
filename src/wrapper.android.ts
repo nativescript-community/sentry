@@ -1,15 +1,17 @@
 import { Application, Utils } from '@nativescript/core';
 import { android as androidApp } from '@nativescript/core/application';
-import { BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel, User } from '@sentry/types';
+import { Attachment, BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel, User } from '@sentry/types';
 import { convertNativescriptFramesToSentryFrames, parseErrorStack } from './integrations/debugsymbolicator';
 import { UserFeedback } from './wrapper';
 import { rewriteFrameIntegration } from './sdk';
 import { SentryError, logger, normalize } from '@sentry/utils';
 import { NativescriptOptions } from './options';
-import { pointsFromBuffer } from '@nativescript-community/arraybuffers';
+import { createArrayBuffer, pointsFromBuffer } from '@nativescript-community/arraybuffers';
 import { isHardCrash } from './misc';
 import { utf8ToBytes } from './vendor';
 import { SDK_NAME } from './version';
+import { TextEncoder } from '@nativescript/core/text';
+import { Scope } from '@sentry/core';
 // function utf8ToBytes(str: string) {{
 //     return new java.lang.String(str).getBytes(java.nio.charset.StandardCharsets.UTF_8);
 // }}
@@ -18,6 +20,27 @@ import { SDK_NAME } from './version';
 // //     return new java.lang.String(str).getBytes(java.nio.charset.StandardCharsets.UTF_8);
 // // }
 // const EOL = utf8ToBytes('\n')[0];
+
+function isArrayBuffer(value: unknown): boolean {
+    return  (value instanceof ArrayBuffer || Object.prototype.toString.call(value) === '[object ArrayBuffer]');
+}
+let encoder;
+function strToTypedArray(str: string) {
+    if (!encoder) {
+        const charset = java.nio.charset.Charset.forName('UTF-8');
+        encoder = charset.newEncoder();
+    }
+    return new Uint8Array((ArrayBuffer as any).from(encoder.encode(java.nio.CharBuffer.wrap(str))));
+}
+
+function concatTypedArrays(a, b) {
+    if (!b || b.length === 0) return a;
+    if (!a || a.length === 0) return b;
+    const c = createArrayBuffer(a.length + b.length, true, false);
+    c.set(a, 0);
+    c.set(b, a.length);
+    return c;
+}
 
 export namespace NATIVE {
     let enableNative = true;
@@ -174,16 +197,16 @@ export namespace NATIVE {
    * the envelope.
    */
     function _getBreadcrumbs(event: Event): Breadcrumb[] | undefined {
-        let breadcrumbs: Breadcrumb[] | undefined = event.breadcrumbs;
+        const breadcrumbs: Breadcrumb[] | undefined = event.breadcrumbs;
 
         const hardCrashed = isHardCrash(event);
-        if (event.breadcrumbs && !hardCrashed) {
-            breadcrumbs = undefined;
-        }
+        // if (event.breadcrumbs && !hardCrashed) {
+        //     breadcrumbs = undefined;
+        // }
 
         breadcrumbs && breadcrumbs.forEach(b=>{
             // fix for native SDK not supporting number
-            b.timestamp = new Date(b.timestamp).toISOString() as any;
+            b.timestamp = new Date(b.timestamp* 1000).toISOString() as any;
         });
 
         return breadcrumbs && breadcrumbs.length ? breadcrumbs : undefined;
@@ -238,7 +261,7 @@ export namespace NATIVE {
             const event = _processLevels(itemPayload as Event);
 
             // fix for native SDK
-            event.timestamp = new Date(event.timestamp).toISOString() as any;
+            event.timestamp = new Date(event.timestamp* 1000).toISOString() as any;
             if ('message' in event) {
                 // @ts-ignore Android still uses the old message object, without this the serialization of events will break.
                 event.message = { message: event.message };
@@ -255,7 +278,17 @@ export namespace NATIVE {
             console.warn('Event was skipped as native SDK is not enabled.');
             return;
         }
-
+        // let startTime = Date.now();
+        const envelopeBytes = prepareEnvelope(envelope);
+        // console.log('prepareEnvelope', Date.now() - startTime, 'ms', envelopeBytes.length);
+        // startTime = Date.now();
+        // const envelopeBytesNative = prepareEnvelopeNative(envelope);
+        await captureEnvelope(envelopeBytes);
+        if (sentryOptions.flushSendEvent) {
+            flush(0);
+        }
+    }
+    export function prepareEnvelope(envelope: Envelope) {
         const [EOL] = utf8ToBytes('\n');
 
         const [envelopeHeader, envelopeItems] = envelope;
@@ -273,9 +306,10 @@ export namespace NATIVE {
                 bytesPayload = utf8ToBytes(itemPayload);
             } else if (itemPayload instanceof Uint8Array) {
                 bytesPayload = [...itemPayload];
+            } else if (itemPayload instanceof ArrayBuffer) {
+                bytesPayload = [...new Uint8Array(itemPayload)];
             } else {
                 bytesPayload = utf8ToBytes(JSON.stringify(itemPayload));
-                console.log('bytesPayload', JSON.stringify(itemPayload));
                 if (!hardCrashed) {
                     hardCrashed = isHardCrash(itemPayload);
                 }
@@ -284,17 +318,53 @@ export namespace NATIVE {
             // Content type is not inside BaseEnvelopeItemHeaders.
             (itemHeader as BaseEnvelopeItemHeaders).content_type = 'application/json';
             (itemHeader as BaseEnvelopeItemHeaders).length = bytesPayload.length;
-            const serializedItemHeader = JSON.stringify(itemHeader);
+            const serializedItemHeader = JSON.stringify(itemHeader) + '\n';
 
             envelopeBytes.push(...utf8ToBytes(serializedItemHeader));
-            envelopeBytes.push(EOL);
+            // envelopeBytes.push(EOL);
             envelopeBytes.push(...bytesPayload);
             envelopeBytes.push(EOL);
         }
-        await captureEnvelope(envelopeBytes, { store: hardCrashed });
-        if (sentryOptions.flushSendEvent) {
-            flush(0);
+        return envelopeBytes;
+    }
+
+    export  function prepareEnvelopeNative(envelope: Envelope) {
+        const [envelopeHeader, envelopeItems] = envelope;
+
+        const headerString = JSON.stringify(envelopeHeader);
+        let envelopeBytes = strToTypedArray(headerString + '\n');
+
+        let hardCrashed: boolean = false;
+        for (const rawItem of envelopeItems) {
+            const [itemHeader, itemPayload] = _processItem(rawItem);
+
+            let bytesPayload;
+            if (typeof itemPayload === 'string') {
+                bytesPayload = strToTypedArray(itemPayload);
+            } else if (itemPayload instanceof Uint8Array) {
+                bytesPayload = itemPayload;
+            } else {
+                bytesPayload = strToTypedArray(JSON.stringify(itemPayload));
+                // console.log('bytesPayload', JSON.stringify(itemPayload));
+                if (!hardCrashed) {
+                    hardCrashed = isHardCrash(itemPayload);
+                }
+            }
+
+            // Content type is not inside BaseEnvelopeItemHeaders.
+            (itemHeader as BaseEnvelopeItemHeaders).content_type = 'application/json';
+            (itemHeader as BaseEnvelopeItemHeaders).length = bytesPayload.length;
+            // const serializedItemHeader = JSON.stringify(itemHeader) + '\n';
+            const serializedItemHeaderBytes = strToTypedArray(JSON.stringify(itemHeader) + '\n');
+
+            const rawItemBytes = createArrayBuffer(serializedItemHeaderBytes.length + bytesPayload.length + 1, true, false);
+            rawItemBytes.set(serializedItemHeaderBytes, 0);
+            rawItemBytes.set(bytesPayload, serializedItemHeaderBytes.length);
+            rawItemBytes[serializedItemHeaderBytes.length + bytesPayload.length] = '\n'.charCodeAt(0);
+
+            envelopeBytes = concatTypedArrays(envelopeBytes, rawItemBytes);
         }
+        return envelopeBytes;
     }
 
 
@@ -464,13 +534,12 @@ export namespace NATIVE {
     //     };
     // }
 
-    export async function captureEnvelope(envelope: string | Uint8Array | number[], {store}: {store?: boolean}) {
-        console.log('captureEnvelope', envelope.length, nSentryOptions.getOutboxPath());
+    export async function captureEnvelope(envelope: string | Uint8Array | number[], {store}: {store?: boolean} = {}) {
+        console.log('captureEnvelope', envelope.length, nSentryOptions.getOutboxPath(), ArrayBuffer.isView(envelope), Array.isArray(envelope));
         try {
             const outboxPath = new java.io.File(nSentryOptions.getOutboxPath(), java.util.UUID.randomUUID().toString());
             const out = new java.io.FileOutputStream(outboxPath);
-            const isBufferView = ArrayBuffer.isView(envelope);
-            if (isBufferView) {
+            if (ArrayBuffer.isView(envelope)) {
                 out.write(pointsFromBuffer(envelope, true, false));
             } else if (Array.isArray(envelope)) {
                 out.write(envelope);
@@ -479,7 +548,7 @@ export namespace NATIVE {
             }
             return true;
         } catch(err) {
-            console.error('captureEnvelope error', err);
+            console.error('captureEnvelope error', err, err.stack);
             return false;
         }
     }
@@ -825,138 +894,179 @@ export namespace NATIVE {
         // });
     }
 
-    export function captureUserFeedback(feedback: UserFeedback) {
-        if (!enableNative) {
-            return;
-        }
-        const userFeedback = new io.sentry.UserFeedback(new io.sentry.protocol.SentryId(feedback.eventId));
-        if (feedback.comments) {
-            userFeedback.setComments(feedback.comments);
-        }
-        if (feedback.email) {
-            userFeedback.setEmail(feedback.email);
-        }
-        if (feedback.name) {
-            userFeedback.setName(feedback.name);
-        }
-        io.sentry.Sentry.captureUserFeedback(userFeedback);
-    }
+    // export function captureUserFeedback(feedback: UserFeedback) {
+    //     if (!enableNative) {
+    //         return;
+    //     }
+    //     const userFeedback = new io.sentry.UserFeedback(new io.sentry.protocol.SentryId(feedback.eventId));
+    //     if (feedback.comments) {
+    //         userFeedback.setComments(feedback.comments);
+    //     }
+    //     if (feedback.email) {
+    //         userFeedback.setEmail(feedback.email);
+    //     }
+    //     if (feedback.name) {
+    //         userFeedback.setName(feedback.name);
+    //     }
+    //     io.sentry.Sentry.captureUserFeedback(userFeedback);
+    // }
 
 
-    export function setUser(user: User | null, otherUserKeys) {
-        if (!enableNative) {
-            return;
-        }
-        io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
-            run(scope) {
-                if (user == null && otherUserKeys == null) {
-                    scope.setUser(null);
-                } else {
-                    const userInstance = new io.sentry.protocol.User();
+    // export function setUser(user: User | null, otherUserKeys) {
+    //     if (!enableNative) {
+    //         return;
+    //     }
+    //     io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
+    //         run(scope) {
+    //             if (user == null && otherUserKeys == null) {
+    //                 scope.setUser(null);
+    //             } else {
+    //                 const userInstance = new io.sentry.protocol.User();
 
-                    if (user) {
-                        if (user.email) {
-                            userInstance.setEmail(user.email);
-                        }
+    //                 if (user) {
+    //                     if (user.email) {
+    //                         userInstance.setEmail(user.email);
+    //                     }
 
-                        if (user.id) {
-                            userInstance.setId(user.id);
-                        }
+    //                     if (user.id) {
+    //                         userInstance.setId(user.id);
+    //                     }
 
-                        if (user.username) {
-                            userInstance.setUsername(user.username);
-                        }
+    //                     if (user.username) {
+    //                         userInstance.setUsername(user.username);
+    //                     }
 
-                        if (user.ip_address) {
-                            userInstance.setIpAddress(user.ip_address);
-                        }
-                    }
+    //                     if (user.ip_address) {
+    //                         userInstance.setIpAddress(user.ip_address);
+    //                     }
+    //                 }
 
-                    if (otherUserKeys ) {
-                        userInstance.setOthers(getNativeHashMap(otherUserKeys));
-                    }
-                    scope.setUser(userInstance);
-                }
-            }
-        }));
+    //                 if (otherUserKeys ) {
+    //                     userInstance.setOthers(getNativeHashMap(otherUserKeys));
+    //                 }
+    //                 scope.setUser(userInstance);
+    //             }
+    //         }
+    //     }));
 
-    }
-    export function setTag(key: string, value: string) {
-        if (!enableNative) {
-            return;
-        }
-        io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
-            run(scope) {
-                scope.setTag(key, value);
-            }
-        }));
-    }
+    // }
+    // export function setTag(key: string, value: string) {
+    //     if (!enableNative) {
+    //         return;
+    //     }
+    //     io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
+    //         run(scope) {
+    //             scope.setTag(key, value);
+    //         }
+    //     }));
+    // }
 
-    export function setExtra(key: string, extra: string) {
-        if (!enableNative) {
-            return;
-        }
-        io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
-            run(scope) {
-                scope.setExtra(key, extra);
-            }
-        }));
-    }
+    // export function setExtra(key: string, extra: string) {
+    //     if (!enableNative) {
+    //         return;
+    //     }
+    //     io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
+    //         run(scope) {
+    //             scope.setExtra(key, extra);
+    //         }
+    //     }));
+    // }
 
-    export function addBreadcrumb(breadcrumb: Breadcrumb, maxBreadcrumbs?: number) {
-        if (!enableNative) {
-            return;
-        }
-        io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
-            run(scope) {
-                const breadcrumbInstance = new io.sentry.Breadcrumb();
+    // export function withScope(callback: (scope: Scope) => void) {
+    //     io.sentry.Sentry.withScope(new io.sentry.ScopeCallback({
+    //         run(nscope) {
+    //             // nscope is ignored
+    //             console.log('native withScope', nscope);
+    //             callback(nscope as any);
+    //         }
+    //     }));
+    // }
 
-                if (breadcrumb.message) {
-                    breadcrumbInstance.setMessage(breadcrumb.message);
-                }
+    // export function addBreadcrumb(breadcrumb: Breadcrumb, maxBreadcrumbs?: number) {
+    //     if (!enableNative) {
+    //         return;
+    //     }
+    //     io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
+    //         run(scope) {
+    //             try {
+    //                 console.log('addBreadcrumb', breadcrumb, scope);
 
-                if (breadcrumb.type) {
-                    breadcrumbInstance.setType(breadcrumb.type);
-                }
+    //                 const breadcrumbInstance = new io.sentry.Breadcrumb();
 
-                if (breadcrumb.category) {
-                    breadcrumbInstance.setCategory(breadcrumb.category);
-                }
+    //                 if (breadcrumb.message) {
+    //                     breadcrumbInstance.setMessage(breadcrumb.message);
+    //                 }
 
-                if (breadcrumb.level) {
-                    breadcrumbInstance.setLevel(eventLevel(breadcrumb.level));
-                }
+    //                 if (breadcrumb.type) {
+    //                     breadcrumbInstance.setType(breadcrumb.type);
+    //                 }
 
-                if (breadcrumb.data) {
-                    Object.keys(breadcrumb.data).forEach(key => {
-                        breadcrumbInstance.setData(key, breadcrumb.data[key]);
-                    });
-                }
+    //                 if (breadcrumb.category) {
+    //                     breadcrumbInstance.setCategory(breadcrumb.category);
+    //                 }
 
-                scope.addBreadcrumb(breadcrumbInstance);
-            }
-        }));
-    }
-    export function clearBreadcrumbs() {
-        if (!enableNative) {
-            return;
-        }
-        io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
-            run(scope) {
-                scope.clearBreadcrumbs();
-            }
-        }));
-    }
-    export function setContext(key: string, context: { [key: string]: any } | null) {
-        if (!enableNative) {
-            return;
-        }
-        io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
-            run(scope) {
-                scope.setContexts(key, getNativeHashMap(context));
-            }
-        }));
-    }
+    //                 if (breadcrumb.level) {
+    //                     breadcrumbInstance.setLevel(eventLevel(breadcrumb.level));
+    //                 }
+
+    //                 if (breadcrumb.data) {
+    //                     Object.keys(breadcrumb.data).forEach(key => {
+    //                         breadcrumbInstance.setData(key, breadcrumb.data[key]);
+    //                     });
+    //                 }
+
+    //                 scope.addBreadcrumb(breadcrumbInstance);
+    //             } catch (error) {
+    //                 console.error('addBreadcrumb', error, error.stack);
+
+    //             }
+    //         }
+    //     }));
+    // }
+    // export function  addAttachment(attachment: Attachment) {
+    //     if (!enableNative) {
+    //         return;
+    //     }
+    //     io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
+    //         run(scope) {
+    //             console.log('addAttachment', attachment, scope);
+    //             try {
+    //                 if (attachment.data) {
+    //                     if (typeof attachment.data === 'string') {
+    //                         attachment.data = new TextEncoder().encode(attachment.data);
+    //                     }
+    //                     const bytes = pointsFromBuffer(attachment.data, true, false);
+    //                     console.log('addAttachment', typeof attachment.data, attachment.data.length, bytes, bytes.length);
+    //                     scope.addAttachment(new io.sentry.Attachment(bytes,  attachment.filename));
+    //                 } else {
+    //                     scope.addAttachment(new io.sentry.Attachment(attachment.filename));
+    //                 }
+    //             } catch (error) {
+    //                 console.error('addAttachment', error, error.stack);
+    //             }
+    //         }
+    //     }));
+    // }
+    // export function clearBreadcrumbs() {
+    //     if (!enableNative) {
+    //         return;
+    //     }
+    //     io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
+    //         run(scope) {
+    //             scope.clearBreadcrumbs();
+    //         }
+    //     }));
+    // }
+    // export function setContext(key: string, context: { [key: string]: any } | null) {
+    //     if (!enableNative) {
+    //         return;
+    //     }
+    //     io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
+    //         run(scope) {
+    //             scope.setContexts(key, getNativeHashMap(context));
+    //         }
+    //     }));
+    // }
 
     function isFrameMetricsAggregatorAvailable() {
         return frameMetricsAggregator != null;

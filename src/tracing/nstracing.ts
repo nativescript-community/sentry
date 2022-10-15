@@ -147,7 +147,7 @@ export class NativescriptTracing implements Integration {
         } = this.options;
 
         this._getCurrentHub = getCurrentHub;
-
+        console.log('NativescriptTracing', this.options);
         if (enableAppStartTracking) {
             void this._instrumentAppStart();
         }

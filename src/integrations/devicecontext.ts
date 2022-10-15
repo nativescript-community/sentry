@@ -25,6 +25,7 @@ export class DeviceContext implements Integration {
             }
 
             try {
+                console.log('about to fetchNativeDeviceContexts');
                 const contexts = await NATIVE.fetchNativeDeviceContexts();
 
                 const context = contexts['context'] as Contexts ?? {};

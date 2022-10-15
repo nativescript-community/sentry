@@ -1,4 +1,5 @@
 import {
+    Attachment,
     AttachmentItem,
     BaseEnvelopeItemHeaders,
     Breadcrumb,
@@ -14,6 +15,7 @@ import {
 } from '@sentry/types';
 import { NativescriptOptions } from './options';
 import { SentryError, logger } from '@sentry/utils';
+import { Hub, Scope } from '@sentry/core';
 
 export interface NativeAppStartResponse {
     isColdStart: boolean;
@@ -43,7 +45,7 @@ export namespace NATIVE {
     const nativeClientAvailable: boolean;
     const nativeTransport: boolean;
     let enableNative: boolean;
-    function sendEvent(event: Event): Promise<Response>;
+    function sendEvent(event: Event, hint?): Promise<boolean>;
     function sendEnvelope(envelope: Envelope): Promise<void>;
     function initNativeSdk(options: NativescriptOptions): Promise<boolean>;
     function closeNativeSdk(): Promise<void>;
@@ -74,11 +76,13 @@ export namespace NATIVE {
     function setExtra(key: string, extra: any);
 
     function addBreadcrumb(breadcrumb: Breadcrumb, maxBreadcrumbs?: number);
+    function addAttachment(attachment: Attachment);
 
     function clearBreadcrumbs();
 
     function setContext(key: string, context: { [key: string]: any } | null);
 
+    function withScope(callback: (scope: Scope) => void): ReturnType<Hub['withScope']>;
 
     function utf8ToBytes(str: string): Uint8Array;
 }
