@@ -16,7 +16,6 @@ export {
     captureException,
     captureEvent,
     captureMessage,
-    configureScope,
     getHubFromCarrier,
     getCurrentHub,
     Hub,
@@ -24,11 +23,12 @@ export {
     setContext,
     setExtra,
     setExtras,
+    withScope,
+    configureScope,
     setTag,
     setTags,
     setUser,
-    startTransaction,
-    withScope,
+    startTransaction
 } from '@sentry/core';
 
 // We need to import it so we patch the hub with global functions

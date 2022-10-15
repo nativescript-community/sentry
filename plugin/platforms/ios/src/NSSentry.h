@@ -10,5 +10,7 @@
 
 @property (class, nonatomic, assign, readonly) SentryScreenFrames *currentScreenFrames;
 @property (class, nullable, nonatomic, readonly) SentryAppStartMeasurement *appStartMeasurement;
+@property (class, nonatomic, assign) BOOL appStartMeasurementHybridSDKMode;
+@property (class, nonatomic, assign) BOOL framesTrackingMeasurementHybridSDKMode;
 
 @end

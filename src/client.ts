@@ -106,6 +106,19 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
     }
 
     /**
+   * @inheritDoc
+   */
+    // sendEvent(event: Event, hint = {}) {
+    //     if (this._dsn) {
+    //         if (NATIVE.sendEvent) {
+    //             NATIVE.sendEvent(event, hint);
+    //         } else {
+    //             super.sendEvent(event, hint);
+    //         }
+    //     }
+    // }
+
+    /**
    * @inheritdoc
    */
     protected _sendEnvelope(envelope: Envelope): void {

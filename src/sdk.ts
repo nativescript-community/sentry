@@ -1,22 +1,22 @@
 import { Integrations, defaultStackParser, getCurrentHub, defaultIntegrations as sentryDefaultIntegrations } from '@sentry/browser';
-import { getIntegrationsToSetup, initAndBind, setExtra } from '@sentry/core';
-import { Hub, makeMain } from '@sentry/hub';
+import { Hub, Scope, getIntegrationsToSetup, initAndBind, makeMain, setExtra } from '@sentry/core';
 import { RewriteFrames } from '@sentry/integrations';
-import { Integration, Scope, StackFrame, UserFeedback } from '@sentry/types';
-import { getGlobalObject, logger, stackParserFromStackParserOptions } from '@sentry/utils';
+import { Integration, StackFrame, UserFeedback } from '@sentry/types';
+import { logger, stackParserFromStackParserOptions } from '@sentry/utils';
 
-import { NativescriptClientOptions, NativescriptOptions, NativescriptWrapperOptions } from './options';
+import { NativescriptClientOptions, NativescriptOptions } from './options';
 
 import { NativescriptClient } from './client';
-import { NativescriptScope } from './scope';
-import { DebugSymbolicator, DeviceContext, NativescriptErrorHandlers, Release } from './integrations';
+import { DeviceContext, NativescriptErrorHandlers, Release } from './integrations';
 import { EventOrigin } from './integrations/eventorigin';
-import { SdkInfo } from './integrations/sdkinfo';
-import { makeNativescriptTransport } from './transports/native';
 import { NativescriptErrorHandlersOptions } from './integrations/nativescripterrorhandlers';
+import { SdkInfo } from './integrations/sdkinfo';
+// import { NativescriptScope } from './scope';
+import { NativescriptTracing } from './tracing';
+import { makeNativescriptTransport } from './transports/native';
 import { makeUtf8TextEncoder } from './transports/TextEncoder';
 import { safeFactory, safeTracesSampler } from './utils/safe';
-import { NativescriptTracing } from './tracing';
+import { NATIVE } from './wrapper';
 
 const IGNORED_DEFAULT_INTEGRATIONS = [
     'GlobalHandlers', // We will use the react-native internal handlers
@@ -46,9 +46,9 @@ export let rewriteFrameIntegration: {
  */
 export function init(passedOptions: NativescriptOptions): void {
 
-    const NativescriptHub = new Hub(undefined, new NativescriptScope());
+    const NativescriptHub = new Hub(undefined, new Scope());
+    // const NativescriptHub = new Hub(undefined, new NativescriptScope());
     makeMain(NativescriptHub);
-
     const options: NativescriptClientOptions & NativescriptOptions = {
         ...DEFAULT_OPTIONS,
         ...passedOptions,
@@ -111,6 +111,7 @@ export function init(passedOptions: NativescriptOptions): void {
             new EventOrigin(),
             new SdkInfo()
         ]);
+        console.log('test', options.enableNative);
         if (!!options.enableNative) {
             defaultIntegrations.push(new DeviceContext());
         }
@@ -211,7 +212,9 @@ export function captureUserFeedback(feedback: UserFeedback): void {
 export function withScope(callback: (scope: Scope) => void): ReturnType<Hub['withScope']> {
     const safeCallback = (scope: Scope): void => {
         try {
-            callback(scope);
+            NATIVE.withScope(nscope=>{
+                callback(scope);
+            });
         } catch (e) {
             logger.error('Error while running withScope callback', e);
         }
