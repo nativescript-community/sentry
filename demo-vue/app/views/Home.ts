@@ -1,4 +1,7 @@
 import * as Sentry from '@nativescript-community/sentry';
+import { File, knownFolders, path } from '@nativescript/core';
+import { TextEncoder } from '@nativescript/core/text';
+import { createArrayBuffer } from '@nativescript-community/arraybuffers';
 declare class TestClass {
     static someMethod();
 }
@@ -11,7 +14,9 @@ export default {
       </ActionBar>
       <StackLayout>
         <Button text="leaveBreadcrumb" @tap="leaveBreadcrumb"/>
-        <Button text="notify" @tap="notify"/>
+        <Button text="message" @tap="message"/>
+        <Button text="attachment" @tap="attachment"/>
+        <Button text="attachmentFile" @tap="attachmentFile"/>
         <Button text="throwError" @tap="throwError"/>
         <Button text="crashTest" @tap="crashTest"/>
         <Button text="nativeCrashTest" @tap="nativeCrashTest"/>
@@ -24,14 +29,64 @@ export default {
     // mounted() {
     // },
     methods: {
-        notify() {
-            Sentry.captureException(new Error('test_notify_error' + Date.now()));
+        message() {
+            Sentry.withScope(scope => {
+                try {
+                    scope.setTag('myTag', 'tag-value');
+                    scope.setExtra('myExtra', 'extra-value');
+                    scope.addBreadcrumb({ message: 'local breadcrumb' });
+                    Sentry.captureMessage('Hello Sentry!');
+                } catch (error) {
+                    console.error(error);
+                }
+            });
+        },
+        attachment() {
+            Sentry.withScope(scope => {
+                try {
+                    scope.addAttachment({
+                        data:'this is a  test text file',
+                        filename: 'test.jpg',
+                    });
+
+                    Sentry.captureMessage('Attachment!');
+                } catch (error) {
+                    console.error(error);
+                }
+            });
+        },
+        attachmentFile() {
+            Sentry.withScope(scope => {
+                try {
+                    const filePath = path.join(knownFolders.currentApp().path, 'assets/map.geojson');
+                    let typedArray;
+                    if (__ANDROID__) {
+                        const javaFile = new java.io.File(filePath);
+                        const stream = new java.io.FileInputStream(javaFile);
+                        typedArray = createArrayBuffer(stream.available(), true, false);
+                        java.nio.channels.Channels.newChannel(stream).read(typedArray.buffer['nativeObject']);
+                    }
+                    if (__IOS__) {
+                        const data = File.fromPath(filePath).readSync();
+                        console.log('test', data, interop.bufferFromData(data));
+                        typedArray = new Uint8Array(interop.bufferFromData(data));
+                    }
+                    scope.addAttachment({
+                        data: typedArray.buffer,
+                        filename: 'map.geojson',
+                    });
+
+                    Sentry.captureMessage('Attachment File!');
+                } catch (error) {
+                    console.error(error);
+                }
+            });
         },
         throwError() {
-            throw new Error('test_thrown_error');
+            Sentry.captureException(new Error('test_notify_error' + Date.now()));
         },
         leaveBreadcrumb() {
-            Sentry.addBreadcrumb({ category: 'ui', message: 'test', level: 'info' as any });
+            Sentry.addBreadcrumb({ category: 'ui', message: 'global breadcrumb', level: 'info' as any });
         },
         crashTest() {
             Sentry.nativeCrash();

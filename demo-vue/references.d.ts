@@ -1,5 +1,6 @@
 /* eslint-disable spaced-comment */
 /// <reference path="../src/references.d.ts" />
+/// <reference path="../references.d.ts" />
 
 declare module '*.vue' {
     import Vue from 'vue';
