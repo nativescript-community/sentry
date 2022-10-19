@@ -1,8 +1,12 @@
 
+// buildscript {
 repositories {
     google()
     mavenCentral()
 }
 dependencies {
-    classpath 'io.sentry:sentry-android-gradle-plugin:2.1.5'
+    // def sentryGradleVersion =  project.hasProperty("sentryGradleVersion") ? project.sentryGradleVersion : "3.2.0"
+    // println "sentryGradleVersion $sentryGradleVersion"
+    classpath "io.sentry:sentry-android-gradle-plugin:3.2.0"
 }
+// }
