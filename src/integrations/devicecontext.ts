@@ -25,13 +25,22 @@ export class DeviceContext implements Integration {
             }
 
             try {
-                console.log('about to fetchNativeDeviceContexts');
                 const contexts = await NATIVE.fetchNativeDeviceContexts();
 
                 const context = contexts['context'] as Contexts ?? {};
                 const user = contexts['user'] ?? {};
 
                 event.contexts = { ...context, ...event.contexts };
+                const breadcrumbs = contexts['breadcrumbs'] ?? [];
+                if (breadcrumbs.length) {
+                    event.breadcrumbs = event.breadcrumbs || [];
+                    event.breadcrumbs.push(...breadcrumbs);
+                    event.breadcrumbs = event.breadcrumbs.sort((a, b) => a.timestamp - b.timestamp);
+                }
+                if (contexts['extra']) {
+                    event.extra  = event.extra || {};
+                    Object.assign(event.extra, contexts['extra']);
+                }
 
                 if (!event.user) {
                     event.user = { ...user };
