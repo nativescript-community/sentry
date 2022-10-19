@@ -1,12 +1,8 @@
-import { pointsFromBuffer } from '@nativescript-community/arraybuffers';
-import { getClass } from '@nativescript/core/utils/types';
-import { Scope  } from '@sentry/core';
-import { Attachment, BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel, User } from '@sentry/types';
+import { BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel } from '@sentry/types';
 import { SentryError, logger } from '@sentry/utils';
 import { isHardCrash } from './misc';
 import { NativescriptOptions } from './options';
 import { utf8ToBytes } from './vendor';
-import { UserFeedback } from './wrapper';
 
 const numberHasDecimals = function (value: number): boolean {
     return !(value % 1 === 0);
@@ -187,54 +183,6 @@ export namespace NATIVE {
             }
         }
     }
-    export async function sendEvent(event: Event) {
-        try {
-            // Process and convert deprecated levels
-            // event.level = event.level ? _processLevel(event.level) : undefined;
-            console.error('sendEvent', JSON.stringify(event));
-
-            const payload = {
-                ...event,
-                message: {
-                    message: event.message
-                }
-            };
-            payload.tags = payload.tags || {};
-
-            payload.tags['event.origin'] = 'ios';
-            payload.tags['event.environment'] = 'nativescript';
-            // Serialize and remove any instances that will crash the native bridge such as Spans
-            const serializedPayload = JSON.parse(JSON.stringify(payload));
-            const eventId = SentryId.alloc().initWithUUIDString(event.event_id);
-            const envelopeHeader = SentryEnvelopeHeader.alloc().initWithId(eventId);
-            const envelopeItemData = NSJSONSerialization.dataWithJSONObjectOptionsError(serializedPayload, 0);
-
-            let itemType = payload.type;
-            if (!itemType) {
-                // Default to event type.
-                itemType = 'event' as any;
-            }
-
-            const envelopeItemHeader = SentryEnvelopeItemHeader.alloc().initWithTypeLength(itemType, envelopeItemData.length);
-            const envelopeItem = SentryEnvelopeItem.alloc().initWithHeaderData(envelopeItemHeader, envelopeItemData);
-
-            const envelope = SentryEnvelope.alloc().initWithHeaderSingleItem(envelopeHeader, envelopeItem);
-
-            if (event.level === 'fatal') {
-                // captureEvent queues the event for submission, so storing to disk happens asynchronously
-                // We need to make sure the event is written to disk before resolving the promise.
-                // This could be replaced by SentrySDK.flush() when available.
-                NSSentrySDK.storeEnvelope(envelope);
-            } else {
-                NSSentrySDK.captureEnvelope(envelope);
-            }
-            // if (sentryOptions.flushSendEvent === true) {
-
-            // }
-        } catch (err) {
-            console.error('sendEvent', err, err.stack);
-        }
-    }
     /**
    * Sending the envelope over the bridge to native
    * @param envelope Envelope
@@ -337,12 +285,12 @@ export namespace NATIVE {
                     delete toPassOptions[k];
                 }
             });
-            console.log('toPassOptions', Object.keys(toPassOptions));
             const mutDict = NSMutableDictionary.alloc().initWithDictionary(dataSerialize(toPassOptions) as any);
 
             nSentryOptions = SentryOptions.alloc().initWithDictDidFailWithError(mutDict as any);
-            nSentryOptions.beforeSend = (event: SentryEvent)=>{
-                console.log('beforeSend', event);
+
+            // before send right now is never called when we send the envelope
+            nSentryOptions.beforeSend = (event: SentryEvent) => {
                 if (beforeSend) {
                     beforeSend(event as any, null);
                 }
@@ -352,9 +300,8 @@ export namespace NATIVE {
             if (toPassOptions.hasOwnProperty('enableNativeCrashHandling')) {
                 if (!toPassOptions.enableNativeCrashHandling) {
                     const integrations = nSentryOptions.integrations.mutableCopy();
-                    // console.log('integrations', typeof nSentryOptions, nSentryOptions.length, nSentryOptions[0]);
                     integrations.removeObject('SentryCrashIntegration');
-                    sentryOptions.integrations = integrations;
+                    nSentryOptions.integrations = integrations;
                 }
             }
 
@@ -364,26 +311,6 @@ export namespace NATIVE {
             }
             NSSentrySDK.startWithOptionsObject(nSentryOptions);
 
-            // NSSentrySDK.startWithConfigureOptions((obj) => {
-            //     const beforeSend = options.beforeSend;
-            //     delete options.beforeSend;
-
-            //     obj.beforeSend = (event: SentryEvent)=>{
-            //         console.log('beforeSend', event);
-            //         if (beforeSend) {
-            //             beforeSend(event as any, null);
-            //         }
-            //         return event;
-            //     };
-            //     Object.keys(options).forEach((k) => {
-            //         if (options[k] !== undefined )  {
-            //             // console.log('setting sentry option',k, obj.hasOwnProperty(k), options[k] );
-            //             obj[k] = options[k];
-
-            //         }
-            //     });
-            //     nSentryOptions = obj;
-            // });
             return (true);
         } catch (error) {
             enableNative = false;
@@ -392,115 +319,26 @@ export namespace NATIVE {
         }
     }
 
-    // export function nativeLogLevel(level: number) {
-    //     let cocoaLevel;
-    //     switch (level) {
-    //         case 1:
-    //             cocoaLevel = SentryLevel.kSentryLevelError;
-    //             break;
-    //         case 2:
-    //             cocoaLevel = SentryLevel.kSentryLevelDebug;
-    //             break;
-    //         case 3:
-    //             cocoaLevel = SentryLevel.kSentryLevelVerbose;
-    //             break;
-    //         default:
-    //             cocoaLevel = SentryLevel.kSentryLevelNone;
-    //     }
-    //     return cocoaLevel;
-    // }
-    export function cranativeCrashsh() {
+    export function nativeCrash() {
         NSSentrySDK.crash();
     }
     export function flush(timeout: number) {
         NSSentrySDK.flush(timeout);
     }
-    function toJsObject(objCObj) {
-        if (objCObj === null || typeof objCObj !== 'object') {
-            return objCObj;
-        }
-        let node, key, i, l;
-        const oKeyArr = objCObj.allKeys;
-
-        if (oKeyArr === undefined && objCObj.count !== undefined) {
-            // array
-            node = [];
-            for (i = 0, l = objCObj.count; i < l; i++) {
-                key = objCObj.objectAtIndex(i);
-                node.push(toJsObject(key));
-            }
-        } else if (oKeyArr !== undefined) {
-            // object
-            node = {};
-            for (i = 0, l = oKeyArr.count; i < l; i++) {
-                key = oKeyArr.objectAtIndex(i);
-                const val = objCObj.valueForKey(key);
-
-                // Firestore can store nulls
-                if (val === null) {
-                    node[key] = null;
-                    continue;
-                }
-                node[key] = getValueForClass(val);
-            }
-        } else {
-            node = getValueForClass(objCObj);
-        }
-
-        return node;
-    }
-
-    function getValueForClass(val) {
-        switch (getClass(val)) {
-            case 'NSArray':
-            case 'NSMutableArray':
-                return toJsObject(val);
-            case 'NSDictionary':
-            case 'NSMutableDictionary':
-                return toJsObject(val);
-            case 'String':
-                return String(val);
-            case 'Boolean':
-                return val;
-            case 'Number':
-            case 'NSDecimalNumber':
-                return Number(String(val));
-            case 'Date':
-                return new Date(val);
-
-            default:
-                return String(val);
-        }
-    }
 
     function dictToJSON(dict) {
-        JSON.parse(NSString.alloc().initWithDataEncoding(NSJSONSerialization.dataWithJSONObjectOptionsError(dict, 0), NSUTF8StringEncoding) as any);
+        return JSON.parse(NSString.alloc().initWithDataEncoding(NSJSONSerialization.dataWithJSONObjectOptionsError(dict, 0), NSUTF8StringEncoding) as any);
     }
     export async function fetchNativeDeviceContexts() {
         if (!enableNative) {
             throw _DisabledNativeError;
         }
-        const contexts = {};
+        let contexts = {};
         NSSentrySDK.configureScope((scope) => {
             try {
-
-                const serializedScope = scope.serialize();
-                // console.log('toto' , dictToJSON(serializedScope), NSString.alloc().initWithDataEncoding(NSJSONSerialization.dataWithJSONObjectOptionsError(serializedScope, 0), NSUTF8StringEncoding));
-                // const context2 = SentryEvent.alloc().init().context;
-                // console.log('context2' , context2 && dictToJSON(context2));
-                const tempContexts = (serializedScope.valueForKey('context'));
-                const tempUser = serializedScope.valueForKey('user');
-                const user = {};
-                if (tempUser) {
-                    Object.assign(user, dictToJSON(tempUser.valueForKey('user')));
-                } else {
-                    user['id'] = NSSentrySDK.installationID;
-                }
-                contexts['user'] = user;
-
-                if (tempContexts) {
-                    contexts['context'] = dictToJSON(tempContexts);
-                }
+                const result = dictToJSON( scope.serialize());
+                result['user'] = result['user'] || { id: NSSentrySDK.installationID };
+                contexts =  result;
             } catch (error) {
                 console.error('fetchNativeDeviceContexts', error, error.stack);
             }
@@ -524,21 +362,21 @@ export namespace NATIVE {
     //     }
     //     NSSentrySDK.captureUserFeedback(userFeedback);
     // }
-    function eventLevel(level) {
-        switch (level) {
-            case 'fatal':
-                return SentryLevel.kSentryLevelFatal;
-            case 'warning':
-                return SentryLevel.kSentryLevelWarning;
-            case 'info':
-            case 'log':
-                return SentryLevel.kSentryLevelInfo;
-            case 'debug':
-                return SentryLevel.kSentryLevelDebug;
-            default:
-                return SentryLevel.kSentryLevelError;
-        }
-    }
+    // function eventLevel(level) {
+    //     switch (level) {
+    //         case 'fatal':
+    //             return SentryLevel.kSentryLevelFatal;
+    //         case 'warning':
+    //             return SentryLevel.kSentryLevelWarning;
+    //         case 'info':
+    //         case 'log':
+    //             return SentryLevel.kSentryLevelInfo;
+    //         case 'debug':
+    //             return SentryLevel.kSentryLevelDebug;
+    //         default:
+    //             return SentryLevel.kSentryLevelError;
+    //     }
+    // }
 
     // export function setUser(user: User | null, otherUserKeys) {
     //     if (!enableNative) {
