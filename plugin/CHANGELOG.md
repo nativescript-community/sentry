@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.6.0](https://github.com/nativescript-community/sentry/compare/v3.1.5...v4.6.0) (2022-10-19)
+
+
+### Bug Fixes
+
+* **android:** use latest gradle plugin requiring gradle 7+ ([7a29368](https://github.com/nativescript-community/sentry/commit/7a29368cb533548cbf2d5aee02b9d869c3181be0))
+* improving integration ([7e8be4e](https://github.com/nativescript-community/sentry/commit/7e8be4e2d37f29d07b155d9c0f2e028c858f1039))
+
+
+### Features
+
+* bump to latest JS/native SDKs ([d63d12a](https://github.com/nativescript-community/sentry/commit/d63d12a837c7b0da7ed170360716169d9d79d3e5))
+
+
+
+
+
 ## [3.1.5](https://github.com/nativescript-community/sentry/compare/v3.1.4...v3.1.5) (2022-05-12)
 
 
