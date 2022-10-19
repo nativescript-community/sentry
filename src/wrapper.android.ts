@@ -1,29 +1,14 @@
-import { Application, Utils } from '@nativescript/core';
-import { android as androidApp } from '@nativescript/core/application';
-import { Attachment, BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel, User } from '@sentry/types';
-import { convertNativescriptFramesToSentryFrames, parseErrorStack } from './integrations/debugsymbolicator';
-import { UserFeedback } from './wrapper';
-import { rewriteFrameIntegration } from './sdk';
-import { SentryError, logger, normalize } from '@sentry/utils';
-import { NativescriptOptions } from './options';
 import { createArrayBuffer, pointsFromBuffer } from '@nativescript-community/arraybuffers';
+import { Application, Utils } from '@nativescript/core';
+import { BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel } from '@sentry/types';
+import { SentryError } from '@sentry/utils';
+import { convertNativescriptFramesToSentryFrames, parseErrorStack } from './integrations/debugsymbolicator';
 import { isHardCrash } from './misc';
+import { NativescriptOptions } from './options';
+import { rewriteFrameIntegration } from './sdk';
 import { utf8ToBytes } from './vendor';
 import { SDK_NAME } from './version';
-import { TextEncoder } from '@nativescript/core/text';
-import { Scope } from '@sentry/core';
-// function utf8ToBytes(str: string) {{
-//     return new java.lang.String(str).getBytes(java.nio.charset.StandardCharsets.UTF_8);
-// }}
-// // function utf8ToUint8Array(str: string) {
 
-// //     return new java.lang.String(str).getBytes(java.nio.charset.StandardCharsets.UTF_8);
-// // }
-// const EOL = utf8ToBytes('\n')[0];
-
-function isArrayBuffer(value: unknown): boolean {
-    return  (value instanceof ArrayBuffer || Object.prototype.toString.call(value) === '[object ArrayBuffer]');
-}
 let encoder;
 function strToTypedArray(str: string) {
     if (!encoder) {
@@ -51,76 +36,6 @@ export namespace NATIVE {
         return enableNative;
     }
 
-    function eventLevel(level) {
-        switch (level) {
-            case 'fatal':
-                return io.sentry.SentryLevel.FATAL;
-            case 'warning':
-                return io.sentry.SentryLevel.WARNING;
-            case 'debug':
-                return io.sentry.SentryLevel.DEBUG;
-            case 'error':
-                return io.sentry.SentryLevel.ERROR;
-            default:
-                return io.sentry.SentryLevel.INFO;
-        }
-    }
-    function getNativeHashMap(obj: { [k: string]: string }) {
-        if (!obj) {
-            return null;
-        }
-        const map = new java.util.HashMap<string, string>();
-        Object.keys(obj).forEach((k) => {
-            map.put(k, obj[k]);
-        });
-        return map;
-    }
-    function getJSHashMap(obj: java.util.HashMap<any, any>) {
-        if (!obj) {
-            return null;
-        }
-
-        const result = {};
-        let value, pair, key;
-
-        const it = obj.entrySet().iterator();
-        while (it.hasNext()) {
-            pair = it.next();
-            value = pair.getValue();
-            key = pair.getKey();
-            if (value instanceof java.util.HashMap) {
-                result[key] = getJSHashMap(value);
-            } else if (value instanceof java.lang.Number) {
-                result[key] = value.doubleValue();
-            } else if (value && value.hasOwnProperty('length')) {
-                result[key] = Array.from({ length: value.length }).map((v, i) => value[i]);
-            } else {
-                result[key] = value;
-            }
-        }
-
-        return result;
-    }
-    function getUser(user: { [k: string]: any }) {
-        const nUser = new io.sentry.protocol.User();
-        if (user.email) {
-            nUser.setEmail(user.email);
-        }
-        if (user.userID) {
-            nUser.setId(user.userID);
-        } else if (user.userId) {
-            nUser.setId(user.userId);
-        } else if (user.id) {
-            nUser.setId(user.id);
-        }
-        if (user.username) {
-            nUser.setUsername(user.username);
-        }
-        if (user.extra) {
-            nUser.setOthers(getNativeHashMap(user.extra));
-        }
-        return nUser;
-    }
     const mJsModuleIdPattern = new RegExp('(?:^|[/\\\\])(\\d+\\.js)$');
     function stackFrameToModuleId(frame: { file?: string }) {
         if (!!frame.file) {
@@ -245,8 +160,6 @@ export namespace NATIVE {
         else if (level === 'critical' as SeverityLevel) {
             return 'fatal' as SeverityLevel;
         }
-
-
         return level;
     }
     /**
@@ -278,10 +191,7 @@ export namespace NATIVE {
             console.warn('Event was skipped as native SDK is not enabled.');
             return;
         }
-        // let startTime = Date.now();
-        const envelopeBytes = prepareEnvelope(envelope);
-        // console.log('prepareEnvelope', Date.now() - startTime, 'ms', envelopeBytes.length);
-        // startTime = Date.now();
+        const envelopeBytes = prepareEnvelopeNative(envelope);
         // const envelopeBytesNative = prepareEnvelopeNative(envelope);
         await captureEnvelope(envelopeBytes);
         if (sentryOptions.flushSendEvent) {
@@ -328,7 +238,7 @@ export namespace NATIVE {
         return envelopeBytes;
     }
 
-    export  function prepareEnvelopeNative(envelope: Envelope) {
+    export function prepareEnvelopeNative(envelope: Envelope) {
         const [envelopeHeader, envelopeItems] = envelope;
 
         const headerString = JSON.stringify(envelopeHeader);
@@ -345,7 +255,6 @@ export namespace NATIVE {
                 bytesPayload = itemPayload;
             } else {
                 bytesPayload = strToTypedArray(JSON.stringify(itemPayload));
-                // console.log('bytesPayload', JSON.stringify(itemPayload));
                 if (!hardCrashed) {
                     hardCrashed = isHardCrash(itemPayload);
                 }
@@ -354,7 +263,6 @@ export namespace NATIVE {
             // Content type is not inside BaseEnvelopeItemHeaders.
             (itemHeader as BaseEnvelopeItemHeaders).content_type = 'application/json';
             (itemHeader as BaseEnvelopeItemHeaders).length = bytesPayload.length;
-            // const serializedItemHeader = JSON.stringify(itemHeader) + '\n';
             const serializedItemHeaderBytes = strToTypedArray(JSON.stringify(itemHeader) + '\n');
 
             const rawItemBytes = createArrayBuffer(serializedItemHeaderBytes.length + bytesPayload.length + 1, true, false);
@@ -535,7 +443,6 @@ export namespace NATIVE {
     // }
 
     export async function captureEnvelope(envelope: string | Uint8Array | number[], {store}: {store?: boolean} = {}) {
-        console.log('captureEnvelope', envelope.length, nSentryOptions.getOutboxPath(), ArrayBuffer.isView(envelope), Array.isArray(envelope));
         try {
             const outboxPath = new java.io.File(nSentryOptions.getOutboxPath(), java.util.UUID.randomUUID().toString());
             const out = new java.io.FileOutputStream(outboxPath);
