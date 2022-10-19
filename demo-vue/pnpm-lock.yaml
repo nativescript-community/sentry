@@ -3,7 +3,6 @@ lockfileVersion: 5.4
 specifiers:
   '@babel/core': ~7.19.3
   '@babel/preset-env': ~7.19.4
-  '@nativescript-community/arraybuffers': ^1.0.1
   '@nativescript-community/sentry': link:../plugin
   '@nativescript/android': 8.4.0-alpha.4
   '@nativescript/core': 8.3.5
@@ -27,7 +26,6 @@ specifiers:
   vue-loader: ~15.9.8
 
 dependencies:
-  '@nativescript-community/arraybuffers': 1.0.1
   '@nativescript-community/sentry': link:../plugin
   '@nativescript/core': 8.3.5
   nativescript-vue: 2.9.3
@@ -1254,10 +1252,6 @@ packages:
       '@jridgewell/resolve-uri': 3.0.5
       '@jridgewell/sourcemap-codec': 1.4.11
     dev: true
-
-  /@nativescript-community/arraybuffers/1.0.1:
-    resolution: {integrity: sha512-Rl6oFtR5IUhnS5xKsoR5m1sdy/lrGs/i9KQ+lzLLPPbGL3ZT5fmqnbhuLc4YXZSgF3bsYat752VkRJwPs7MA6Q==}
-    dev: false
 
   /@nativescript/android/8.4.0-alpha.4:
     resolution: {integrity: sha512-1IyUFa8nFeXWsEcDGJP1K0z3SNB2eMJz773r1fPVirtdvZd5SBPLsgKIhCValiFB0SGqaxdirJsvdiophh4AgQ==}
