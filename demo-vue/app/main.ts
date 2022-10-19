@@ -12,7 +12,7 @@ async function startSentry() {
             dsn: SENTRY_DSN,
             debug: true,
             flushSendEvent: true,
-            enableNativeCrashHandling: false,
+            enableNativeCrashHandling: true,
             enableAutoPerformanceTracking: true
         });
         setTimeout(()=>{
