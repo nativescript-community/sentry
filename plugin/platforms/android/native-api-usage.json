@@ -5,6 +5,7 @@
         "java.lang:Integer*",
         "java.util:Map*",
         "java.lang:Thread*",
+        "java.nio.charset:Charset*",
         "io.sentry:Sentry*",
         "io.sentry:Breadcrumb*",
         "io.sentry:SentryLevel*",
