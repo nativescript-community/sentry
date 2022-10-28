@@ -700,7 +700,7 @@ export namespace NATIVE {
 
     function setEventOriginTag( event: io.sentry.SentryEvent) {
         const sdk = event.getSdk();
-        if (sdk != null) {
+        if (sdk) {
             switch (sdk.getName()) {
                 // If the event is from capacitor js, it gets set there and we do not handle it
                 // here.
