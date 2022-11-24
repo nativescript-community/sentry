@@ -331,7 +331,7 @@ export namespace NATIVE {
                 return false;
             }
             sentryOptions = options;
-            const {tracesSampleRate, tracesSampler, beforeSend, ...toPassOptions} = options;
+            const {tracesSampleRate, tracesSampler, beforeSend, beforeBreadcrumb, ...toPassOptions} = options;
 
             Object.keys(toPassOptions).forEach((k) => {
                 const value = toPassOptions[k];
@@ -366,6 +366,23 @@ export namespace NATIVE {
                 setEventOriginTag(event);
                 return event;
             };
+            nSentryOptions.beforeBreadcrumb = (breadcrumb) => {
+                if (beforeBreadcrumb) {
+                    const deserialized = dictToJSON(breadcrumb.serialize());
+                    const processed = beforeBreadcrumb(deserialized, null);
+                    const serialized = dataSerialize(processed);
+                    const levels = ['log', 'debug', 'info', 'warning', 'error', 'fatal'];
+
+                    if (processed) {
+                        breadcrumb.level = Math.max(levels.indexOf(processed['level']), 0);
+                        ['category', 'data', 'message', 'type']
+                            .forEach(key => breadcrumb[key] = serialized.objectForKey(key));
+                    } else {
+                        return null;
+                    }
+                }
+                return breadcrumb;
+            }
             if (toPassOptions.hasOwnProperty('enableNativeCrashHandling')) {
                 if (!toPassOptions.enableNativeCrashHandling) {
                     const integrations = nSentryOptions.integrations.mutableCopy();
