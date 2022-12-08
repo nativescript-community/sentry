@@ -21,4 +21,6 @@ Pods
 *.xcuserdatad
 /plugin/README.md
 pnpm-lock.yaml
+yarn.lock
 /plugin/platforms/android/sentry.aar
+.sentryclirc
