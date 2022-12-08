@@ -1,4 +1,4 @@
-import { Integrations, defaultStackParser, getCurrentHub, defaultIntegrations as sentryDefaultIntegrations } from '@sentry/browser';
+import { Integrations, getCurrentHub, defaultIntegrations as sentryDefaultIntegrations } from '@sentry/browser';
 import { Hub, Scope, getIntegrationsToSetup, initAndBind, makeMain, setExtra } from '@sentry/core';
 import { RewriteFrames } from '@sentry/integrations';
 import { Integration, StackFrame, UserFeedback } from '@sentry/types';
@@ -17,6 +17,47 @@ import { makeNativescriptTransport } from './transports/native';
 import { makeUtf8TextEncoder } from './transports/TextEncoder';
 import { safeFactory, safeTracesSampler } from './utils/safe';
 import { NATIVE } from './wrapper';
+import { parseErrorStack } from './integrations/debugsymbolicator';
+
+
+const STACKTRACE_LIMIT = 50;
+function stripSentryFramesAndReverse(stack) {
+    if (!stack.length) {
+        return [];
+    }
+
+    let localStack = stack;
+
+    const firstFrameFunction = localStack[0].function || '';
+    const lastFrameFunction = localStack[localStack.length - 1].function || '';
+
+    // If stack starts with one of our API calls, remove it (starts, meaning it's the top of the stack - aka last call)
+    if (firstFrameFunction.indexOf('captureMessage') !== -1 || firstFrameFunction.indexOf('captureException') !== -1) {
+        localStack = localStack.slice(1);
+    }
+
+    // If stack ends with one of our internal API calls, remove it (ends, meaning it's the bottom of the stack - aka top-most call)
+    if (lastFrameFunction.indexOf('sentryWrapped') !== -1) {
+        localStack = localStack.slice(0, -1);
+    }
+
+    // The frame where the crash happened, should be the last entry in the array
+    return localStack
+        .slice(0, STACKTRACE_LIMIT)
+        .map(frame => ({
+            ...frame,
+            filename: frame.filename || localStack[0].filename,
+            function: frame.function || undefined,
+        }));
+}
+const defaultStackParser = (stack, skipFirst = 0) => {
+    let frames = parseErrorStack({ stack } as any);
+
+    if (skipFirst) {
+        frames = frames.slice(skipFirst);
+    }
+    return frames;
+};
 
 const IGNORED_DEFAULT_INTEGRATIONS = [
     'GlobalHandlers', // We will use the react-native internal handlers
@@ -74,7 +115,7 @@ export function init(passedOptions: NativescriptOptions): void {
     if (passedOptions.defaultIntegrations === undefined) {
         rewriteFrameIntegration = new RewriteFrames({
             iteratee: (frame: StackFrame) => {
-                if (frame.filename) {
+                if (frame.platform === 'javascript' && frame.filename) {
                     let filename = (frame.filename = frame.filename
                         .replace(/^file\:\/\//, '')
                         .replace(/^address at /, '')

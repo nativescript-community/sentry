@@ -1,4 +1,4 @@
-import { BrowserClient, defaultStackParser, makeFetchTransport } from '@sentry/browser';
+import { BrowserClient, makeFetchTransport } from '@sentry/browser';
 import { BrowserTransportOptions } from '@sentry/browser/types/transports/types';
 import { FetchImpl } from '@sentry/browser/types/transports/utils';
 import { BaseClient } from '@sentry/core';
@@ -6,13 +6,14 @@ import { BaseClient } from '@sentry/core';
 import { ClientReportEnvelope, ClientReportItem, Envelope, Event, EventHint, Outcome, SeverityLevel, Transport, UserFeedback } from '@sentry/types';
 import { SentryError, dateTimestampInSeconds, logger } from '@sentry/utils';
 
+import { alert } from '@nativescript/core';
 import { defaultSdkInfo } from './integrations/sdkinfo';
 import { NativescriptClientOptions } from './options';
 import { NativeTransport } from './transports/native';
-import { NATIVE } from './wrapper';
-import { alert } from '@nativescript/core';
-import { mergeOutcomes } from './utils/outcome';
 import { createUserFeedbackEnvelope, items } from './utils/envelope';
+import { mergeOutcomes } from './utils/outcome';
+import { NATIVE } from './wrapper';
+
 
 /**
  * The Sentry React Native SDK Client.
@@ -47,7 +48,7 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
             dsn: options.dsn,
             transport: options.transport,
             transportOptions: options.transportOptions,
-            stackParser: options.stackParser || defaultStackParser,
+            stackParser: options.stackParser,
             integrations: [],
             _metadata: options._metadata,
         });
@@ -59,6 +60,10 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
    * @inheritDoc
    */
     public eventFromException(_exception: unknown, _hint?: EventHint): PromiseLike<Event> {
+        // N put stackTrace in "stackTrace" instead of "stacktrace"
+        if (_exception['stackTrace']) {
+            _exception['stacktrace'] = _exception['stackTrace'];
+        }
         return this._browserClient.eventFromException(_exception, _hint);
     }
 
