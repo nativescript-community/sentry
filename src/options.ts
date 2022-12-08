@@ -1,4 +1,3 @@
-import { BaseBrowserOptions } from '@sentry/browser/types/client';
 import { BrowserTransportOptions } from '@sentry/browser/types/transports/types';
 // import { ProfilerProps } from '@sentry/react/types/profiler';
 import { ClientOptions, Options } from '@sentry/types';
@@ -121,7 +120,7 @@ export interface BaseNativescriptOptions {
  * @see ReactNativeFrontend for more information.
  */
 
-export interface NativescriptOptions extends Options<BrowserTransportOptions>, BaseBrowserOptions, BaseNativescriptOptions, NativescriptErrorHandlersOptions {
+export interface NativescriptOptions extends Options<BrowserTransportOptions>, BaseNativescriptOptions, NativescriptErrorHandlersOptions {
     headers?: {[k: string]: string};
     /**
      * Optional prefix to add while rewriting frames
@@ -140,7 +139,7 @@ export interface NativescriptOptions extends Options<BrowserTransportOptions>, B
     };
 }
 
-export interface NativescriptClientOptions extends ClientOptions<BrowserTransportOptions>, BaseBrowserOptions, BaseNativescriptOptions {
+export interface NativescriptClientOptions extends ClientOptions<BrowserTransportOptions>, BaseNativescriptOptions {
 
 
 }
