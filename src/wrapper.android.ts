@@ -2,7 +2,7 @@ import { createArrayBuffer, pointsFromBuffer } from '@nativescript-community/arr
 import { Application, Utils } from '@nativescript/core';
 import { BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel } from '@sentry/types';
 import { SentryError } from '@sentry/utils';
-import { convertNativescriptFramesToSentryFrames, parseErrorStack } from './integrations/debugsymbolicator';
+import { parseErrorStack } from './integrations/debugsymbolicator';
 import { isHardCrash } from './misc';
 import { NativescriptOptions } from './options';
 import { rewriteFrameIntegration } from './sdk';
@@ -46,7 +46,7 @@ export namespace NATIVE {
         }
         return '';
     }
-    function convertToNativeStacktrace(
+    function convertToNativeJavascriptStacktrace(
         stack: {
             file?: string;
             filename?: string;
@@ -73,12 +73,10 @@ export namespace NATIVE {
             const lineNumber = frame.lineNumber || frame.lineno || 0;
             const column = frame.column || frame.colno || 0;
             const stackFrame = new io.sentry.protocol.SentryStackFrame();
-            stackFrame.setModule('');
-            stackFrame.setFunction(methodName.length > 0 ? methodName.split('.').pop() : methodName);
-            stackFrame.setFilename(stackFrameToModuleId(frame));
+            stackFrame.setFunction(methodName);
+            stackFrame.setFilename(fileName);
             stackFrame.setLineno(new java.lang.Integer(lineNumber));
             stackFrame.setColno(new java.lang.Integer(column));
-            stackFrame.setAbsPath(fileName);
             stackFrame.setPlatform('javascript');
             stackFrame.setInApp(new java.lang.Boolean(frame.in_app || false));
             frames.add(stackFrame);
@@ -86,19 +84,24 @@ export namespace NATIVE {
         nStackTrace.setFrames(frames);
         return nStackTrace;
     }
-    function addExceptionInterface(nEvent: io.sentry.SentryEvent, type: string, value: string, stack) {
-        const exceptions = nEvent.getExceptions() || new java.util.ArrayList<io.sentry.protocol.SentryException>();
+    function addJavascriptExceptionInterface(nEvent: io.sentry.SentryEvent, type: string, value: string, stack) {
+        const exceptions = nEvent.getExceptions();
 
+        const actualExceptions = new java.util.ArrayList<io.sentry.protocol.SentryException>();
         const nException = new io.sentry.protocol.SentryException();
         nException.setType(type);
         nException.setValue(value);
-        nException.setModule('');
+        console.log('test');
+        // nException.setModule('');
         // nException.setModule('com.tns');
         nException.setThreadId(new java.lang.Long(java.lang.Thread.currentThread().getId()));
 
-        nException.setStacktrace(convertToNativeStacktrace(stack));
-        exceptions.add(nException);
-        nEvent.setExceptions(exceptions);
+        nException.setStacktrace(convertToNativeJavascriptStacktrace(stack));
+        actualExceptions.add(nException);
+        if (exceptions) {
+            actualExceptions.addAll(1, exceptions);
+        }
+        nEvent.setExceptions(actualExceptions);
     }
 
     /**
@@ -642,6 +645,7 @@ export namespace NATIVE {
                                         // we use this callback to actually try and get the JS stack when a native error is catched
                                         try {
                                             const ex: io.sentry.protocol.SentryException = event.getExceptions().get(0);
+                                            console.log('beforeSend', ex, ex.getStacktrace(), ex.getMechanism());
                                             if (ex && ex.getType() === 'NativeScriptException') {
                                                 let mechanism = event.getThrowable && event.getThrowable();
                                                 if (!mechanism) {
@@ -658,11 +662,12 @@ export namespace NATIVE {
                                                 if (throwable ) {
                                                     const jsStackTrace: string = (throwable ).getIncomingStackTrace();
                                                     if (jsStackTrace) {
-                                                        const stack = parseErrorStack({ stack: jsStackTrace } as any);
 
-                                                        const convertedFrames = convertNativescriptFramesToSentryFrames(stack as any);
-                                                        convertedFrames.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
-                                                        addExceptionInterface(event, 'Error', throwable.getMessage(), convertedFrames.reverse());
+                                                        console.log('jsStackTrace', jsStackTrace);
+                                                        const stack = parseErrorStack({ stack: 'at ' + jsStackTrace } as any).reverse();
+                                                        console.log('stack', stack);
+                                                        stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
+                                                        addJavascriptExceptionInterface(event, 'Error', throwable.getMessage(), stack.reverse());
                                                     }
                                                 }
                                             }
