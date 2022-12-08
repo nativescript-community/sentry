@@ -59,5 +59,9 @@
     },
     "dependencies": {
         "@nativescript-community/arraybuffers": "^1.0.1"
-    }
+    },
+    "workspaces": [
+        "plugin",
+        "demo-vue"
+    ]
 }
