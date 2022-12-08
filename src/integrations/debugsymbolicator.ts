@@ -1,6 +1,6 @@
 import { addGlobalEventProcessor, getCurrentHub } from '@sentry/core';
-import { Event, EventHint, Integration, StackFrame } from '@sentry/types';
-import { logger } from '@sentry/utils';
+import { Event, EventHint, Integration, StackFrame, StackLineParser } from '@sentry/types';
+import { logger, stackParserFromStackParserOptions } from '@sentry/utils';
 
 // const INTERNAL_CALLSITES_REGEX = new RegExp(['/Libraries/Renderer/oss/NativescriptRenderer-dev\\.js$', '/Libraries/BatchedBridge/MessageQueue\\.js$'].join('|'));
 
@@ -19,6 +19,7 @@ interface NativescriptFrame {
  * React Native Error
  */
 type NativescriptError = Error & {
+    stackTrace?: string;
     framesToPop?: number;
     jsEngine?: string;
     preventSymbolication?: boolean;
@@ -32,44 +33,81 @@ type NativescriptError = Error & {
 //   isComponentError?: boolean,
 //   ...
 // };
+const UNKNOWN_FUNCTION = undefined;
 
-export function parseErrorStack(e: NativescriptError): NativescriptFrame[] {
-    if (!e || !e.stack) {
+export interface NativescriptStackFrame extends StackFrame {
+    native?: boolean;
+}
+
+// function createFrame(filename, func, lineno, colno) {
+
+function createFrame(frame: Partial<NativescriptStackFrame>) {
+    frame.in_app = (frame.filename && !frame.filename.includes('node_modules')) || (!!frame.colno && !!frame.lineno);
+    frame.platform = frame.filename.endsWith('.js') ? 'javascript'  : 'android';
+
+
+    return frame;
+}
+
+const nativescriptRegex =
+  /^\s*at (?:(.*\).*?|.*?) ?\()?((?:file|native|webpack|<anonymous>|[-a-z]+:|.*bundle|\/)?.*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
+
+const nativescriptFunc = line => {
+    const parts = nativescriptRegex.exec(line);
+    if (parts) {
+        return createFrame({
+            filename:parts[2],
+            platform:'javascript',
+            function:parts[1] || UNKNOWN_FUNCTION,
+            lineno:parts[3] ? +parts[3] : undefined,
+            colno:parts[4] ? +parts[4] : undefined
+        });
+    }
+    return null;
+};
+
+const nativescriptLineParser: StackLineParser = [30, nativescriptFunc];
+
+const androidRegex =
+  /^\s*(?:(.*\).*?|.*?) ?\()?((?:Native Method|[-a-z]+:)?.*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
+
+const androidFunc = line => {
+    const parts = androidRegex.exec(line);
+    if (parts) {
+        let func = UNKNOWN_FUNCTION, mod;
+        if (parts[1]) {
+            const splitted = parts[1].split('.');
+            func = splitted[splitted.length-1];
+            mod = splitted.slice(0, -1).join('.');
+        }
+        if (!parts[2].endsWith('.java')) {
+            return null;
+        }
+        return createFrame({
+            filename:parts[2],
+            function:func,
+            module:mod,
+            native: func && (func.indexOf('Native Method') !== -1),
+            lineno:parts[3] ? +parts[3] : undefined,
+            colno:parts[4] ? +parts[4] : undefined
+        });
+    }
+    return null;
+};
+
+const androidLineParser: StackLineParser = [50, androidFunc];
+
+const stackParser = stackParserFromStackParserOptions([nativescriptLineParser, androidLineParser]);
+
+export function parseErrorStack(e: NativescriptError): StackFrame[] {
+    const stack = e?.['stackTrace'] || e?.stack;
+    if (!stack) {
         return [];
     }
-    const stacktraceParser = require('stacktrace-parser');
-    if (Array.isArray(e.stack)) {
-        return e.stack;
-    } else {
-        return stacktraceParser.parse('at ' + e.stack).map(frame => ({
-            ...frame,
-            column: frame.column != null ? frame.column - 1 : null
-        }));
-    }
+    console.log('parseErrorStack', stack);
+    return stackParser(stack);
 }
 
-/**
- * Converts NativescriptFrames to frames in the Sentry format
- * @param frames NativescriptFrame[]
- */
-export function convertNativescriptFramesToSentryFrames(frames: NativescriptFrame[]): StackFrame[] {
-    // Below you will find lines marked with :HACK to prevent showing errors in the sentry ui
-    // But since this is a debug only feature: This is Fine (TM)
-    return frames.map(
-        (frame: NativescriptFrame): StackFrame => {
-            const inApp = (frame.file && !frame.file.includes('node_modules')) || (!!frame.column && !!frame.lineNumber);
-            // const inApp =true;
-            return {
-                colno: frame.column,
-                filename: frame.file,
-                function: frame.methodName,
-                in_app: inApp,
-                lineno: inApp ? frame.lineNumber : undefined, // :HACK
-                platform: inApp ? 'javascript' : 'node' // :HACK
-            };
-        }
-    );
-}
 /** Tries to symbolicate the JS stack trace on the device. */
 export class DebugSymbolicator implements Integration {
     /**
@@ -92,9 +130,11 @@ export class DebugSymbolicator implements Integration {
             }
             // @ts-ignore
             const error: NativescriptError = hint.originalException;
-
             // const parseErrorStack = require('react-native/Libraries/Core/Devtools/parseErrorStack');
             const stack = parseErrorStack(error);
+            console.log('addGlobalEventProcessor', error);
+            console.log('stack', stack);
+
 
             // Ideally this should go into contexts but android sdk doesn't support it
             event.extra = {
@@ -117,12 +157,11 @@ export class DebugSymbolicator implements Integration {
    */
     private async _symbolicate(
         event: Event,
-        stack: NativescriptFrame[]
+        stack: StackFrame[]
     ): Promise<void> {
         try {
             // eslint-disable-next-line @typescript-eslint/no-var-requires
-            const convertedFrames = convertNativescriptFramesToSentryFrames(stack);
-            this._replaceFramesInEvent(event, convertedFrames);
+            this._replaceFramesInEvent(event, stack);
         } catch (error) {
             if (error instanceof Error) {
                 logger.warn(`Unable to symbolicate stack trace: ${error.message}`);

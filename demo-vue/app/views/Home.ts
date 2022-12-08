@@ -20,6 +20,8 @@ export default {
         <Button text="throwError" @tap="throwError"/>
         <Button text="crashTest" @tap="crashTest"/>
         <Button text="nativeCrashTest" @tap="nativeCrashTest"/>
+        <Button text="androidNativeCrashTest" @tap="androidNativeCrashTest"/>
+        <Button text="androidNativeCrashCatchedTest" @tap="androidNativeCrashCatchedTest"/>
         <Button text="flush" @tap="flush"/>
       </StackLayout>
     </Page>
@@ -83,6 +85,7 @@ export default {
             });
         },
         throwError() {
+            
             Sentry.captureException(new Error('test_notify_error' + Date.now()));
         },
         leaveBreadcrumb() {
@@ -93,6 +96,24 @@ export default {
         },
         nativeCrashTest() {
             TestClass.someMethod();
+        },
+        androidNativeCrashCatchedTest() {
+            try {
+                console.log('androidNativeCrashTest', (com as any).nativescript.sentry.ClassExample.helloWorld('test3'));
+
+            } catch (error) {
+                // console.error('error', error);
+                // console.error('keys', Object.keys(error));
+                // console.error('nativeExceptio',  error.nativeException);
+                console.error('stackTrace', error.stackTrace);
+                console.error('stack', error.stack);
+                // console.error('stack', error.stack);
+                // console.error('stacktrace', error.stacktrace);
+                Sentry.captureException(error);
+            }
+        },
+        androidNativeCrashTest() {
+            console.log('androidNativeCrashTest', (com as any).nativescript.sentry.ClassExample.helloWorld('test3'));
         },
         flush() {
             Sentry.flush();

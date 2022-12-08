@@ -9,12 +9,17 @@ module.exports = (env, params = {}) => {
         config.entry('bundle').prepend('@nativescript-community/sentry/process');
     });
     const config =  nsWebpack.resolveConfig();
-
+    // Object.assign(config, {
+    //     snapshot: {
+    //         // detect changes in "node_modules"
+    //         managedPaths: [],
+    //     }
+    // });
     const definitions  =config.plugins.find((p) => p.constructor.name === 'DefinePlugin').definitions;
     delete definitions['process'];
     const SENTRY_PREFIX = 'app:///';
     Object.assign(definitions, {
-        'SENTRY_DSN': '"https://466438c5b21b4f5fa3b9278ae7baafac@bugs.akylas.fr/14"',
+        'SENTRY_DSN': '"https://3e5220672ff5463f9a0c5bb18bcac1fd@bugs.akylas.fr/2"',
         'SENTRY_PREFIX': `"${SENTRY_PREFIX}"`,
     });
 
@@ -38,21 +43,19 @@ module.exports = (env, params = {}) => {
         buildNumber = plistData.match(/<key>CFBundleVersion<\/key>[\s\n]*<string>([0-9]*)<\/string>/)[1];
     }
     config.resolve.symlinks = false;
-    config.devtool = 'inline-nosources-cheap-module-source-map';
+    config.devtool = false;
     config.plugins.push(
         new webpack.SourceMapDevToolPlugin({
             append: `\n//# sourceMappingURL=${SENTRY_PREFIX}[file].map`,
             filename: join(SOURCEMAP_REL_DIR, '[file].map')
         })
     );
-    const release = `${nconfig.id}@${appVersion}+${buildNumber}`;
     // config.plugins.push(
     //     new SentryCliPlugin({
     //         release: appVersion,
     //         urlPrefix: SENTRY_PREFIX,
     //         rewrite: true,
-    //         // cleanArtifacts: true,
-    //         release,
+    //         release: `${nconfig.id}@${appVersion}+${buildNumber}`,
     //         dist: `${buildNumber}.${platform}`,
     //         ignoreFile: '.sentrycliignore',
     //         include: [dist, join(dist, SOURCEMAP_REL_DIR)]
