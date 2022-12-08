@@ -91,9 +91,6 @@ export namespace NATIVE {
         const nException = new io.sentry.protocol.SentryException();
         nException.setType(type);
         nException.setValue(value);
-        console.log('test');
-        // nException.setModule('');
-        // nException.setModule('com.tns');
         nException.setThreadId(new java.lang.Long(java.lang.Thread.currentThread().getId()));
 
         nException.setStacktrace(convertToNativeJavascriptStacktrace(stack));
