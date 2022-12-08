@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.3](https://github.com/nativescript-community/sentry/compare/v4.6.2...v4.6.3) (2022-12-08)
+
+
+### Bug Fixes
+
+* fixed callstack parsing when there is java + javascript ([83094cd](https://github.com/nativescript-community/sentry/commit/83094cdf6ecf31fe0a757475efb7c38a1fc460f2))
+
+
+
+
+
 ## [4.6.2](https://github.com/nativescript-community/sentry/compare/v4.6.1...v4.6.2) (2022-10-28)
 
 
