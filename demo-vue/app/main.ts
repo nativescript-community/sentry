@@ -13,7 +13,9 @@ async function startSentry() {
             debug: true,
             flushSendEvent: true,
             enableNativeCrashHandling: true,
-            enableAutoPerformanceTracking: true
+            enableAutoPerformanceTracking: false,
+            enableAutoSessionTracking: false,
+            attachScreenshot:true
         });
         setTimeout(()=>{
             // Sentry.withScope(scope => {
