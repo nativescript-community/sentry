@@ -212,13 +212,21 @@ export namespace NATIVE {
             const [itemHeader, itemPayload] = _processItem(rawItem);
 
             let bytesPayload: number[] = [];
+            let bytesContentType: string;
             if (typeof itemPayload === 'string') {
                 bytesPayload = utf8ToBytes(itemPayload);
             } else if (itemPayload instanceof Uint8Array) {
+                bytesContentType = typeof itemHeader.content_type === 'string'
+                    ? itemHeader.content_type
+                    : 'application/octet-stream';
                 bytesPayload = [...itemPayload];
             } else if (itemPayload instanceof ArrayBuffer) {
                 bytesPayload = [...new Uint8Array(itemPayload)];
+                bytesContentType = typeof itemHeader.content_type === 'string'
+                    ? itemHeader.content_type
+                    : 'application/octet-stream';
             } else {
+                bytesContentType = 'application/json';
                 bytesPayload = utf8ToBytes(JSON.stringify(itemPayload));
                 if (!hardCrashed) {
                     hardCrashed = isHardCrash(itemPayload);
@@ -226,7 +234,7 @@ export namespace NATIVE {
             }
 
             // Content type is not inside BaseEnvelopeItemHeaders.
-            (itemHeader as BaseEnvelopeItemHeaders).content_type = 'application/json';
+            (itemHeader as BaseEnvelopeItemHeaders).content_type = bytesContentType;
             (itemHeader as BaseEnvelopeItemHeaders).length = bytesPayload.length;
             const serializedItemHeader = JSON.stringify(itemHeader) + '\n';
 
@@ -467,6 +475,9 @@ export namespace NATIVE {
     let initialized = false;
     let sentryOptions: NativescriptOptions ;
     let nSentryOptions: io.sentry.SentryOptions ;
+    let logger: io.sentry.android.core.AndroidLogger;
+    let buildInfo: io.sentry.android.core.BuildInfoProvider;
+
 
     function addPackages( event: io.sentry.SentryEvent,  sdk: io.sentry.protocol.SdkVersion) {
         const eventSdk = event.getSdk();
@@ -524,7 +535,8 @@ export namespace NATIVE {
             io.sentry.android.core.SentryAndroid.init(
                 Utils.android.getApplicationContext(),
                 new io.sentry.Sentry.OptionsConfiguration({
-                    configure(config: io.sentry.SentryOptions) {
+                    configure(config: io.sentry.android.core.SentryAndroidOptions) {
+                        console.log('config', config);
                         // config.setLogger(new io.sentry.SystemOutLogger());
                         try {
                             if (options.dsn) {
@@ -580,6 +592,9 @@ export namespace NATIVE {
                                 // by default we hide.
                                 config.setAttachThreads(options.attachThreads);
                             }
+                            if (options.attachScreenshot !== undefined) {
+                                config.setAttachScreenshot(options.attachScreenshot);
+                            }
                             if (options.sendDefaultPii !== undefined) {
                                 config.setSendDefaultPii(options.sendDefaultPii);
                             }
@@ -618,6 +633,11 @@ export namespace NATIVE {
                                 }
                             }
 
+                            const currentActivityHolder = io.sentry.android.core.CurrentActivityHolder.getInstance();
+                            const activity = Application.android.startActivity;
+                            if (activity != null) {
+                                currentActivityHolder.setActivity(activity);
+                            }
                             config.setTransportFactory(new io.sentry.ITransportFactory({
                                 create( sopt: io.sentry.SentryOptions,  requestDetails: io.sentry.RequestDetails) {
                                     const map =requestDetails.getHeaders();
@@ -682,6 +702,9 @@ export namespace NATIVE {
                     },
                 })
             );
+
+            logger = new io.sentry.android.core.AndroidLogger('NativescriptSentry');
+            buildInfo = new io.sentry.android.core.BuildInfoProvider(logger);
             initialized = true;
         } catch (e) {
             console.error('Catching on startWithOptions, calling callback', e);
@@ -973,6 +996,20 @@ export namespace NATIVE {
     //         }
     //     }));
     // }
+
+    export  function captureScreenshot(fileName = 'screenshot') {
+        const activity = Application.android.foregroundActivity || Application.android.startActivity;
+        const raw = io.sentry.android.core.internal.util.ScreenshotUtils.takeScreenshot(activity, logger, buildInfo);
+        console.log('captureScreenshot',activity , raw, raw?.length);
+        if (raw !== null) {
+            return [{
+                'contentType': 'image/png',
+                data:new Uint8Array((ArrayBuffer as any).from(java.nio.ByteBuffer.wrap(raw))),
+                filename:fileName + '.png'
+            }];
+        }
+        return null;
+    }
 
     function isFrameMetricsAggregatorAvailable() {
         return frameMetricsAggregator != null;

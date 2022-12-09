@@ -13,6 +13,7 @@ import { NativeTransport } from './transports/native';
 import { createUserFeedbackEnvelope, items } from './utils/envelope';
 import { mergeOutcomes } from './utils/outcome';
 import { NATIVE } from './wrapper';
+import { Screenshot } from './integrations/screenshot';
 
 
 /**
@@ -59,12 +60,13 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
     /**
    * @inheritDoc
    */
-    public eventFromException(_exception: unknown, _hint?: EventHint): PromiseLike<Event> {
+    public eventFromException(exception: unknown, hint?: EventHint): PromiseLike<Event> {
         // N put stackTrace in "stackTrace" instead of "stacktrace"
-        if (_exception['stackTrace']) {
-            _exception['stacktrace'] = _exception['stackTrace'];
+        if (exception['stackTrace']) {
+            exception['stacktrace'] = exception['stackTrace'];
         }
-        return this._browserClient.eventFromException(_exception, _hint);
+        Screenshot.attachScreenshotToEventHint(hint, this._options);
+        return this._browserClient.eventFromException(exception, hint);
     }
 
     /**

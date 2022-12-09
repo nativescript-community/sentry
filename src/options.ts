@@ -52,6 +52,13 @@ export interface BaseNativescriptOptions {
     attachThreads?: boolean;
 
     /**
+   * When enabled and a user experiences an error, Sentry provides the ability to take a screenshot and include it as an attachment.
+   *
+   * @default false
+   */
+    attachScreenshot?: boolean;
+
+    /**
    *  When enabled, certain personally identifiable information (PII) is added by active integrations.
    *
    * @default false

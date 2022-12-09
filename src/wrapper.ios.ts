@@ -541,4 +541,17 @@ export namespace NATIVE {
         }
         return null;
     }
+
+    export  function captureScreenshot(fileName = 'screenshot') {
+        const rawScreenshots = PrivateSentrySDKOnly.captureScreenshots();
+        const res = [];
+        for (let index = 0; index < rawScreenshots.count; index++) {
+            res.push({
+                'contentType': 'image/png',
+                data:new Uint8Array(interop.bufferFromData( rawScreenshots.objectAtIndex(index))),
+                filename:fileName + (index>0?`-${index}`:'')+ '.png'
+            });
+        }
+        return res;
+    }
 }
