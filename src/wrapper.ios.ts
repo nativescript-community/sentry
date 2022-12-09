@@ -349,15 +349,12 @@ export namespace NATIVE {
                 const exception = event.exceptions?.objectAtIndex(0);
                 const exceptionvalue = exception?.value;
                 if(exceptionvalue ) {
-
                     const matches =exceptionvalue.match(FATAL_ERROR_REGEXP);
                     if (matches) {
                         const errorMessage = matches[1];
                         const jsStackTrace = exceptionvalue.substring(exceptionvalue.indexOf(matches[2]));
                         const stack = parseErrorStack({ stack: 'at ' + jsStackTrace } as any).reverse();
                         stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
-                        console.log('errorMessage!', errorMessage);
-                        console.log('jsStackTrace!', jsStackTrace);
                         addJavascriptExceptionInterface(event, 'Error', errorMessage, stack.reverse());
                         exception.type = 'NativeScriptException';
                         exception.value = errorMessage;
