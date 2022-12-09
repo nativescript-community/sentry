@@ -1,7 +1,9 @@
 import { BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel } from '@sentry/types';
 import { SentryError, logger } from '@sentry/utils';
+import { parseErrorStack } from './integrations/debugsymbolicator';
 import { isHardCrash } from './misc';
 import { NativescriptOptions } from './options';
+import { rewriteFrameIntegration } from './sdk';
 import { utf8ToBytes } from './vendor';
 
 const numberHasDecimals = function (value: number): boolean {
@@ -60,9 +62,62 @@ function dataSerialize (data?: any, wrapPrimitives?: boolean) {
     }
 };
 
+const FATAL_ERROR_REGEXP = /NativeScript encountered a fatal error: (.*?)\n at \n(\t*)?(.*)$/m;
+
 export namespace NATIVE {
     let enableNative = true;
     const _DisabledNativeError = new SentryError('Native is disabled');
+
+    function convertToNativeJavascriptStacktrace(
+        stack: {
+            file?: string;
+            filename?: string;
+            function?: string;
+            methodName?: string;
+            column?: number;
+            colno?: number;
+            lineno?: number;
+            lineNumber?: number;
+            in_app?: boolean;
+        }[]
+    ) {
+        if (!stack) {
+            return null;
+        }
+        const nStackTrace = SentryStacktrace.new();
+        const frames = NSMutableArray.alloc().init();
+        for (let i = 0; i < stack.length; i++) {
+            const frame = stack[i];
+
+            const fileName = frame.file || frame.filename || '';
+            const methodName = frame.methodName || frame.function || '';
+
+            const lineNumber = frame.lineNumber || frame.lineno || 0;
+            const column = frame.column || frame.colno || 0;
+            const stackFrame = SentryFrame.new();
+            stackFrame.function = methodName;
+            stackFrame.fileName = fileName;
+            stackFrame.lineNumber = lineNumber;
+            stackFrame.columnNumber = column;
+            stackFrame.platform = 'javascript';
+            stackFrame.inApp = NSNumber.numberWithBool(frame.in_app || false) ;
+            frames.addObject(stackFrame);
+        }
+        nStackTrace.frames = (frames) as any;
+        return nStackTrace;
+    }
+    function addJavascriptExceptionInterface(nEvent: SentryEvent, type: string, value: string, stack) {
+        const exceptions = nEvent.exceptions;
+
+        const actualExceptions = NSMutableArray.alloc().initWithArray(exceptions);
+        const nException =  SentryException.new();
+        nException.type = type;
+        nException.value = value;
+        // nException.threadId = NSThread.currentThread.;
+        nException.stacktrace = convertToNativeJavascriptStacktrace(stack);
+        actualExceptions.insertObjectAtIndex(nException, 0);
+        nEvent.exceptions = (actualExceptions) as any;
+    }
 
     export function isNativeTransportAvailable() {
         return enableNative;
@@ -291,6 +346,23 @@ export namespace NATIVE {
 
             // before send right now is never called when we send the envelope
             nSentryOptions.beforeSend = (event: SentryEvent) => {
+                const exception = event.exceptions?.objectAtIndex(0);
+                const exceptionvalue = exception?.value;
+                if(exceptionvalue ) {
+
+                    const matches =exceptionvalue.match(FATAL_ERROR_REGEXP);
+                    if (matches) {
+                        const errorMessage = matches[1];
+                        const jsStackTrace = exceptionvalue.substring(exceptionvalue.indexOf(matches[2]));
+                        const stack = parseErrorStack({ stack: 'at ' + jsStackTrace } as any).reverse();
+                        stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
+                        console.log('errorMessage!', errorMessage);
+                        console.log('jsStackTrace!', jsStackTrace);
+                        addJavascriptExceptionInterface(event, 'Error', errorMessage, stack.reverse());
+                        exception.type = 'NativeScriptException';
+                        exception.value = errorMessage;
+                    }
+                }
                 if (beforeSend) {
                     beforeSend(event as any, null);
                 }
