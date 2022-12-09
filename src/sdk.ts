@@ -152,7 +152,6 @@ export function init(passedOptions: NativescriptOptions): void {
             new EventOrigin(),
             new SdkInfo()
         ]);
-        console.log('test', options.enableNative);
         if (!!options.enableNative) {
             defaultIntegrations.push(new DeviceContext());
         }
