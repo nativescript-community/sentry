@@ -534,7 +534,7 @@ export namespace NATIVE {
                             }
 
                             if (options.sendClientReports) {
-                                // config.setSendClientReports(options.sendClientReports);
+                                config.setSendClientReports(options.sendClientReports);
                             }
 
                             if (options.maxBreadcrumbs) {
@@ -642,7 +642,6 @@ export namespace NATIVE {
                                         // we use this callback to actually try and get the JS stack when a native error is catched
                                         try {
                                             const ex: io.sentry.protocol.SentryException = event.getExceptions().get(0);
-                                            console.log('beforeSend', ex, ex.getStacktrace(), ex.getMechanism());
                                             if (ex && ex.getType() === 'NativeScriptException') {
                                                 let mechanism = event.getThrowable && event.getThrowable();
                                                 if (!mechanism) {
@@ -660,9 +659,7 @@ export namespace NATIVE {
                                                     const jsStackTrace: string = (throwable ).getIncomingStackTrace();
                                                     if (jsStackTrace) {
 
-                                                        console.log('jsStackTrace', jsStackTrace);
                                                         const stack = parseErrorStack({ stack: 'at ' + jsStackTrace } as any).reverse();
-                                                        console.log('stack', stack);
                                                         stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
                                                         addJavascriptExceptionInterface(event, 'Error', throwable.getMessage(), stack.reverse());
                                                     }
