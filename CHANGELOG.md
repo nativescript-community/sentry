@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.6](https://github.com/nativescript-community/sentry/compare/v4.6.5...v4.6.6) (2022-12-09)
+
+
+### Bug Fixes
+
+* **ios:** correctly translate JS stack from fatal error ([30304d3](https://github.com/nativescript-community/sentry/commit/30304d3c5c34d32c7370c48bd3392b49be12db50))
+
+
+
+
+
 ## [4.6.5](https://github.com/nativescript-community/sentry/compare/v4.6.4...v4.6.5) (2022-12-09)
 
 
