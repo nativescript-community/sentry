@@ -33,7 +33,6 @@ export class Screenshot implements Integration {
                 ...(hint?.attachments || []),
             ];
         }
-        console.log('attachScreenshotToEventHint', screenshots, hint.attachments);
         return hint;
     }
 
