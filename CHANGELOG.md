@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.5](https://github.com/nativescript-community/sentry/compare/v4.6.4...v4.6.5) (2022-12-09)
+
+
+### Features
+
+* captureScreenshot support ([e9e565f](https://github.com/nativescript-community/sentry/commit/e9e565f2301ef3964772297a639242b422483b7c))
+
+
+
+
+
 ## [4.6.4](https://github.com/nativescript-community/sentry/compare/v4.6.3...v4.6.4) (2022-12-09)
 
 
