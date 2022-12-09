@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.4](https://github.com/nativescript-community/sentry/compare/v4.6.3...v4.6.4) (2022-12-09)
+
+
+### Bug Fixes
+
+* **android:** native sdk update ([633dd3a](https://github.com/nativescript-community/sentry/commit/633dd3aebed875bb7fb2e6c08eeca53c208756ea))
+* **ios:** native sdk update with build fix ([b73b021](https://github.com/nativescript-community/sentry/commit/b73b021af47a59b40156503d1776928953d505ed))
+
+
+
+
+
 ## [4.6.3](https://github.com/nativescript-community/sentry/compare/v4.6.2...v4.6.3) (2022-12-08)
 
 **Note:** Version bump only for package @nativescript-community/sentry
