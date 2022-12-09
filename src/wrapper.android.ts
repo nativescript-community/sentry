@@ -469,7 +469,6 @@ export namespace NATIVE {
     }
 
     export function flush(timeout: number = 0) {
-        console.log('flush', timeout);
         io.sentry.Sentry.flush(timeout);
     }
     let initialized = false;
@@ -536,7 +535,6 @@ export namespace NATIVE {
                 Utils.android.getApplicationContext(),
                 new io.sentry.Sentry.OptionsConfiguration({
                     configure(config: io.sentry.android.core.SentryAndroidOptions) {
-                        console.log('config', config);
                         // config.setLogger(new io.sentry.SystemOutLogger());
                         try {
                             if (options.dsn) {
@@ -1000,7 +998,6 @@ export namespace NATIVE {
     export  function captureScreenshot(fileName = 'screenshot') {
         const activity = Application.android.foregroundActivity || Application.android.startActivity;
         const raw = io.sentry.android.core.internal.util.ScreenshotUtils.takeScreenshot(activity, logger, buildInfo);
-        console.log('captureScreenshot',activity , raw, raw?.length);
         if (raw !== null) {
             return [{
                 'contentType': 'image/png',

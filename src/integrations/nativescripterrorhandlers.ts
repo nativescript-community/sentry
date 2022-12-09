@@ -95,7 +95,6 @@ export class NativescriptErrorHandlers implements Integration {
     handlingFatal = false;
 
     private globalHander(error: any, isFatal?: boolean) {
-        console.log('globalHander', Object.keys(error));
         try {
             // We want to handle fatals, but only in production mode.
             const shouldHandleFatal = isFatal && !__DEV__;
