@@ -1,12 +1,13 @@
 import { getCurrentHub } from '@sentry/core';
 import { eventFromUnknownInput } from '@sentry/browser/esm/eventbuilder';
-import { Integration, SeverityLevel } from '@sentry/types';
+import { EventHint, Integration, SeverityLevel } from '@sentry/types';
 import { NATIVE } from '../wrapper';
 import { addExceptionMechanism, getGlobalObject, logger } from '@sentry/utils';
 
 import { NativescriptClient } from '../client';
 
 import {Application, Trace} from '@nativescript/core';
+import { Screenshot } from './screenshot';
 
 /** NativescriptErrorHandlers Options */
 export interface NativescriptErrorHandlersOptions {
@@ -123,28 +124,34 @@ export class NativescriptErrorHandlers implements Integration {
 
                 return;
             }
+
+
+            // We override client.eventFromException because it is async function
+            // while not needed and we want to be sync
             if (error['stackTrace']) {
                 error['stacktrace'] = error['stackTrace'];
             }
-            // const syntheticException = (hint && hint.syntheticException) || undefined;
-            const event = eventFromUnknownInput(client.getOptions().stackParser, error, undefined, true);
+            let hint: EventHint = {
+                originalException: error
+            };
+            const syntheticException = (hint && hint.syntheticException) || undefined;
+            hint = Screenshot.attachScreenshotToEventHint(hint, client.getOptions());
+            const event = eventFromUnknownInput(client.getOptions().stackParser, error, syntheticException, client.getOptions().attachStacktrace);
             addExceptionMechanism(event); // defaults to { type: 'generic', handled: true }
             event.level = 'error';
-            // const event = await client.eventFromException(error, {
-            //     originalException: error
-            // });
+            if (hint && hint.event_id) {
+                event.event_id = hint.event_id;
+            }
 
             if (isFatal) {
                 event.level = 'fatal' as SeverityLevel;
-
                 addExceptionMechanism(event, {
                     handled: false,
                     type: 'onerror',
                 });
             }
 
-            const result = client.captureEvent(event);
-            console.log('globalHander2', result, Object.keys(event));
+            client.captureEvent(event);
         } catch (error) {
             console.error(error);
         }
