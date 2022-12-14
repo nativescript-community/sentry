@@ -690,6 +690,18 @@ export namespace NATIVE {
                                     },
                                 })
                             );
+                            config.setBeforeBreadcrumb(
+                                new io.sentry.SentryOptions.BeforeBreadcrumbCallback({
+                                    execute(event, hint) {
+                                        if (options.beforeBreadcrumb) {
+                                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+                                            return options.beforeBreadcrumb(event, hint);
+                                        } else {
+                                            return event;
+                                        }
+                                    }
+                                })
+                            );
                             nSentryOptions = config;
                             sentryOptions = options;
                         } catch(err) {
