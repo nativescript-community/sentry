@@ -212,13 +212,21 @@ export namespace NATIVE {
             const [itemHeader, itemPayload] = _processItem(rawItem);
 
             let bytesPayload: number[] = [];
+            let bytesContentType: string;
             if (typeof itemPayload === 'string') {
                 bytesPayload = utf8ToBytes(itemPayload);
             } else if (itemPayload instanceof Uint8Array) {
+                bytesContentType = typeof itemHeader.content_type === 'string'
+                    ? itemHeader.content_type
+                    : 'application/octet-stream';
                 bytesPayload = [...itemPayload];
             } else if (itemPayload instanceof ArrayBuffer) {
                 bytesPayload = [...new Uint8Array(itemPayload)];
+                bytesContentType = typeof itemHeader.content_type === 'string'
+                    ? itemHeader.content_type
+                    : 'application/octet-stream';
             } else {
+                bytesContentType = 'application/json';
                 bytesPayload = utf8ToBytes(JSON.stringify(itemPayload));
                 if (!hardCrashed) {
                     hardCrashed = isHardCrash(itemPayload);
@@ -226,7 +234,7 @@ export namespace NATIVE {
             }
 
             // Content type is not inside BaseEnvelopeItemHeaders.
-            (itemHeader as BaseEnvelopeItemHeaders).content_type = 'application/json';
+            (itemHeader as BaseEnvelopeItemHeaders).content_type = bytesContentType;
             (itemHeader as BaseEnvelopeItemHeaders).length = bytesPayload.length;
             const serializedItemHeader = JSON.stringify(itemHeader) + '\n';
 
@@ -461,12 +469,14 @@ export namespace NATIVE {
     }
 
     export function flush(timeout: number = 0) {
-        console.log('flush', timeout);
         io.sentry.Sentry.flush(timeout);
     }
     let initialized = false;
     let sentryOptions: NativescriptOptions ;
     let nSentryOptions: io.sentry.SentryOptions ;
+    let logger: io.sentry.android.core.AndroidLogger;
+    let buildInfo: io.sentry.android.core.BuildInfoProvider;
+
 
     function addPackages( event: io.sentry.SentryEvent,  sdk: io.sentry.protocol.SdkVersion) {
         const eventSdk = event.getSdk();
@@ -524,7 +534,7 @@ export namespace NATIVE {
             io.sentry.android.core.SentryAndroid.init(
                 Utils.android.getApplicationContext(),
                 new io.sentry.Sentry.OptionsConfiguration({
-                    configure(config: io.sentry.SentryOptions) {
+                    configure(config: io.sentry.android.core.SentryAndroidOptions) {
                         // config.setLogger(new io.sentry.SystemOutLogger());
                         try {
                             if (options.dsn) {
@@ -534,7 +544,7 @@ export namespace NATIVE {
                             }
 
                             if (options.sendClientReports) {
-                                // config.setSendClientReports(options.sendClientReports);
+                                config.setSendClientReports(options.sendClientReports);
                             }
 
                             if (options.maxBreadcrumbs) {
@@ -580,6 +590,9 @@ export namespace NATIVE {
                                 // by default we hide.
                                 config.setAttachThreads(options.attachThreads);
                             }
+                            if (options.attachScreenshot !== undefined) {
+                                config.setAttachScreenshot(options.attachScreenshot);
+                            }
                             if (options.sendDefaultPii !== undefined) {
                                 config.setSendDefaultPii(options.sendDefaultPii);
                             }
@@ -618,6 +631,11 @@ export namespace NATIVE {
                                 }
                             }
 
+                            const currentActivityHolder = io.sentry.android.core.CurrentActivityHolder.getInstance();
+                            const activity = Application.android.startActivity;
+                            if (activity != null) {
+                                currentActivityHolder.setActivity(activity);
+                            }
                             config.setTransportFactory(new io.sentry.ITransportFactory({
                                 create( sopt: io.sentry.SentryOptions,  requestDetails: io.sentry.RequestDetails) {
                                     const map =requestDetails.getHeaders();
@@ -642,7 +660,6 @@ export namespace NATIVE {
                                         // we use this callback to actually try and get the JS stack when a native error is catched
                                         try {
                                             const ex: io.sentry.protocol.SentryException = event.getExceptions().get(0);
-                                            console.log('beforeSend', ex, ex.getStacktrace(), ex.getMechanism());
                                             if (ex && ex.getType() === 'NativeScriptException') {
                                                 let mechanism = event.getThrowable && event.getThrowable();
                                                 if (!mechanism) {
@@ -660,9 +677,7 @@ export namespace NATIVE {
                                                     const jsStackTrace: string = (throwable ).getIncomingStackTrace();
                                                     if (jsStackTrace) {
 
-                                                        console.log('jsStackTrace', jsStackTrace);
                                                         const stack = parseErrorStack({ stack: 'at ' + jsStackTrace } as any).reverse();
-                                                        console.log('stack', stack);
                                                         stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
                                                         addJavascriptExceptionInterface(event, 'Error', throwable.getMessage(), stack.reverse());
                                                     }
@@ -675,6 +690,18 @@ export namespace NATIVE {
                                     },
                                 })
                             );
+                            config.setBeforeBreadcrumb(
+                                new io.sentry.SentryOptions.BeforeBreadcrumbCallback({
+                                    execute(event, hint) {
+                                        if (options.beforeBreadcrumb) {
+                                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+                                            return options.beforeBreadcrumb(event, hint);
+                                        } else {
+                                            return event;
+                                        }
+                                    }
+                                })
+                            );
                             nSentryOptions = config;
                             sentryOptions = options;
                         } catch(err) {
@@ -685,6 +712,9 @@ export namespace NATIVE {
                     },
                 })
             );
+
+            logger = new io.sentry.android.core.AndroidLogger('NativescriptSentry');
+            buildInfo = new io.sentry.android.core.BuildInfoProvider(logger);
             initialized = true;
         } catch (e) {
             console.error('Catching on startWithOptions, calling callback', e);
@@ -737,24 +767,7 @@ export namespace NATIVE {
                 }
             }
         }
-
     }
-    // export function setLogLevel(level: number) {
-    //     switch (level) {
-    //         case 1:
-    //             io.sentry.Sentry.setLevel(null);
-    //             break;
-    //         case 2:
-    //             io.sentry.Sentry.setLevel(io.sentry.SentryLevel.ERROR);
-    //             break;
-    //         case 3:
-    //             io.sentry.Sentry.setLevel(io.sentry.SentryLevel.DEBUG);
-    //             break;
-    //         case 4:
-    //             io.sentry.Sentry.setLevel(io.sentry.SentryLevel.INFO);
-    //             break;
-    //     }
-    // }
 
     export function fetchNativeSdkInfo () {
         return null;
@@ -787,195 +800,20 @@ export namespace NATIVE {
     }
     export async function fetchNativeDeviceContexts() {
         return {};
-        // return new Promise((resolve) => {
-        //     const nEvent = new io.sentry.SentryEvent();
-
-        //     const params = {};
-        //     const it = nEvent.getContexts().entrySet().iterator();
-        //     let value, pair, key;
-        //     while (it.hasNext()) {
-        //         pair = it.next();
-        //         value = pair.getValue();
-        //         key = pair.getKey();
-        //         params[key] = getJSHashMap(value);
-        //     }
-        //     resolve(params);
-        // });
     }
 
-    // export function captureUserFeedback(feedback: UserFeedback) {
-    //     if (!enableNative) {
-    //         return;
-    //     }
-    //     const userFeedback = new io.sentry.UserFeedback(new io.sentry.protocol.SentryId(feedback.eventId));
-    //     if (feedback.comments) {
-    //         userFeedback.setComments(feedback.comments);
-    //     }
-    //     if (feedback.email) {
-    //         userFeedback.setEmail(feedback.email);
-    //     }
-    //     if (feedback.name) {
-    //         userFeedback.setName(feedback.name);
-    //     }
-    //     io.sentry.Sentry.captureUserFeedback(userFeedback);
-    // }
-
-
-    // export function setUser(user: User | null, otherUserKeys) {
-    //     if (!enableNative) {
-    //         return;
-    //     }
-    //     io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
-    //         run(scope) {
-    //             if (user == null && otherUserKeys == null) {
-    //                 scope.setUser(null);
-    //             } else {
-    //                 const userInstance = new io.sentry.protocol.User();
-
-    //                 if (user) {
-    //                     if (user.email) {
-    //                         userInstance.setEmail(user.email);
-    //                     }
-
-    //                     if (user.id) {
-    //                         userInstance.setId(user.id);
-    //                     }
-
-    //                     if (user.username) {
-    //                         userInstance.setUsername(user.username);
-    //                     }
-
-    //                     if (user.ip_address) {
-    //                         userInstance.setIpAddress(user.ip_address);
-    //                     }
-    //                 }
-
-    //                 if (otherUserKeys ) {
-    //                     userInstance.setOthers(getNativeHashMap(otherUserKeys));
-    //                 }
-    //                 scope.setUser(userInstance);
-    //             }
-    //         }
-    //     }));
-
-    // }
-    // export function setTag(key: string, value: string) {
-    //     if (!enableNative) {
-    //         return;
-    //     }
-    //     io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
-    //         run(scope) {
-    //             scope.setTag(key, value);
-    //         }
-    //     }));
-    // }
-
-    // export function setExtra(key: string, extra: string) {
-    //     if (!enableNative) {
-    //         return;
-    //     }
-    //     io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
-    //         run(scope) {
-    //             scope.setExtra(key, extra);
-    //         }
-    //     }));
-    // }
-
-    // export function withScope(callback: (scope: Scope) => void) {
-    //     io.sentry.Sentry.withScope(new io.sentry.ScopeCallback({
-    //         run(nscope) {
-    //             // nscope is ignored
-    //             console.log('native withScope', nscope);
-    //             callback(nscope as any);
-    //         }
-    //     }));
-    // }
-
-    // export function addBreadcrumb(breadcrumb: Breadcrumb, maxBreadcrumbs?: number) {
-    //     if (!enableNative) {
-    //         return;
-    //     }
-    //     io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
-    //         run(scope) {
-    //             try {
-    //                 console.log('addBreadcrumb', breadcrumb, scope);
-
-    //                 const breadcrumbInstance = new io.sentry.Breadcrumb();
-
-    //                 if (breadcrumb.message) {
-    //                     breadcrumbInstance.setMessage(breadcrumb.message);
-    //                 }
-
-    //                 if (breadcrumb.type) {
-    //                     breadcrumbInstance.setType(breadcrumb.type);
-    //                 }
-
-    //                 if (breadcrumb.category) {
-    //                     breadcrumbInstance.setCategory(breadcrumb.category);
-    //                 }
-
-    //                 if (breadcrumb.level) {
-    //                     breadcrumbInstance.setLevel(eventLevel(breadcrumb.level));
-    //                 }
-
-    //                 if (breadcrumb.data) {
-    //                     Object.keys(breadcrumb.data).forEach(key => {
-    //                         breadcrumbInstance.setData(key, breadcrumb.data[key]);
-    //                     });
-    //                 }
-
-    //                 scope.addBreadcrumb(breadcrumbInstance);
-    //             } catch (error) {
-    //                 console.error('addBreadcrumb', error, error.stack);
-
-    //             }
-    //         }
-    //     }));
-    // }
-    // export function  addAttachment(attachment: Attachment) {
-    //     if (!enableNative) {
-    //         return;
-    //     }
-    //     io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
-    //         run(scope) {
-    //             console.log('addAttachment', attachment, scope);
-    //             try {
-    //                 if (attachment.data) {
-    //                     if (typeof attachment.data === 'string') {
-    //                         attachment.data = new TextEncoder().encode(attachment.data);
-    //                     }
-    //                     const bytes = pointsFromBuffer(attachment.data, true, false);
-    //                     console.log('addAttachment', typeof attachment.data, attachment.data.length, bytes, bytes.length);
-    //                     scope.addAttachment(new io.sentry.Attachment(bytes,  attachment.filename));
-    //                 } else {
-    //                     scope.addAttachment(new io.sentry.Attachment(attachment.filename));
-    //                 }
-    //             } catch (error) {
-    //                 console.error('addAttachment', error, error.stack);
-    //             }
-    //         }
-    //     }));
-    // }
-    // export function clearBreadcrumbs() {
-    //     if (!enableNative) {
-    //         return;
-    //     }
-    //     io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
-    //         run(scope) {
-    //             scope.clearBreadcrumbs();
-    //         }
-    //     }));
-    // }
-    // export function setContext(key: string, context: { [key: string]: any } | null) {
-    //     if (!enableNative) {
-    //         return;
-    //     }
-    //     io.sentry.Sentry.configureScope(new io.sentry.ScopeCallback({
-    //         run(scope) {
-    //             scope.setContexts(key, getNativeHashMap(context));
-    //         }
-    //     }));
-    // }
+    export  function captureScreenshot(fileName = 'screenshot') {
+        const activity = Application.android.foregroundActivity || Application.android.startActivity;
+        const raw = io.sentry.android.core.internal.util.ScreenshotUtils.takeScreenshot(activity, logger, buildInfo);
+        if (raw !== null) {
+            return [{
+                'contentType': 'image/png',
+                data:new Uint8Array((ArrayBuffer as any).from(java.nio.ByteBuffer.wrap(raw))),
+                filename:fileName + '.png'
+            }];
+        }
+        return null;
+    }
 
     function isFrameMetricsAggregatorAvailable() {
         return frameMetricsAggregator != null;

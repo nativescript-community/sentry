@@ -41,6 +41,13 @@ export interface UserFeedback {
     name?: string;
 }
 
+export interface NativeScreenshot {
+    data: Uint8Array;
+    contentType: string;
+    filename: string;
+}
+
+
 export namespace NATIVE {
     const nativeClientAvailable: boolean;
     const nativeTransport: boolean;
@@ -85,4 +92,6 @@ export namespace NATIVE {
     function withScope(callback: (scope: Scope) => void): ReturnType<Hub['withScope']>;
 
     function utf8ToBytes(str: string): Uint8Array;
+
+    function captureScreenshot( fileName?: string): NativeScreenshot[];
 }

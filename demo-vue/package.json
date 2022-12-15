@@ -4,7 +4,7 @@
     "readme": "README.md",
     "repository": "http://www.github.com/nativescript-community/sentry.git",
     "dependencies": {
-        "@nativescript-community/sentry": "4.6.2",
+        "@nativescript-community/sentry": "link:../plugin",
         "@nativescript/core": "8.4.1",
         "nativescript-vue": "2.9.3"
     },
@@ -23,8 +23,5 @@
         "vue": "~2.6.14",
         "vue-loader": "~15.9.8"
     },
-    "main": "app/main",
-    "resolutions": {
-        "@nativescript-community/sentry": "portal:../plugin"
-    }
+    "main": "app/main"
 }

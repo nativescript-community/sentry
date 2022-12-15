@@ -18,6 +18,7 @@ import { makeUtf8TextEncoder } from './transports/TextEncoder';
 import { safeFactory, safeTracesSampler } from './utils/safe';
 import { NATIVE } from './wrapper';
 import { parseErrorStack } from './integrations/debugsymbolicator';
+import { Screenshot } from './integrations/screenshot';
 
 
 const STACKTRACE_LIMIT = 50;
@@ -152,7 +153,6 @@ export function init(passedOptions: NativescriptOptions): void {
             new EventOrigin(),
             new SdkInfo()
         ]);
-        console.log('test', options.enableNative);
         if (!!options.enableNative) {
             defaultIntegrations.push(new DeviceContext());
         }
@@ -160,6 +160,9 @@ export function init(passedOptions: NativescriptOptions): void {
             if (options.enableAutoPerformanceTracking) {
                 defaultIntegrations.push(new NativescriptTracing());
             }
+        }
+        if (options.attachScreenshot) {
+            defaultIntegrations.push(new Screenshot());
         }
     }
     options.integrations = getIntegrationsToSetup({
