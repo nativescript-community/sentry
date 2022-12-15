@@ -692,12 +692,11 @@ export namespace NATIVE {
                             );
                             config.setBeforeBreadcrumb(
                                 new io.sentry.SentryOptions.BeforeBreadcrumbCallback({
-                                    execute(event, hint) {
+                                    execute(breadcrumb: io.sentry.Breadcrumb, hint: io.sentry.Hint) {
                                         if (options.beforeBreadcrumb) {
-                                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-                                            return options.beforeBreadcrumb(event, hint);
+                                            return options.beforeBreadcrumb(breadcrumb as any, hint) as any;
                                         } else {
-                                            return event;
+                                            return breadcrumb;
                                         }
                                     }
                                 })

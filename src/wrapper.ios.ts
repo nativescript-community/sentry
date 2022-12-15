@@ -370,7 +370,7 @@ export namespace NATIVE {
                 if (beforeBreadcrumb) {
                     const deserialized = dictToJSON(breadcrumb.serialize());
                     const processed = beforeBreadcrumb(deserialized, null);
-                    const serialized = dataSerialize(processed);
+                    const serialized = dataSerialize(processed) as NSDictionary<string, any>;
                     const levels = ['log', 'debug', 'info', 'warning', 'error', 'fatal'];
 
                     if (processed) {
@@ -382,7 +382,7 @@ export namespace NATIVE {
                     }
                 }
                 return breadcrumb;
-            }
+            };
             if (toPassOptions.hasOwnProperty('enableNativeCrashHandling')) {
                 if (!toPassOptions.enableNativeCrashHandling) {
                     const integrations = nSentryOptions.integrations.mutableCopy();
