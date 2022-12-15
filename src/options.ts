@@ -1,4 +1,3 @@
-import { BaseBrowserOptions } from '@sentry/browser/types/client';
 import { BrowserTransportOptions } from '@sentry/browser/types/transports/types';
 // import { ProfilerProps } from '@sentry/react/types/profiler';
 import { ClientOptions, Options } from '@sentry/types';
@@ -40,7 +39,7 @@ export interface BaseNativescriptOptions {
     /** Should the native nagger alert be shown or not. */
     enableNativeNagger?: boolean;
 
-    /** Should sessions be tracked to Sentry Health or not. */
+    /** Should sessions be tracked to Sentry Health or not. Default to true! */
     enableAutoSessionTracking?: boolean;
 
     /** The interval to end a session if the App goes to the background. */
@@ -51,6 +50,13 @@ export interface BaseNativescriptOptions {
 
     /** When enabled, all the threads are automatically attached to all logged events on Android */
     attachThreads?: boolean;
+
+    /**
+   * When enabled and a user experiences an error, Sentry provides the ability to take a screenshot and include it as an attachment.
+   *
+   * @default false
+   */
+    attachScreenshot?: boolean;
 
     /**
    *  When enabled, certain personally identifiable information (PII) is added by active integrations.
@@ -121,7 +127,7 @@ export interface BaseNativescriptOptions {
  * @see ReactNativeFrontend for more information.
  */
 
-export interface NativescriptOptions extends Options<BrowserTransportOptions>, BaseBrowserOptions, BaseNativescriptOptions, NativescriptErrorHandlersOptions {
+export interface NativescriptOptions extends Options<BrowserTransportOptions>, BaseNativescriptOptions, NativescriptErrorHandlersOptions {
     headers?: {[k: string]: string};
     /**
      * Optional prefix to add while rewriting frames
@@ -140,7 +146,7 @@ export interface NativescriptOptions extends Options<BrowserTransportOptions>, B
     };
 }
 
-export interface NativescriptClientOptions extends ClientOptions<BrowserTransportOptions>, BaseBrowserOptions, BaseNativescriptOptions {
+export interface NativescriptClientOptions extends ClientOptions<BrowserTransportOptions>, BaseNativescriptOptions {
 
 
 }

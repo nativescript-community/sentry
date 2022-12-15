@@ -4,6 +4,7 @@ import { TextEncoder } from '@nativescript/core/text';
 import { createArrayBuffer } from '@nativescript-community/arraybuffers';
 declare class TestClass {
     static someMethod();
+    static helloWorld(str: string);
 }
 
 export default {
@@ -85,7 +86,7 @@ export default {
             });
         },
         throwError() {
-            
+
             Sentry.captureException(new Error('test_notify_error' + Date.now()));
         },
         leaveBreadcrumb() {
@@ -99,8 +100,12 @@ export default {
         },
         androidNativeCrashCatchedTest() {
             try {
-                console.log('androidNativeCrashTest', (com as any).nativescript.sentry.ClassExample.helloWorld('test3'));
-
+                if (__ANDROID__) {
+                    console.log('androidNativeCrashTest', (com as any).nativescript.sentry.ClassExample.helloWorld('test3'));
+                }
+                if(__IOS__) {
+                    console.log('iosNativeCrashTest', TestClass.helloWorld('test3'));
+                }
             } catch (error) {
                 // console.error('error', error);
                 // console.error('keys', Object.keys(error));
@@ -113,7 +118,12 @@ export default {
             }
         },
         androidNativeCrashTest() {
-            console.log('androidNativeCrashTest', (com as any).nativescript.sentry.ClassExample.helloWorld('test3'));
+            if (__ANDROID__) {
+                console.log('androidNativeCrashTest', (com as any).nativescript.sentry.ClassExample.helloWorld('test3'));
+            }
+            if(__IOS__) {
+                console.log('iosNativeCrashTest', TestClass.helloWorld('test3'));
+            }
         },
         flush() {
             Sentry.flush();

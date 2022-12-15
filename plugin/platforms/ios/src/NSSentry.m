@@ -1,5 +1,6 @@
 #import "NSSentry.h"
 #import <Sentry/Sentry.h>
+#import <Sentry/PrivateSentrySDKOnly.h>
 
 @implementation NSSentrySDK
 

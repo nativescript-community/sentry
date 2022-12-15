@@ -8,4 +8,10 @@
     NSLog(@"%@", result);
 }
 
+
++(void)helloWorld: (NSString* ) message  {
+    @throw [NSException exceptionWithName:message
+                               reason:@"reason"
+                             userInfo:nil];
+}
 @end
