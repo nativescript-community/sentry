@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.8](https://github.com/nativescript-community/sentry/compare/v4.6.7...v4.6.8) (2023-01-23)
+
+
+### Bug Fixes
+
+* **android:** improved native-api-usage ([5886e27](https://github.com/nativescript-community/sentry/commit/5886e2710b32f312111e74e2b79566486ed4a05e))
+
+
+
+
+
 ## [4.6.7](https://github.com/nativescript-community/sentry/compare/v4.6.6...v4.6.7) (2022-12-15)
 
 **Note:** Version bump only for package sentry
