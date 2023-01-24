@@ -16,7 +16,7 @@
         "io.sentry:SentryOptions",
         "io.sentry:UserFeedback",
         "io.sentry:RequestDetails",
-        "io.sentry.SentryOptions:BeforeSendCallback",
+        "io.sentry:SentryOptions.BeforeSendCallback",
         "io.sentry.protocol:User",
         "io.sentry.protocol:SentryStackTrace",
         "io.sentry.protocol:SentryStackFrame",
