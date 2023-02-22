@@ -200,13 +200,14 @@ export function nativeCrash(): void {
 /**
  * Flushes all pending events in the queue to disk.
  * Use this before applying any realtime updates such as code-push or expo updates.
+ * Not yet working on Android
  */
-export async function flush(): Promise<boolean> {
+export async function flush(timeout: number): Promise<boolean> {
     try {
         const client = getCurrentHub().getClient<NativescriptClient>();
 
         if (client) {
-            const result = await client.flush();
+            const result = await client.flush(timeout);
 
             return result;
         }
