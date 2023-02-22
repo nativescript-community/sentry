@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.11](https://github.com/nativescript-community/sentry/compare/v4.6.10...v4.6.11) (2023-02-22)
+
+
+### Bug Fixes
+
+* typings fix for flush method ([6b7f94c](https://github.com/nativescript-community/sentry/commit/6b7f94c47c05e25ad40996430fe3878d0ec2f903))
+
+
+
+
+
 ## [4.6.10](https://github.com/nativescript-community/sentry/compare/v4.6.9...v4.6.10) (2023-02-22)
 
 
