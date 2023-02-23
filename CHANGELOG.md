@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.12](https://github.com/nativescript-community/sentry/compare/v4.6.11...v4.6.12) (2023-02-23)
+
+
+### Bug Fixes
+
+* removed debug logging ([e16a498](https://github.com/nativescript-community/sentry/commit/e16a498b01d31c9f2674900063337064542f7fd2))
+
+
+
+
+
 ## [4.6.11](https://github.com/nativescript-community/sentry/compare/v4.6.10...v4.6.11) (2023-02-22)
 
 
