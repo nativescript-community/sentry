@@ -104,7 +104,6 @@ export function parseErrorStack(e: NativescriptError): StackFrame[] {
     if (!stack) {
         return [];
     }
-    console.log('parseErrorStack', stack);
     return stackParser(stack);
 }
 
