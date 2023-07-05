@@ -2,7 +2,7 @@ const webpack = require('webpack');
 const nsWebpack = require('@nativescript/webpack');
 const { dirname, join, relative, resolve, sep } = require('path');
 const { readdirSync, readFileSync } = require('fs');
-const SentryCliPlugin = require('@sentry/webpack-plugin');
+const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
 module.exports = (env, params = {}) => {
     nsWebpack.init(env);
     nsWebpack.chainWebpack(config=>{
@@ -51,14 +51,18 @@ module.exports = (env, params = {}) => {
         })
     );
     // config.plugins.push(
-    //     new SentryCliPlugin({
+    //     sentryWebpackPlugin({
     //         release: appVersion,
     //         urlPrefix: SENTRY_PREFIX,
     //         rewrite: true,
-    //         release: `${nconfig.id}@${appVersion}+${buildNumber}`,
-    //         dist: `${buildNumber}.${platform}`,
-    //         ignoreFile: '.sentrycliignore',
-    //         include: [dist, join(dist, SOURCEMAP_REL_DIR)]
+    //         release: {
+    //             name: `${nconfig.id}@${appVersion}+${buildNumber}`,
+    //             dist: `${buildNumber}.${platform}`,
+    //             uploadLegacySourcemaps: {
+    //                 ignoreFile: '.sentrycliignore',
+    //                 paths: [dist, join(dist, SOURCEMAP_REL_DIR)]
+    //             },
+    //         },
     //     })
     // );
     return config;
