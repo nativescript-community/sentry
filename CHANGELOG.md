@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.13](https://github.com/nativescript-community/sentry/compare/v4.6.12...v4.6.13) (2023-12-15)
+
+
+### Features
+
+* update sentry/webpack-plugin to v2.2.2 ([10ae22a](https://github.com/nativescript-community/sentry/commit/10ae22a4ff9097a0558b313fb1bea2aa17fe14b0))
+
+
+
+
+
 ## [4.6.12](https://github.com/nativescript-community/sentry/compare/v4.6.11...v4.6.12) (2023-02-23)
 
 
