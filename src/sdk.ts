@@ -117,18 +117,18 @@ export function init(passedOptions: NativescriptOptions): void {
         rewriteFrameIntegration = new RewriteFrames({
             iteratee: (frame: StackFrame) => {
                 if (frame.platform === 'javascript' && frame.filename) {
-                    let filename = (frame.filename = frame.filename
+                    let filename = frame.filename
                         .replace(/^file\:\/\//, '')
+                        .replace(/^app\:\/\//, '')
                         .replace(/^address at /, '')
-                        .replace(/^.*\/[^\.]+(\.app|CodePush|.*(?=\/))/, ''));
+                        .replace(/^.*\/[^\.]+(\.app|CodePush|.*(?=\/))/, '');
 
-                    // const appPrefix = 'app://';
                     if (frame.filename.indexOf('[native code]') === -1) {
-                        const appPrefix = options.appPrefix || 'app:///';
+                        const appPrefix = options.appPrefix ?? '~/';
                         if (appPrefix.endsWith('//') && !appPrefix.endsWith('///')) {
-                            filename = frame.filename.indexOf('/') === 0 ? `${appPrefix}${frame.filename}` : `${appPrefix}/${frame.filename}`;
+                            filename = filename.indexOf('/') === 0 ? `${appPrefix}${filename}` : `${appPrefix}/${filename}`;
                         } else {
-                            filename = frame.filename.indexOf('/') === 0 ? `${appPrefix}${frame.filename.slice(1)}` : `${appPrefix}${frame.filename}`;
+                            filename = filename.indexOf('/') === 0 ? `${appPrefix}${filename.slice(1)}` : `${appPrefix}${filename}`;
                         }
                     }
 
