@@ -4,7 +4,7 @@
     "readme": "README.md",
     "repository": "http://www.github.com/nativescript-community/sentry.git",
     "dependencies": {
-        "@nativescript-community/sentry": "link:../plugin",
+        "@nativescript-community/sentry": "portal:../plugin",
         "@nativescript/core": "8.4.1",
         "nativescript-vue": "2.9.3"
     },
@@ -13,9 +13,9 @@
         "@babel/preset-env": "~7.20.2",
         "@nativescript/android": "8.4.0",
         "@nativescript/ios": "8.4.0",
-        "@nativescript/webpack": "~5.0.12",
-        "@sentry/cli": "2.10.0",
-        "@sentry/webpack-plugin": "2.2.2",
+        "@nativescript/webpack": "~5.0.18",
+        "@sentry/cli": "2.23.0",
+        "@sentry/webpack-plugin": "2.10.2",
         "babel-loader": "~9.1.0",
         "cross-var": "^1.1.0",
         "nativescript-vue-template-compiler": "~2.9.3",

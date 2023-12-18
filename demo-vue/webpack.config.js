@@ -5,28 +5,10 @@ const { readdirSync, readFileSync } = require('fs');
 const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
 module.exports = (env, params = {}) => {
     nsWebpack.init(env);
-    nsWebpack.chainWebpack(config=>{
-        config.entry('bundle').prepend('@nativescript-community/sentry/process');
-    });
-    const config =  nsWebpack.resolveConfig();
-    // Object.assign(config, {
-    //     snapshot: {
-    //         // detect changes in "node_modules"
-    //         managedPaths: [],
-    //     }
-    // });
-    const definitions  =config.plugins.find((p) => p.constructor.name === 'DefinePlugin').definitions;
-    delete definitions['process'];
-    const SENTRY_PREFIX = 'app:///';
-    Object.assign(definitions, {
-        'SENTRY_DSN': '"https://3e5220672ff5463f9a0c5bb18bcac1fd@bugs.akylas.fr/2"',
-        'SENTRY_PREFIX': `"${SENTRY_PREFIX}"`,
-    });
-
     const nconfig = require('./nativescript.config');
+
     const platform = env && ((env.android && 'android') || (env.ios && 'ios'));
     const dist = nsWebpack.Utils.platform.getDistPath();
-    const SOURCEMAP_REL_DIR = '../../sourcemaps';
     const projectRoot = params.projectRoot || __dirname;
     const appResourcesPath = nconfig.appResourcesPath;
     let appVersion;
@@ -42,28 +24,39 @@ module.exports = (env, params = {}) => {
         appVersion = plistData.match(/<key>CFBundleShortVersionString<\/key>[\s\n]*<string>(.*?)<\/string>/)[1];
         buildNumber = plistData.match(/<key>CFBundleVersion<\/key>[\s\n]*<string>([0-9]*)<\/string>/)[1];
     }
+    // nsWebpack.chainWebpack(config=>{
+    //     config.entry('bundle').prepend('@nativescript-community/sentry/process');
+    // });
+    const config = nsWebpack.resolveConfig();
+    const definitions = config.plugins.find((p) => p.constructor.name === 'DefinePlugin').definitions;
+    delete definitions['process'];
+    Object.assign(definitions, {
+        SENTRY_DSN: `"${process.env.SENTRY_DSN}"`,
+        SENTRY_PREFIX: `"${process.env.SENTRY_PREFIX}"`,
+        __APP_ID__: `"${config.id}"`,
+        __APP_VERSION__: `"${appVersion}"`,
+        __APP_BUILD_NUMBER__: `"${buildNumber}"`
+    });
+
     config.resolve.symlinks = false;
-    config.devtool = false;
+    config.devtool = 'source-map';
     config.plugins.push(
-        new webpack.SourceMapDevToolPlugin({
-            append: `\n//# sourceMappingURL=${SENTRY_PREFIX}[file].map`,
-            filename: join(SOURCEMAP_REL_DIR, '[file].map')
+        sentryWebpackPlugin({
+            org: process.env.SENTRY_ORG,
+            url: process.env.SENTRY_URL,
+            project: process.env.SENTRY_PROJECT,
+            authToken: process.env.SENTRY_AUTH_TOKEN,
+            release: {
+                create: true,
+                cleanArtifacts: true,
+                name: `${nconfig.id}@${appVersion}+${buildNumber}`,
+                dist: `${buildNumber}.${platform}`,
+            },
+            sourcemaps: {
+                ignore: ['tns-java-classes', 'hot-update'],
+                assets: [dist + '/**/*.js', join(dist, process.env.SOURCEMAP_REL_DIR) + '/*.map']
+            }
         })
     );
-    // config.plugins.push(
-    //     sentryWebpackPlugin({
-    //         release: appVersion,
-    //         urlPrefix: SENTRY_PREFIX,
-    //         rewrite: true,
-    //         release: {
-    //             name: `${nconfig.id}@${appVersion}+${buildNumber}`,
-    //             dist: `${buildNumber}.${platform}`,
-    //             uploadLegacySourcemaps: {
-    //                 ignoreFile: '.sentrycliignore',
-    //                 paths: [dist, join(dist, SOURCEMAP_REL_DIR)]
-    //             },
-    //         },
-    //     })
-    // );
     return config;
 };

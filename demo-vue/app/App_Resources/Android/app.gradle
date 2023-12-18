@@ -2,7 +2,7 @@ android {
  defaultConfig {  
     compileSdkVersion 33
     multiDexEnabled true
-    minSdkVersion 18
+    minSdkVersion 19
     targetSdkVersion 33
     versionCode 104
     versionName "2.0"
