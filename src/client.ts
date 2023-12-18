@@ -1,9 +1,8 @@
-import { BrowserClient, makeFetchTransport } from '@sentry/browser';
-import { BrowserTransportOptions } from '@sentry/browser/types/transports/types';
+import { eventFromException, eventFromMessage,makeFetchTransport } from '@sentry/browser';import { BrowserTransportOptions } from '@sentry/browser/types/transports/types';
 import { FetchImpl } from '@sentry/browser/types/transports/utils';
 import { BaseClient } from '@sentry/core';
 
-import { ClientReportEnvelope, ClientReportItem, Envelope, Event, EventHint, Outcome, SeverityLevel, Transport, UserFeedback } from '@sentry/types';
+import { ClientReportEnvelope, ClientReportItem, Envelope, Event, EventHint, Exception, Outcome, SeverityLevel, Thread, Transport, UserFeedback } from '@sentry/types';
 import { SentryError, dateTimestampInSeconds, logger } from '@sentry/utils';
 
 import { alert } from '@nativescript/core';
@@ -14,6 +13,7 @@ import { createUserFeedbackEnvelope, items } from './utils/envelope';
 import { mergeOutcomes } from './utils/outcome';
 import { NATIVE } from './wrapper';
 import { Screenshot } from './integrations/screenshot';
+import { rewriteFrameIntegration } from './sdk';
 
 
 /**
@@ -24,7 +24,7 @@ import { Screenshot } from './integrations/screenshot';
  */
 export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
     private _outcomesBuffer: Outcome[];
-    private readonly _browserClient: BrowserClient;
+    // private readonly _browserClient: BrowserClient;
 
     /**
      * Creates a new React Native SDK instance.
@@ -45,14 +45,14 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
 
         this._outcomesBuffer = [];
 
-        this._browserClient = new BrowserClient({
-            dsn: options.dsn,
-            transport: options.transport,
-            transportOptions: options.transportOptions,
-            stackParser: options.stackParser,
-            integrations: [],
-            _metadata: options._metadata,
-        });
+        // this._browserClient = new BrowserClient({
+        //     dsn: options.dsn,
+        //     transport: options.transport,
+        //     transportOptions: options.transportOptions,
+        //     stackParser: options.stackParser,
+        //     integrations: [],
+        //     _metadata: options._metadata,
+        // });
 
         this._initNativeSdk();
     }
@@ -65,15 +65,43 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
         if (exception['stackTrace']) {
             exception['stacktrace'] = exception['stackTrace'];
         }
-        Screenshot.attachScreenshotToEventHint(hint, this._options);
-        return this._browserClient.eventFromException(exception, hint);
+        const hintWithScreenshot =  Screenshot.attachScreenshotToEventHint(hint, this._options);
+        return eventFromException(
+            this._options.stackParser,
+            exception,
+            hintWithScreenshot,
+            this._options.attachStacktrace,
+        );
+        // return this._browserClient.eventFromException(exception, hint);
     }
 
     /**
    * @inheritDoc
    */
-    public eventFromMessage(_message: string, _level?: SeverityLevel, _hint?: EventHint): PromiseLike<Event> {
-        return this._browserClient.eventFromMessage(_message, _level, _hint);
+    public eventFromMessage(message: string, level?: SeverityLevel, hint?: EventHint): PromiseLike<Event> {
+        return eventFromMessage(
+            this._options.stackParser,
+            message,
+            level,
+            hint,
+            this._options.attachStacktrace,
+        ).then((event: Event) => {
+        // TMP! Remove this function once JS SDK uses threads for messages
+            if (!event.exception?.values || event.exception.values.length <= 0) {
+                return event;
+            }
+            const values = event.exception.values.map((exception: Exception): Thread => {
+                if (exception.stacktrace) {
+                    exception.stacktrace.frames.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
+                }
+                return {
+                    stacktrace: exception.stacktrace,
+                };
+            });
+            (event as { threads?: { values: Thread[] } }).threads = { values };
+            delete event.exception;
+            return event;
+        });
     }
 
     /**

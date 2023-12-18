@@ -1,4 +1,4 @@
-import { addGlobalEventProcessor, getCurrentHub } from '@sentry/core';
+import { addEventProcessor, addGlobalEventProcessor, getCurrentHub } from '@sentry/core';
 import { Contexts, Event, Integration } from '@sentry/types';
 import { logger } from '@sentry/utils';
 import { NATIVE } from '../wrapper';
@@ -18,7 +18,7 @@ export class DeviceContext implements Integration {
      * @inheritDoc
      */
     public setupOnce(): void {
-        addGlobalEventProcessor(async (event: Event) => {
+        addEventProcessor(async (event: Event) => {
             const self = getCurrentHub().getIntegration(DeviceContext);
             if (!self) {
                 return event;

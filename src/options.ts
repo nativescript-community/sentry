@@ -45,7 +45,15 @@ export interface BaseNativescriptOptions {
     /** The interval to end a session if the App goes to the background. */
     sessionTrackingIntervalMillis?: number;
 
-    /** Enable scope sync from Java to NDK on Android */
+    /** Enable NDK on Android
+   *
+   * @default true
+   */
+    enableNdk?: boolean;
+
+    /** Enable scope sync from Java to NDK on Android
+   * Only has an effect if `enableNdk` is `true`.
+   */
     enableNdkScopeSync?: boolean;
 
     /** When enabled, all the threads are automatically attached to all logged events on Android */
@@ -85,12 +93,6 @@ export interface BaseNativescriptOptions {
    */
     enableOutOfMemoryTracking?: boolean;
 
-    /**
-   * Set data to the inital scope
-   * @deprecated Use `Sentry.configureScope(...)`
-   */
-    initialScope?: CaptureContext;
-
 
     /**
    * The max cache items for capping the number of envelopes.
@@ -120,6 +122,18 @@ export interface BaseNativescriptOptions {
    * @default 2
    */
     appHangsTimeoutInterval?: number;
+
+    /**
+     * The max queue size for capping the number of envelopes waiting to be sent by Transport.
+     */
+    maxQueueSize?: number;
+}
+
+export interface ReactNativeTransportOptions extends BrowserTransportOptions {
+    /**
+     * @deprecated use `maxQueueSize` in the root of the SDK options.
+    */
+    bufferSize?: number;
 }
 
 /**

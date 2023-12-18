@@ -1,5 +1,5 @@
 import { createArrayBuffer, pointsFromBuffer } from '@nativescript-community/arraybuffers';
-import { Application, Utils } from '@nativescript/core';
+import { Application, Trace, Utils } from '@nativescript/core';
 import { BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel } from '@sentry/types';
 import { SentryError } from '@sentry/utils';
 import { parseErrorStack } from './integrations/debugsymbolicator';
@@ -8,6 +8,7 @@ import { NativescriptOptions } from './options';
 import { rewriteFrameIntegration } from './sdk';
 import { utf8ToBytes } from './vendor';
 import { SDK_NAME } from './version';
+import { CLog, CLogTypes } from '.';
 
 let encoder;
 function strToTypedArray(str: string) {
@@ -283,173 +284,6 @@ export namespace NATIVE {
         return envelopeBytes;
     }
 
-
-    // export async function sendEvent(event: Event): Promise<Response> {
-    //     try {
-    //         // Process and convert deprecated levels
-    //         const nEvent = new io.sentry.SentryEvent();
-    //         if (event.event_id) {
-    //             nEvent.setEventId(new io.sentry.protocol.SentryId(event.event_id));
-    //         }
-
-    //         if (event.breadcrumbs) {
-    //             const breadcrumbs = event.breadcrumbs;
-    //             const eventBreadcrumbs = new java.util.ArrayList<io.sentry.Breadcrumb>();
-    //             for (let i = 0; i < breadcrumbs.length; i++) {
-    //                 const breadcrumb = breadcrumbs[i];
-    //                 const nBreadcumb = new io.sentry.Breadcrumb();
-    //                 if (breadcrumb.category) {
-    //                     nBreadcumb.setCategory(breadcrumb.category);
-    //                 }
-
-    //                 if (breadcrumb.type) {
-    //                     const typeString = breadcrumb.type.toUpperCase();
-    //                     try {
-    //                         nBreadcumb.setType(typeString);
-    //                     } catch (e) {
-    //                         // don't copy over invalid breadcrumb 'type' value
-    //                     }
-    //                 }
-
-    //                 if (breadcrumb.level) {
-    //                     nBreadcumb.setLevel(eventLevel(breadcrumb.level));
-    //                 }
-
-    //                 try {
-    //                     if (breadcrumb.data) {
-    //                         Object.keys(breadcrumb.data).forEach((k) => {
-    //                             let value = breadcrumb.data[k];
-    //                             // in case a `status_code` entry got accidentally stringified as a float
-    //                             if (k === 'status_code' && typeof value === 'string' && value.endsWith('.0')) {
-    //                                 value = value.replace('.0', '');
-    //                             } else if (typeof value === 'boolean') {
-    //                                 value = new java.lang.Boolean(value);
-    //                             } else if (typeof value === 'number') {
-    //                                 value = value.toString();
-    //                             } else if (Array.isArray(value)) {
-    //                                 value = new org.json.JSONArray(JSON.stringify(value));
-    //                             } else if (value && typeof value === 'object') {
-    //                                 value = new org.json.JSONObject(JSON.stringify(value));
-    //                             }
-
-    //                             nBreadcumb.setData(k, value);
-    //                         });
-    //                     }
-    //                 } catch (e) {
-    //                     console.warn('Discarded breadcrumb.data since it was not an object');
-    //                 }
-
-    //                 if (breadcrumb.message) {
-    //                     nBreadcumb.setMessage(breadcrumb.message);
-    //                 } else {
-    //                     nBreadcumb.setMessage('');
-    //                 }
-    //                 eventBreadcrumbs.add(i, nBreadcumb);
-    //             }
-    //             if (eventBreadcrumbs.size() > 0) {
-    //                 nEvent.setBreadcrumbs(eventBreadcrumbs);
-    //             }
-    //         }
-
-    //         if (event.message) {
-    //             const nMsg = new io.sentry.protocol.Message();
-    //             nMsg.setMessage(event.message || '');
-    //             nEvent.setMessage(nMsg);
-    //         }
-
-    //         if (event.logger) {
-    //             nEvent.setLogger(event.logger);
-    //         }
-
-    //         if (event.user) {
-    //             nEvent.setUser(getUser(event.user));
-    //         }
-
-    //         if (event.extra) {
-    //             Object.keys(event.extra).forEach((k) => {
-    //                 const value = event.extra[k];
-    //                 nEvent.setExtra(k, typeof value === 'string' ? value : JSON.stringify(value));
-    //             });
-    //         }
-
-    //         if (event.fingerprint) {
-    //             const fingerprint: string[] = event.fingerprint;
-    //             const print = new java.util.ArrayList();
-    //             for (let i = 0; i < fingerprint.length; ++i) {
-    //                 print.add(fingerprint[i]);
-    //             }
-    //             nEvent.setFingerprints(print);
-    //         }
-
-    //         if (event.tags) {
-    //             Object.keys(event.tags).forEach((k) => {
-    //                 const value = event.tags[k];
-    //                 nEvent.setTag(k, (value || 'INVALID_TAG').toString());
-    //             });
-    //         }
-
-    //         if (event.exception) {
-    //             const exceptionValues: any[] = event.exception.values;
-    //             const exception = exceptionValues[0];
-    //             if (exception.stacktrace) {
-    //                 const stacktrace = exception.stacktrace;
-    //                 const frames = stacktrace.frames;
-    //                 if (exception.value) {
-    //                     addExceptionInterface(nEvent, exception.type, exception.value, frames);
-    //                 } else {
-    //                     // We use type/type here since this indicates an Unhandled Promise Rejection
-    //                     // https://github.com/getsentry/react-native-sentry/issues/353
-    //                     addExceptionInterface(nEvent, exception.type, exception.type, frames);
-    //                 }
-    //             }
-    //         }
-    //         if (event.environment) {
-    //             nEvent.setEnvironment(event.environment);
-    //         }
-
-    //         if (event.platform) {
-    //             nEvent.setPlatform(event.platform);
-    //         }
-
-    //         if (event.release) {
-    //             nEvent.setRelease(event.release);
-    //         }
-
-    //         if (event.dist) {
-    //             nEvent.setDist(event.dist);
-    //         }
-    //         if (event.level) {
-    //             nEvent.setLevel(eventLevel(event.level));
-    //         }
-    //         if (event.contexts) {
-    //             Object.keys(event.contexts).forEach((k) => {
-    //                 // const value = event.contexts[k];
-    //                 // const context = new io.sentry.protocol.Contexts();
-    //                 // nEvent.setTag(k, value || 'INVALID_TAG');
-    //             });
-    //         }
-    //         if (event.sdk) {
-    //             const sdk = event.sdk;
-    //             const nSdk = new io.sentry.protocol.SdkVersion();
-    //             nSdk.setName(sdk.name);
-    //             nSdk.setVersion(sdk.version);
-    //             if (sdk.integrations) {
-    //                 const integrations: string[] = sdk.integrations;
-    //                 for (let i = 0; i < integrations.length; ++i) {
-    //                     nSdk.addIntegration(integrations[i]);
-    //                 }
-    //             }
-    //             nEvent.setSdk(nSdk);
-    //         }
-    //         const id = io.sentry.Sentry.captureEvent(nEvent);
-    //         flush(0);
-    //         return({ status: 'success', id } as any);
-    //     }catch(err) {
-    //         console.error('error sending sentry event', err, err.stack);
-    //         throw(err);
-    //     };
-    // }
-
     export async function captureEnvelope(envelope: string | Uint8Array | number[], {store}: {store?: boolean} = {}) {
         try {
             const outboxPath = new java.io.File(nSentryOptions.getOutboxPath(), java.util.UUID.randomUUID().toString());
@@ -469,6 +303,9 @@ export namespace NATIVE {
     }
 
     export function flush(timeout: number = 0) {
+        if (Trace.isEnabled()) {
+            CLog(CLogTypes.info, 'flush');
+        }
         io.sentry.Sentry.flush(timeout);
     }
     let initialized = false;
@@ -595,6 +432,13 @@ export namespace NATIVE {
                             }
                             if (options.sendDefaultPii !== undefined) {
                                 config.setSendDefaultPii(options.sendDefaultPii);
+                            }
+                            if (options.enableNdk !== undefined) {
+                                config.setEnableNdk(options.enableNdk);
+                            }
+
+                            if (options.maxQueueSize !== undefined) {
+                                config.setMaxQueueSize(options.maxQueueSize);
                             }
 
                             // if (options.enableAutoPerformanceTracking === true) {
