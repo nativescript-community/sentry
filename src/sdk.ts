@@ -131,7 +131,6 @@ export function init(passedOptions: NativescriptOptions): void {
                 if (frame.platform === 'javascript' && frame.filename) {
                     let filename = frame.filename
                         .replace(/^file\:\/\//, '')
-                        .replace(/^app\:\/\//, '')
                         .replace(/^address at /, '')
                         .replace(/^.*\/[^\.]+(\.app|CodePush|.*(?=\/))/, '');
 
