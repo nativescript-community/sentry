@@ -13,47 +13,47 @@ import { NativescriptErrorHandlersOptions } from './integrations/nativescripterr
 import { SdkInfo } from './integrations/sdkinfo';
 // import { NativescriptScope } from './scope';
 import { NativescriptTracing } from './tracing';
-import { makeNativescriptTransport } from './transports/native';
+import { DEFAULT_BUFFER_SIZE, makeNativescriptTransport } from './transports/native';
 import { makeUtf8TextEncoder } from './transports/TextEncoder';
 import { safeFactory, safeTracesSampler } from './utils/safe';
 import { NATIVE } from './wrapper';
 import { parseErrorStack } from './integrations/debugsymbolicator';
 import { Screenshot } from './integrations/screenshot';
+import { getDefaultEnvironment } from './utils/environment';
 
 
-const STACKTRACE_LIMIT = 50;
-function stripSentryFramesAndReverse(stack) {
-    if (!stack.length) {
-        return [];
-    }
+// const STACKTRACE_LIMIT = 50;
+// function stripSentryFramesAndReverse(stack) {
+//     if (!stack.length) {
+//         return [];
+//     }
 
-    let localStack = stack;
+//     let localStack = stack;
 
-    const firstFrameFunction = localStack[0].function || '';
-    const lastFrameFunction = localStack[localStack.length - 1].function || '';
+//     const firstFrameFunction = localStack[0].function || '';
+//     const lastFrameFunction = localStack[localStack.length - 1].function || '';
 
-    // If stack starts with one of our API calls, remove it (starts, meaning it's the top of the stack - aka last call)
-    if (firstFrameFunction.indexOf('captureMessage') !== -1 || firstFrameFunction.indexOf('captureException') !== -1) {
-        localStack = localStack.slice(1);
-    }
+//     // If stack starts with one of our API calls, remove it (starts, meaning it's the top of the stack - aka last call)
+//     if (firstFrameFunction.indexOf('captureMessage') !== -1 || firstFrameFunction.indexOf('captureException') !== -1) {
+//         localStack = localStack.slice(1);
+//     }
 
-    // If stack ends with one of our internal API calls, remove it (ends, meaning it's the bottom of the stack - aka top-most call)
-    if (lastFrameFunction.indexOf('sentryWrapped') !== -1) {
-        localStack = localStack.slice(0, -1);
-    }
+//     // If stack ends with one of our internal API calls, remove it (ends, meaning it's the bottom of the stack - aka top-most call)
+//     if (lastFrameFunction.indexOf('sentryWrapped') !== -1) {
+//         localStack = localStack.slice(0, -1);
+//     }
 
-    // The frame where the crash happened, should be the last entry in the array
-    return localStack
-        .slice(0, STACKTRACE_LIMIT)
-        .map(frame => ({
-            ...frame,
-            filename: frame.filename || localStack[0].filename,
-            function: frame.function || undefined,
-        }));
-}
+//     // The frame where the crash happened, should be the last entry in the array
+//     return localStack
+//         .slice(0, STACKTRACE_LIMIT)
+//         .map(frame => ({
+//             ...frame,
+//             filename: frame.filename || localStack[0].filename,
+//             function: frame.function || undefined,
+//         }));
+// }
 const defaultStackParser = (stack, skipFirst = 0) => {
     let frames = parseErrorStack({ stack } as any);
-
     if (skipFirst) {
         frames = frames.slice(skipFirst);
     }
@@ -78,6 +78,8 @@ const DEFAULT_OPTIONS: NativescriptOptions & NativescriptErrorHandlersOptions = 
         textEncoder: makeUtf8TextEncoder(),
     },
     sendClientReports: true,
+    maxQueueSize: DEFAULT_BUFFER_SIZE,
+    attachStacktrace: true
 };
 
 export let rewriteFrameIntegration: {
@@ -91,6 +93,10 @@ export function init(passedOptions: NativescriptOptions): void {
     const NativescriptHub = new Hub(undefined, new Scope());
     // const NativescriptHub = new Hub(undefined, new NativescriptScope());
     makeMain(NativescriptHub);
+
+    const maxQueueSize = passedOptions.maxQueueSize
+    ?? passedOptions.transportOptions?.bufferSize
+    ?? DEFAULT_OPTIONS.maxQueueSize;
     const options: NativescriptClientOptions & NativescriptOptions = {
         ...DEFAULT_OPTIONS,
         ...passedOptions,
@@ -99,7 +105,9 @@ export function init(passedOptions: NativescriptOptions): void {
         transportOptions: {
             ...DEFAULT_OPTIONS.transportOptions,
             ...(passedOptions.transportOptions ?? {}),
+            bufferSize: maxQueueSize,
         },
+        maxQueueSize    ,
         integrations: [],
         // integrations: getIntegrationsToSetup(passedOptions),
         stackParser: stackParserFromStackParserOptions(passedOptions.stackParser || defaultStackParser),
@@ -107,6 +115,10 @@ export function init(passedOptions: NativescriptOptions): void {
         initialScope: safeFactory(passedOptions.initialScope, { loggerMessage: 'The initialScope threw an error' }),
         tracesSampler: safeTracesSampler(passedOptions.tracesSampler),
     };
+
+    if (!('environment' in options)) {
+        options.environment = getDefaultEnvironment();
+    }
     // As long as tracing is opt in with either one of these options, then this is how we determine tracing is enabled.
     const tracingEnabled =
       typeof options.tracesSampler !== 'undefined' ||
@@ -202,7 +214,7 @@ export function nativeCrash(): void {
  * Use this before applying any realtime updates such as code-push or expo updates.
  * Not yet working on Android
  */
-export async function flush(timeout: number): Promise<boolean> {
+export async function flush(timeout: number = 0): Promise<boolean> {
     try {
         const client = getCurrentHub().getClient<NativescriptClient>();
 

@@ -1,4 +1,4 @@
-import { addGlobalEventProcessor, getCurrentHub } from '@sentry/core';
+import { addEventProcessor, addGlobalEventProcessor, getCurrentHub } from '@sentry/core';
 import { Event, EventHint, Integration, StackFrame, StackLineParser } from '@sentry/types';
 import { logger, stackParserFromStackParserOptions } from '@sentry/utils';
 
@@ -122,8 +122,10 @@ export class DebugSymbolicator implements Integration {
      * @inheritDoc
      */
     public setupOnce(): void {
+        console.log('setupOnce');
         addGlobalEventProcessor(async (event: Event, hint?: EventHint) => {
             const self = getCurrentHub().getIntegration(DebugSymbolicator);
+            console.log('addGlobalEventProcessor', hint.originalException);
             if (!self || hint === undefined || hint.originalException === undefined) {
                 return event;
             }
@@ -131,8 +133,9 @@ export class DebugSymbolicator implements Integration {
             const error: NativescriptError = hint.originalException;
             // const parseErrorStack = require('react-native/Libraries/Core/Devtools/parseErrorStack');
             const stack = parseErrorStack(error);
-            console.log('addGlobalEventProcessor', error);
             console.log('stack', stack);
+            console.log('event.exception?.values?.[0].stacktrace', event.exception?.values?.[0].stacktrace);
+            // console.log('stack', stack);
 
 
             // Ideally this should go into contexts but android sdk doesn't support it
@@ -174,7 +177,8 @@ export class DebugSymbolicator implements Integration {
      * @param frames StackFrame[]
      */
     private _replaceFramesInEvent(event: Event, frames: StackFrame[]): void {
-        if (event.exception && event.exception.values && event.exception.values[0] && event.exception.values[0].stacktrace) {
+        console.log('_replaceFramesInEvent');
+        if (event.exception?.values?.[0].stacktrace) {
             event.exception.values[0].stacktrace.frames = frames.reverse();
         }
     }
