@@ -8,5 +8,6 @@ android {
 }
 dependencies {
     def sentryVersion =  project.hasProperty("sentryVersion") ? project.sentryVersion : "7.0.0"
+    println("sentryVersion $sentryVersion")
     implementation "io.sentry:sentry-android:$sentryVersion"
 }
