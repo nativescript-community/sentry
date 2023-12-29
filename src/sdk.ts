@@ -144,6 +144,9 @@ export function init(passedOptions: NativescriptOptions): void {
                     }
 
                     frame.filename = filename;
+                    if (passedOptions.colnoOffset) {
+                        frame.colno += passedOptions.colnoOffset;
+                    }
                     // We always want to have a tripple slash
                 }
                 return frame;

@@ -127,6 +127,11 @@ export interface BaseNativescriptOptions {
      * The max queue size for capping the number of envelopes waiting to be sent by Transport.
      */
     maxQueueSize?: number;
+
+    /**
+     * offset applied to errors colno
+     */
+    colnoOffset?: number;
 }
 
 export interface ReactNativeTransportOptions extends BrowserTransportOptions {
