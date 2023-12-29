@@ -10,6 +10,10 @@ import { utf8ToBytes } from './vendor';
 import { SDK_NAME } from './version';
 import { CLog, CLogTypes } from '.';
 
+
+function capitalize(value) {
+    return value.charAt(0).toUpperCase() + value.substr(1);
+}
 let encoder;
 function strToTypedArray(str: string) {
     if (!encoder) {
@@ -374,72 +378,80 @@ export namespace NATIVE {
                     configure(config: io.sentry.android.core.SentryAndroidOptions) {
                         // config.setLogger(new io.sentry.SystemOutLogger());
                         try {
-                            if (options.dsn) {
-                                config.setDsn(options.dsn);
-                            } else {
-                                config.setDsn('');
-                            }
 
-                            if (options.sendClientReports) {
-                                config.setSendClientReports(options.sendClientReports);
-                            }
+                            const {dsn, debug, enableNativeCrashHandling, beforeSend, beforeBreadcrumb, headers,  ...otherOptions} = options;
 
-                            if (options.maxBreadcrumbs) {
-                                config.setMaxBreadcrumbs(options.maxBreadcrumbs);
-                            }
-
-                            if (options.maxCacheItems) {
-                                config.setMaxCacheItems(options.maxCacheItems);
-                            }
-
-                            if (!!options.environment) {
-                                config.setEnvironment(options.environment);
-                            } else {
-                                config.setEnvironment('javascript');
-                            }
-                            if (!!options.debug) {
+                            config.setDsn(dsn || '');
+                            if (!!debug) {
                                 io.sentry.Sentry.setLevel(io.sentry.SentryLevel.DEBUG);
-                                config.setDebug(options.debug);
+                                config.setDebug(debug);
                             }
-                            if (!!options.release) {
-                                config.setRelease(options.release);
-                            }
-                            if (!!options.dist) {
-                                config.setDist(options.dist);
-                            }
-                            if (options.enableAutoSessionTracking !== undefined) {
-                                config.setEnableAutoSessionTracking(options.enableAutoSessionTracking);
-                            }
-                            if (options.sessionTrackingIntervalMillis !== undefined) {
-                                config.setSessionTrackingIntervalMillis(options.sessionTrackingIntervalMillis);
-                            }
-                            if (options.shutdownTimeout !== undefined) {
-                                config.setShutdownTimeoutMillis(options.shutdownTimeout);
-                            }
-                            if (options.enableNdkScopeSync !== undefined) {
-                                config.setEnableScopeSync(options.enableNdkScopeSync);
-                            }
-                            if (options.attachStacktrace !== undefined) {
-                                config.setAttachStacktrace(options.attachStacktrace);
-                            }
-                            if (options.attachThreads !== undefined) {
-                                // JS use top level stacktraces and android attaches Threads which hides them so
-                                // by default we hide.
-                                config.setAttachThreads(options.attachThreads);
-                            }
-                            if (options.attachScreenshot !== undefined) {
-                                config.setAttachScreenshot(options.attachScreenshot);
-                            }
-                            if (options.sendDefaultPii !== undefined) {
-                                config.setSendDefaultPii(options.sendDefaultPii);
-                            }
-                            if (options.enableNdk !== undefined) {
-                                config.setEnableNdk(options.enableNdk);
-                            }
+                            Object.keys(otherOptions).forEach(k => {
+                                const methodName = `set${capitalize(k)}`;
+                                if (typeof config[methodName] === 'function') {
+                                    config[methodName](otherOptions[k]);
+                                }
+                            });
+                            // if (options.sendClientReports) {
+                            //     config.setSendClientReports(options.sendClientReports);
+                            // }
 
-                            if (options.maxQueueSize !== undefined) {
-                                config.setMaxQueueSize(options.maxQueueSize);
-                            }
+                            // if (options.maxBreadcrumbs) {
+                            //     config.setMaxBreadcrumbs(options.maxBreadcrumbs);
+                            // }
+
+                            // if (options.maxCacheItems) {
+                            //     config.setMaxCacheItems(options.maxCacheItems);
+                            // }
+
+                            // if (!!options.environment) {
+                            //     config.setEnvironment(options.environment);
+                            // } else {
+                            //     config.setEnvironment('javascript');
+                            // }
+                            // if (!!options.debug) {
+                            //     io.sentry.Sentry.setLevel(io.sentry.SentryLevel.DEBUG);
+                            //     config.setDebug(options.debug);
+                            // }
+                            // if (!!options.release) {
+                            //     config.setRelease(options.release);
+                            // }
+                            // if (!!options.dist) {
+                            //     config.setDist(options.dist);
+                            // }
+                            // if (options.enableAutoSessionTracking !== undefined) {
+                            //     config.setEnableAutoSessionTracking(options.enableAutoSessionTracking);
+                            // }
+                            // if (options.sessionTrackingIntervalMillis !== undefined) {
+                            //     config.setSessionTrackingIntervalMillis(options.sessionTrackingIntervalMillis);
+                            // }
+                            // if (options.shutdownTimeout !== undefined) {
+                            //     config.setShutdownTimeoutMillis(options.shutdownTimeout);
+                            // }
+                            // if (options.enableNdkScopeSync !== undefined) {
+                            //     config.setEnableScopeSync(options.enableNdkScopeSync);
+                            // }
+                            // if (options.attachStacktrace !== undefined) {
+                            //     config.setAttachStacktrace(options.attachStacktrace);
+                            // }
+                            // if (options.attachThreads !== undefined) {
+                            //     // JS use top level stacktraces and android attaches Threads which hides them so
+                            //     // by default we hide.
+                            //     config.setAttachThreads(options.attachThreads);
+                            // }
+                            // if (options.attachScreenshot !== undefined) {
+                            //     config.setAttachScreenshot(options.attachScreenshot);
+                            // }
+                            // if (options.sendDefaultPii !== undefined) {
+                            //     config.setSendDefaultPii(options.sendDefaultPii);
+                            // }
+                            // if (options.enableNdk !== undefined) {
+                            //     config.setEnableNdk(options.enableNdk);
+                            // }
+
+                            // if (options.maxQueueSize !== undefined) {
+                            //     config.setMaxQueueSize(options.maxQueueSize);
+                            // }
 
                             // if (options.enableAutoPerformanceTracking === true) {
 
@@ -460,7 +472,7 @@ export namespace NATIVE {
                             // }
 
                             // config.setEnableNdk(true);
-                            if (options.enableNativeCrashHandling === false) {
+                            if (enableNativeCrashHandling === false) {
                                 const integrations = config.getIntegrations();
                                 const size = integrations.size();
                                 for (let index = size - 1; index >= 0; index--) {
@@ -484,9 +496,9 @@ export namespace NATIVE {
                                 create( sopt: io.sentry.SentryOptions,  requestDetails: io.sentry.RequestDetails) {
                                     const map =requestDetails.getHeaders();
                                     map.put('X-Forwarded-Protocol', 'https');
-                                    if (options.headers) {
-                                        Object.keys(options.headers).forEach(k=>{
-                                            map.put(k, options.headers[k]);
+                                    if (headers) {
+                                        Object.keys(headers).forEach(k=>{
+                                            map.put(k, headers[k]);
                                         });
                                     }
                                     return new io.sentry.transport.AsyncHttpTransport(
@@ -496,9 +508,9 @@ export namespace NATIVE {
                             config.setBeforeSend(
                                 new io.sentry.SentryOptions.BeforeSendCallback({
                                     execute(event, hint) {
-                                        if (options.beforeSend) {
+                                        if (beforeSend) {
                                             // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-                                            options.beforeSend(event as any, hint as any);
+                                            beforeSend(event as any, hint as any);
                                         }
 
                                         // we use this callback to actually try and get the JS stack when a native error is catched
@@ -537,8 +549,8 @@ export namespace NATIVE {
                             config.setBeforeBreadcrumb(
                                 new io.sentry.SentryOptions.BeforeBreadcrumbCallback({
                                     execute(breadcrumb: io.sentry.Breadcrumb, hint: io.sentry.Hint) {
-                                        if (options.beforeBreadcrumb) {
-                                            return options.beforeBreadcrumb(breadcrumb as any, hint) as any;
+                                        if (beforeBreadcrumb) {
+                                            return beforeBreadcrumb(breadcrumb as any, hint) as any;
                                         } else {
                                             return breadcrumb;
                                         }
