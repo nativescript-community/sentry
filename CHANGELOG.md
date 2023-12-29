@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.16](https://github.com/nativescript-community/sentry/compare/v4.6.15...v4.6.16) (2023-12-29)
+
+
+### Bug Fixes
+
+* `colnoOffset` option ([9ee635c](https://github.com/nativescript-community/sentry/commit/9ee635c6419591b328213869d4c3612f94c231d6))
+* **android:** virtually allow any option to be passed to native sentry ([fe2eb67](https://github.com/nativescript-community/sentry/commit/fe2eb67c3955e56a248aa6dcbc6ece393f54cc0a))
+
+
+
+
+
 ## [4.6.15](https://github.com/nativescript-community/sentry/compare/v4.6.14...v4.6.15) (2023-12-19)
 
 
