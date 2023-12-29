@@ -1,0 +1,4 @@
+ext {
+    sentryVersion = "7.1.0"
+    sentryGradleVersion = "4.1.0"
+}

@@ -17,6 +17,7 @@ async function startSentry() {
             enableNativeCrashHandling: true,
             enableAutoPerformanceTracking: false,
             enableAutoSessionTracking: false,
+            enablePerformanceV2: true,
             attachScreenshot: true,
             release: `${__APP_ID__}@${__APP_VERSION__}+${__APP_BUILD_NUMBER__}`,
             dist: `${__APP_BUILD_NUMBER__}.${__ANDROID__ ? 'android' : 'ios'}`
