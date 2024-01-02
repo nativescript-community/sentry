@@ -389,7 +389,14 @@ export namespace NATIVE {
                             Object.keys(otherOptions).forEach(k => {
                                 const methodName = `set${capitalize(k)}`;
                                 if (typeof config[methodName] === 'function') {
-                                    config[methodName](otherOptions[k]);
+                                    const value = otherOptions[k];
+                                    if (typeof value === 'number') {
+                                        config[methodName](java.lang.Double.valueOf(value));
+
+                                    } else {
+                                        config[methodName](value);
+
+                                    }
                                 }
                             });
                             // if (options.sendClientReports) {
@@ -560,7 +567,7 @@ export namespace NATIVE {
                             nSentryOptions = config;
                             sentryOptions = options;
                         } catch(err) {
-                            console.error('Error starting Sentry', err);
+                            console.error('Error starting Sentry', err, err.stack);
                             throw err;
                         }
 
