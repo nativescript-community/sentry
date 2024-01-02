@@ -45,7 +45,7 @@ export class NativeFramesInstrumentation {
         doesExist: () => boolean
     ) {
         logger.log(
-            '[ReactNativeTracing] Native frames instrumentation initialized.'
+            '[NativescriptTracing] Native frames instrumentation initialized.'
         );
 
         addGlobalEventProcessor((event) => this._processEvent(event, doesExist));
