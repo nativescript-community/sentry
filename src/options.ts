@@ -132,6 +132,7 @@ export interface BaseNativescriptOptions {
      * offset applied to errors colno
      */
     colnoOffset?: number;
+    [k: string]: any;
 }
 
 export interface ReactNativeTransportOptions extends BrowserTransportOptions {
