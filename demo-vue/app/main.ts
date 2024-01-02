@@ -1,4 +1,5 @@
 import * as Sentry from '@nativescript-community/sentry';
+import * as Tracing from '@nativescript-community/sentry/tracing';
 import { Application, Trace, Utils } from '@nativescript/core';
 import { on as applicationOn, launchEvent } from '@nativescript/core/application';
 import Vue from 'nativescript-vue';
@@ -13,14 +14,24 @@ async function startSentry() {
         Sentry.init({
             dsn: SENTRY_DSN,
             debug: true,
+            enablePerformanceV2: true,
+            release: `${__APP_ID__}@${__APP_VERSION__}+${__APP_BUILD_NUMBER__}`,
+            dist: `${__APP_BUILD_NUMBER__}.${__ANDROID__ ? 'android' : 'ios'}`,
             flushSendEvent: true,
             enableNativeCrashHandling: true,
-            enableAutoPerformanceTracking: false,
-            enableAutoSessionTracking: false,
-            enablePerformanceV2: true,
             attachScreenshot: true,
-            release: `${__APP_ID__}@${__APP_VERSION__}+${__APP_BUILD_NUMBER__}`,
-            dist: `${__APP_BUILD_NUMBER__}.${__ANDROID__ ? 'android' : 'ios'}`
+            tracesSampleRate: 1.0,
+            sampleRate: 1.0,
+            enableAutoPerformanceTracking: true,
+            enableAutoSessionTracking: true,
+            integrations: [
+                new Tracing.NativescriptTracing({
+                    enableAppStartTracking: true,
+                    enableNativeFramesTracking: true,
+                    // routingInstrumentation: HttpService.sentryTracing,
+                    enableStallTracking: true,
+                }),
+            ],
         });
         setTimeout(()=>{
             Sentry.withScope(scope => {
