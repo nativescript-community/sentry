@@ -53,19 +53,19 @@ const _patchStartTransaction = (
             customSamplingContext,
         ]);
 
-        const reactNativeTracing = getCurrentHub().getIntegration(
+        const nativescriptTracing = getCurrentHub().getIntegration(
             NativescriptTracing
         );
 
-        if (reactNativeTracing) {
-            reactNativeTracing.onTransactionStart(transaction);
+        if (nativescriptTracing) {
+            nativescriptTracing.onTransactionStart(transaction);
 
             // eslint-disable-next-line @typescript-eslint/unbound-method
             const originalFinish = transaction.finish;
 
             transaction.finish = (endTimestamp: number | undefined) => {
-                if (reactNativeTracing) {
-                    reactNativeTracing.onTransactionFinish(transaction);
+                if (nativescriptTracing) {
+                    nativescriptTracing.onTransactionFinish(transaction);
                 }
 
                 return originalFinish.apply(transaction, [endTimestamp]);
