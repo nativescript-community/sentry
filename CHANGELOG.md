@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.18](https://github.com/nativescript-community/sentry/compare/v4.6.17...v4.6.18) (2024-01-07)
+
+
+### Bug Fixes
+
+* **android:** another fix for options init which would prevent issue sending to server ([9a3e727](https://github.com/nativescript-community/sentry/commit/9a3e727704ab73a9e8c1ba4dc02ee275b477cf76))
+
+
+
+
+
 ## [4.6.17](https://github.com/nativescript-community/sentry/compare/v4.6.16...v4.6.17) (2024-01-02)
 
 
