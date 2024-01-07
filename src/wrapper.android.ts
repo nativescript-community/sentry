@@ -388,8 +388,8 @@ export namespace NATIVE {
                             }
                             Object.keys(otherOptions).forEach(k => {
                                 const methodName = `set${capitalize(k)}`;
-                                if (typeof config[methodName] === 'function') {
-                                    const value = otherOptions[k];
+                                const value = otherOptions[k];
+                                if (value && typeof config[methodName] === 'function') {
                                     if (typeof value === 'number') {
                                         config[methodName](java.lang.Double.valueOf(value));
 
