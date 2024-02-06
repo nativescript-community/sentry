@@ -278,7 +278,7 @@ export function withScope(callback: (scope: Scope) => void): ReturnType<Hub['wit
             logger.error('Error while running withScope callback', e);
         }
     };
-    getCurrentHub().withScope(safeCallback);
+    return getCurrentHub().withScope(safeCallback);
 }
 
 /**
