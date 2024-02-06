@@ -57,7 +57,7 @@
         ]
     },
     "dependencies": {
-        "@nativescript-community/arraybuffers": "^1.0.1"
+        "@nativescript-community/arraybuffers": "^1.1.5"
     },
     "workspaces": [
         "plugin",
