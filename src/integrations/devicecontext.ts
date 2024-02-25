@@ -1,7 +1,10 @@
 import { addEventProcessor, addGlobalEventProcessor, getCurrentHub } from '@sentry/core';
 import { Contexts, Event, Integration } from '@sentry/types';
-import { logger } from '@sentry/utils';
-import { NATIVE } from '../wrapper';
+import { logger, severityLevelFromString } from '@sentry/utils';
+import { NATIVE, NativeDeviceContextsResponse } from '../wrapper';
+
+import { breadcrumbFromObject } from '../breadcrumb';
+import { Application } from '@nativescript/core';
 
 /** Load device context from native. */
 export class DeviceContext implements Integration {
@@ -24,29 +27,69 @@ export class DeviceContext implements Integration {
                 return event;
             }
 
+            let native: NativeDeviceContextsResponse | null = null;
             try {
-                const contexts = await NATIVE.fetchNativeDeviceContexts();
-
-                const context = contexts['context'] as Contexts ?? {};
-                const user = contexts['user'] ?? {};
-
-                event.contexts = { ...context, ...event.contexts };
-                const breadcrumbs = contexts['breadcrumbs'] ?? [];
-                if (breadcrumbs.length) {
-                    event.breadcrumbs = event.breadcrumbs || [];
-                    event.breadcrumbs.push(...breadcrumbs);
-                    event.breadcrumbs = event.breadcrumbs.sort((a, b) => a.timestamp - b.timestamp);
-                }
-                if (contexts['extra']) {
-                    event.extra  = event.extra || {};
-                    Object.assign(event.extra, contexts['extra']);
-                }
-
-                if (!event.user) {
-                    event.user = { ...user };
-                }
+                native = await NATIVE.fetchNativeDeviceContexts();
             } catch (e) {
                 logger.log(`Failed to get device context from native: ${e}`);
+            }
+
+            if (!native) {
+                return event;
+            }
+
+            const nativeUser = native.user;
+            if (!event.user && nativeUser) {
+                event.user = nativeUser;
+            }
+
+            let nativeContexts = native.contexts;
+            // if (AppState.currentState !== 'unknown') {
+            nativeContexts = nativeContexts || {};
+            nativeContexts.app = {
+                ...nativeContexts.app,
+                in_foreground: !Application.inBackground,
+            };
+            // }
+            if (nativeContexts) {
+                event.contexts = { ...nativeContexts, ...event.contexts };
+                if (nativeContexts.app) {
+                    event.contexts.app = { ...nativeContexts.app, ...event.contexts.app };
+                }
+            }
+
+            const nativeTags = native.tags;
+            if (nativeTags) {
+                event.tags = { ...nativeTags, ...event.tags };
+            }
+
+            const nativeExtra = native.extra;
+            if (nativeExtra) {
+                event.extra = { ...nativeExtra, ...event.extra };
+            }
+
+            const nativeFingerprint = native.fingerprint;
+            if (nativeFingerprint) {
+                event.fingerprint = (event.fingerprint ?? []).concat(
+                    nativeFingerprint.filter(item => (event.fingerprint ?? []).indexOf(item) < 0),
+                );
+            }
+
+            const nativeLevel = typeof native['level'] === 'string' ? severityLevelFromString(native['level']) : undefined;
+            if (!event.level && nativeLevel) {
+                event.level = nativeLevel;
+            }
+
+            const nativeEnvironment = native['environment'];
+            if (!event.environment && nativeEnvironment) {
+                event.environment = nativeEnvironment;
+            }
+
+            const nativeBreadcrumbs = Array.isArray(native['breadcrumbs'])
+                ? native['breadcrumbs'].map(breadcrumbFromObject)
+                : undefined;
+            if (nativeBreadcrumbs) {
+                event.breadcrumbs = nativeBreadcrumbs;
             }
 
             return event;

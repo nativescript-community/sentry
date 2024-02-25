@@ -60,13 +60,6 @@ export interface BaseNativescriptOptions {
     attachThreads?: boolean;
 
     /**
-   * When enabled and a user experiences an error, Sentry provides the ability to take a screenshot and include it as an attachment.
-   *
-   * @default false
-   */
-    attachScreenshot?: boolean;
-
-    /**
    *  When enabled, certain personally identifiable information (PII) is added by active integrations.
    *
    * @default false
@@ -89,9 +82,17 @@ export interface BaseNativescriptOptions {
    * See the following link for more information and possible restrictions:
    * https://docs.sentry.io/platforms/apple/guides/ios/configuration/out-of-memory/
    *
+   * Renamed from `enableOutOfMemoryTracking` in v5.
+   *
    * @default true
    */
-    enableOutOfMemoryTracking?: boolean;
+    enableWatchdogTerminationTracking?: boolean;
+
+    /**
+     * Set data to the inital scope
+     * @deprecated Use `Sentry.configureScope(...)`
+     */
+    // initialScope?: CaptureContext;
 
 
     /**
@@ -133,6 +134,50 @@ export interface BaseNativescriptOptions {
      */
     colnoOffset?: number;
     [k: string]: any;
+
+
+    /**
+   * When enabled and a user experiences an error, Sentry provides the ability to take a screenshot and include it as an attachment.
+   *
+   * @default false
+   */
+    attachScreenshot?: boolean;
+    /**
+     * When enabled Sentry includes the current view hierarchy in the error attachments.
+     *
+     * @default false
+     */
+    attachViewHierarchy?: boolean;
+
+    /**
+     * When enabled, Sentry will capture failed XHR/Fetch requests. This option also enabled HTTP Errors on iOS.
+     * [Sentry Android Gradle Plugin](https://docs.sentry.io/platforms/android/configuration/integrations/okhttp/)
+     * is needed to capture HTTP Errors on Android.
+     *
+     * @default false
+     */
+    enableCaptureFailedRequests?: boolean;
+
+    /**
+     * This option will enable forwarding captured Sentry events to Spotlight.
+     *
+     * More details: https://spotlightjs.com/
+     *
+     * IMPORTANT: Only set this option to `true` while developing, not in production!
+     */
+    enableSpotlight?: boolean;
+
+    /**
+     * This option changes the default Spotlight Sidecar URL.
+     *
+     * By default, the SDK expects the Sidecar to be running
+     * on the same host as React Native Metro Dev Server.
+     *
+     * More details: https://spotlightjs.com/
+     *
+     * @default "http://localhost:8969/stream"
+     */
+    spotlightSidecarUrl?: string;
 }
 
 export interface ReactNativeTransportOptions extends BrowserTransportOptions {

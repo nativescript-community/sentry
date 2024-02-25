@@ -11,6 +11,7 @@ import { DeviceContext, NativescriptErrorHandlers, Release } from './integration
 import { EventOrigin } from './integrations/eventorigin';
 import { NativescriptErrorHandlersOptions } from './integrations/nativescripterrorhandlers';
 import { SdkInfo } from './integrations/sdkinfo';
+import { getDefaultIntegrations } from './integrations/default';
 // import { NativescriptScope } from './scope';
 import { NativescriptTracing } from './tracing';
 import { DEFAULT_BUFFER_SIZE, makeNativescriptTransport } from './transports/native';
@@ -82,9 +83,6 @@ const DEFAULT_OPTIONS: NativescriptOptions & NativescriptErrorHandlersOptions = 
     attachStacktrace: true
 };
 
-export let rewriteFrameIntegration: {
-    _iteratee: (frame: StackFrame) => StackFrame;
-};
 /**
  * Inits the SDK
  */
@@ -113,8 +111,10 @@ export function init(passedOptions: NativescriptOptions): void {
         stackParser: stackParserFromStackParserOptions(passedOptions.stackParser || defaultStackParser),
         beforeBreadcrumb: safeFactory(passedOptions.beforeBreadcrumb, { loggerMessage: 'The beforeBreadcrumb threw an error' }),
         initialScope: safeFactory(passedOptions.initialScope, { loggerMessage: 'The initialScope threw an error' }),
-        tracesSampler: safeTracesSampler(passedOptions.tracesSampler),
     };
+    if ('tracesSampler' in options) {
+        options.tracesSampler = safeTracesSampler(options.tracesSampler);
+    }
 
     if (!('environment' in options)) {
         options.environment = getDefaultEnvironment();
@@ -124,61 +124,63 @@ export function init(passedOptions: NativescriptOptions): void {
       typeof options.tracesSampler !== 'undefined' ||
       typeof options.tracesSampleRate !== 'undefined';
 
-    const defaultIntegrations: Integration[] = passedOptions.defaultIntegrations || [];
-    if (passedOptions.defaultIntegrations === undefined) {
-        rewriteFrameIntegration = new RewriteFrames({
-            iteratee: (frame: StackFrame) => {
-                if (frame.platform === 'javascript' && frame.filename) {
-                    let filename = frame.filename
-                        .replace(/^file\:\/\//, '')
-                        .replace(/^address at /, '')
-                        .replace(/^.*\/[^\.]+(\.app|CodePush|.*(?=\/))/, '');
+    const defaultIntegrations: false | Integration[] = passedOptions.defaultIntegrations === undefined
+        ? getDefaultIntegrations(options)
+        : passedOptions.defaultIntegrations;
+    // if (passedOptions.defaultIntegrations === undefined) {
+    //     rewriteFrameIntegration = new RewriteFrames({
+    //         iteratee: (frame: StackFrame) => {
+    //             if (frame.platform === 'javascript' && frame.filename) {
+    //                 let filename = frame.filename
+    //                     .replace(/^file\:\/\//, '')
+    //                     .replace(/^address at /, '')
+    //                     .replace(/^.*\/[^\.]+(\.app|CodePush|.*(?=\/))/, '');
 
-                    if (frame.filename.indexOf('[native code]') === -1) {
-                        const appPrefix = options.appPrefix ?? '~/';
-                        if (appPrefix.endsWith('//') && !appPrefix.endsWith('///')) {
-                            filename = filename.indexOf('/') === 0 ? `${appPrefix}${filename}` : `${appPrefix}/${filename}`;
-                        } else {
-                            filename = filename.indexOf('/') === 0 ? `${appPrefix}${filename.slice(1)}` : `${appPrefix}${filename}`;
-                        }
-                    }
+    //                 if (frame.filename.indexOf('[native code]') === -1) {
+    //                     const appPrefix = options.appPrefix ?? '~/';
+    //                     if (appPrefix.endsWith('//') && !appPrefix.endsWith('///')) {
+    //                         filename = filename.indexOf('/') === 0 ? `${appPrefix}${filename}` : `${appPrefix}/${filename}`;
+    //                     } else {
+    //                         filename = filename.indexOf('/') === 0 ? `${appPrefix}${filename.slice(1)}` : `${appPrefix}${filename}`;
+    //                     }
+    //                 }
 
-                    frame.filename = filename;
-                    if (passedOptions.colnoOffset) {
-                        frame.colno += passedOptions.colnoOffset;
-                    }
-                    // We always want to have a tripple slash
-                }
-                return frame;
-            }
-        }) as any;
-        defaultIntegrations.push(...[
-            new NativescriptErrorHandlers(options),
-            new Release(),
-            ...sentryDefaultIntegrations.filter((i) => !IGNORED_DEFAULT_INTEGRATIONS.includes(i.name)),
-            new Integrations.Breadcrumbs({
-                console: false,
-                xhr: false,
-                dom: false,
-                fetch: false,
-                ...(options.breadcrumbs || {})
-            }),
-            rewriteFrameIntegration as any,
-            new EventOrigin(),
-            new SdkInfo()
-        ]);
-        if (!!options.enableNative) {
-            defaultIntegrations.push(new DeviceContext());
-        }
-        if (tracingEnabled) {
-            if (options.enableAutoPerformanceTracking) {
-                defaultIntegrations.push(new NativescriptTracing());
-            }
-        }
-        if (options.attachScreenshot) {
-            defaultIntegrations.push(new Screenshot());
-        }
-    }
+    //                 frame.filename = filename;
+    //                 if (passedOptions.colnoOffset) {
+    //                     frame.colno += passedOptions.colnoOffset;
+    //                 }
+    //                 // We always want to have a tripple slash
+    //             }
+    //             return frame;
+    //         }
+    //     }) as any;
+    //     defaultIntegrations.push(...[
+    //         new NativescriptErrorHandlers(options),
+    //         new Release(),
+    //         ...sentryDefaultIntegrations.filter((i) => !IGNORED_DEFAULT_INTEGRATIONS.includes(i.name)),
+    //         new Integrations.Breadcrumbs({
+    //             console: false,
+    //             xhr: false,
+    //             dom: false,
+    //             fetch: false,
+    //             ...(options.breadcrumbs || {})
+    //         }),
+    //         rewriteFrameIntegration as any,
+    //         new EventOrigin(),
+    //         new SdkInfo()
+    //     ]);
+    //     if (!!options.enableNative) {
+    //         defaultIntegrations.push(new DeviceContext());
+    //     }
+    //     if (tracingEnabled) {
+    //         if (options.enableAutoPerformanceTracking) {
+    //             defaultIntegrations.push(new NativescriptTracing());
+    //         }
+    //     }
+    //     if (options.attachScreenshot) {
+    //         defaultIntegrations.push(new Screenshot());
+    //     }
+    // }
     options.integrations = getIntegrationsToSetup({
         integrations: safeFactory(passedOptions.integrations, { loggerMessage: 'The integrations threw an error' }),
         defaultIntegrations,

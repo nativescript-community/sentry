@@ -40,6 +40,37 @@ export interface UserFeedback {
     email?: string;
     name?: string;
 }
+/**
+ * This type describes serialized scope from sentry-cocoa and sentry-android
+ * https://github.com/getsentry/sentry-cocoa/blob/master/Sources/Sentry/SentryScope.m
+ * https://github.com/getsentry/sentry-java/blob/a461f7e125b65240004e6162b341f383ce2e1394/sentry-android-core/src/main/java/io/sentry/android/core/InternalSentrySdk.java#L32
+ */
+export interface NativeDeviceContextsResponse {
+    [key: string]: unknown;
+    tags?: Record<string, string>;
+    extra?: Record<string, unknown>;
+    contexts?: Record<string, Record<string, unknown>>;
+    user?: {
+        userId?: string;
+        email?: string;
+        username?: string;
+        ipAddress?: string;
+        segment?: string;
+        data?: Record<string, unknown>;
+    };
+    dist?: string;
+    environment?: string;
+    fingerprint?: string[];
+    level?: string;
+    breadcrumbs?: {
+        level?: string;
+        timestamp?: string;
+        category?: string;
+        type?: string;
+        message?: string;
+        data?: Record<string, unknown>;
+    }[];
+}
 
 export interface NativeScreenshot {
     data: Uint8Array;
@@ -62,6 +93,7 @@ export namespace NATIVE {
     function captureUserFeedback(feedback: UserFeedback);
     function isNativeTransportAvailable(): boolean;
 
+    function enableNativeFramesTracking();
     function disableNativeFramesTracking();
     function fetchNativeSdkInfo(): any;
     function fetchNativeRelease(): any;
