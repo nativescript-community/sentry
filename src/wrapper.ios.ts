@@ -344,7 +344,7 @@ export namespace NATIVE {
 
             nSentryOptions = SentryOptions.alloc().initWithDictDidFailWithError(mutDict as any);
 
-            // before send right now is never called when we send the envelope
+            // before send right now is never called when we send the envelope. Only on native crash
             nSentryOptions.beforeSend = (event: SentryEvent) => {
                 const exception = event.exceptions?.objectAtIndex(0);
                 const exceptionvalue = exception?.value;
@@ -364,6 +364,7 @@ export namespace NATIVE {
                     beforeSend(event as any, null);
                 }
                 setEventOriginTag(event);
+
                 return event;
             };
             nSentryOptions.beforeBreadcrumb = (breadcrumb) => {
@@ -413,7 +414,7 @@ export namespace NATIVE {
     }
 
     function dictToJSON(dict) {
-        return JSON.parse(NSString.alloc().initWithDataEncoding(NSJSONSerialization.dataWithJSONObjectOptionsError(dict, 0), NSUTF8StringEncoding) as any);
+        return JSON.parse(NSString.alloc().initWithDataEncoding(NSJSONSerialization.dataWithJSONObjectOptionsError(dict, 0 as any), NSUTF8StringEncoding) as any);
     }
     export async function fetchNativeDeviceContexts() {
         if (!enableNative) {

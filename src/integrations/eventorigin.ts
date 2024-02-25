@@ -19,8 +19,8 @@ export class EventOrigin implements Integration {
         addGlobalEventProcessor((event) => {
             event.tags = event.tags ?? {};
 
-            event.tags['event.origin'] = 'javascript';
-            event.tags['event.environment'] = 'javascript';
+            event.tags['event.origin'] = __ANDROID__?'android' : __IOS__ ? 'ios' : 'javascript';
+            event.tags['event.environment'] = 'nativescript';
 
             return event;
         });
