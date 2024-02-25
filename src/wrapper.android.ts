@@ -5,10 +5,10 @@ import { SentryError } from '@sentry/utils';
 import { parseErrorStack } from './integrations/debugsymbolicator';
 import { isHardCrash } from './misc';
 import { NativescriptOptions } from './options';
-import { rewriteFrameIntegration } from './sdk';
 import { utf8ToBytes } from './vendor';
 import { SDK_NAME } from './version';
 import { CLog, CLogTypes } from '.';
+import { rewriteFrameIntegration } from './integrations/default';
 
 
 function capitalize(value) {

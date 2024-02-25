@@ -6,6 +6,7 @@ import { ClientReportEnvelope, ClientReportItem, Envelope, Event, EventHint, Exc
 import { SentryError, dateTimestampInSeconds, logger } from '@sentry/utils';
 
 import { alert } from '@nativescript/core';
+import { createIntegration } from './integrations/factory';
 import { defaultSdkInfo } from './integrations/sdkinfo';
 import { NativescriptClientOptions } from './options';
 import { NativeTransport } from './transports/native';
@@ -13,7 +14,8 @@ import { createUserFeedbackEnvelope, items } from './utils/envelope';
 import { mergeOutcomes } from './utils/outcome';
 import { NATIVE } from './wrapper';
 import { Screenshot } from './integrations/screenshot';
-import { rewriteFrameIntegration } from './sdk';
+import { NativescriptTracing } from './tracing';
+import { rewriteFrameIntegration } from './integrations/default';
 
 
 /**
@@ -44,16 +46,6 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
         super(options);
 
         this._outcomesBuffer = [];
-
-        // this._browserClient = new BrowserClient({
-        //     dsn: options.dsn,
-        //     transport: options.transport,
-        //     transportOptions: options.transportOptions,
-        //     stackParser: options.stackParser,
-        //     integrations: [],
-        //     _metadata: options._metadata,
-        // });
-
         this._initNativeSdk();
     }
 
@@ -154,6 +146,22 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
     // }
 
     /**
+   * Sets up the integrations
+   */
+    public setupIntegrations(): void {
+        super.setupIntegrations();
+        const tracing = this.getIntegration(NativescriptTracing);
+        const routingName = tracing?.options.routingInstrumentation?.name;
+        if (routingName) {
+            this.addIntegration(createIntegration(routingName));
+        }
+        const enableUserInteractionTracing = tracing?.options.enableUserInteractionTracing;
+        if (enableUserInteractionTracing) {
+            this.addIntegration(createIntegration('ReactNativeUserInteractionTracing'));
+        }
+    }
+
+    /**
    * @inheritdoc
    */
     protected _sendEnvelope(envelope: Envelope): void {
@@ -165,7 +173,8 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
         }
 
         let shouldClearOutcomesBuffer = true;
-        if (this._transport && this._dsn) {
+        if (this._isEnabled() && this._transport && this._dsn) {
+            this.emit('beforeEnvelope', envelope);
             this._transport.send(envelope)
                 .then(null, reason => {
                     if (reason instanceof SentryError) { // SentryError is thrown by SyncPromise

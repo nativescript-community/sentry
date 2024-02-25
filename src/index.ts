@@ -31,12 +31,7 @@ export {
     startTransaction
 } from '@sentry/core';
 
-// We need to import it so we patch the hub with global functions
-// aka. this has side effects
-import '@sentry/tracing';
-
-// Add the React Native SDK's own tracing extensions, this needs to happen AFTER @sentry/tracing's
-import { _addTracingExtensions } from './measurements';
+import { _addTracingExtensions } from './tracing/addTracingExtensions';
 _addTracingExtensions();
 
 // export {
@@ -65,8 +60,8 @@ export {
 } from './sdk';
 // export { TouchEventBoundary, withTouchEventBoundary } from './touchevents';
 
-// export {
-//     NativescriptTracing,
+export {
+    NativescriptTracing,
 //     ReactNavigationV4Instrumentation,
 //     // eslint-disable-next-line deprecation/deprecation
 //     ReactNavigationV5Instrumentation,
@@ -74,7 +69,7 @@ export {
 //     NativescriptNavigationInstrumentation,
 //     RoutingInstrumentation,
 //     ReactNavigationTransactionContext,
-// } from './tracing';
+} from './tracing';
 
 export { Integrations, SDK_NAME, SDK_VERSION };
 

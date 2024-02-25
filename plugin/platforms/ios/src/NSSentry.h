@@ -1,4 +1,7 @@
 #import <Sentry/Sentry.h>
+#import <Sentry/SentryEnvelope.h>
+#import <Sentry/SentryScreenFrames.h>
+#import <Sentry/SentryAppStartMeasurement.h>
 
 @interface NSSentrySDK: SentrySDK
 + (void)captureEnvelope:(SentryEnvelope *)envelope;

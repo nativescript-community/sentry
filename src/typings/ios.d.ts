@@ -3,2225 +3,2253 @@ declare function NSErrorFromSentryError(error: SentryError, description: string)
 
 declare function NSErrorFromSentryErrorWithException(error: SentryError, description: string, exception: NSException): NSError;
 
+declare function NSErrorFromSentryErrorWithKernelError(error: SentryError, description: string, kernelErrorCode: number): NSError;
+
 declare function NSErrorFromSentryErrorWithUnderlyingError(error: SentryError, description: string, underlyingError: NSError): NSError;
 
 declare class PrivateSentrySDKOnly extends NSObject {
 
-	static alloc(): PrivateSentrySDKOnly; // inherited from NSObject
+    static alloc(): PrivateSentrySDKOnly; // inherited from NSObject
 
-	static captureEnvelope(envelope: SentryEnvelope): void;
+    static breadcrumbWithDictionary(dictionary: NSDictionary<any, any>): SentryBreadcrumb;
 
-	static captureScreenshots(): NSArray<NSData>;
+    static captureEnvelope(envelope: SentryEnvelope): void;
 
-	static envelopeWithData(data: NSData): SentryEnvelope;
+    static captureScreenshots(): NSArray<NSData>;
 
-	static getDebugImages(): NSArray<SentryDebugMeta>;
+    static captureViewHierarchy(): NSData;
 
-	static getSdkName(): string;
+    static collectProfileBetween(startSystemTime: number): NSMutableDictionary<string, any>;
 
-	static getSdkVersionString(): string;
+    static discardProfilerForTrace(traceId: SentryId): void;
 
-	static new(): PrivateSentrySDKOnly; // inherited from NSObject
+    static envelopeWithData(data: NSData): SentryEnvelope;
 
-	static setSdkName(sdkName: string): void;
+    static getDebugImages(): NSArray<SentryDebugMeta>;
 
-	static setSdkNameAndVersionString(sdkName: string, versionString: string): void;
+    static getDebugImagesCrashed(isCrash: boolean): NSArray<SentryDebugMeta>;
 
-	static storeEnvelope(envelope: SentryEnvelope): void;
+    static getExtraContext(): NSDictionary<any, any>;
 
-	static readonly appStartMeasurement: SentryAppStartMeasurement;
+    static getSdkName(): string;
 
-	static appStartMeasurementHybridSDKMode: boolean;
+    static getSdkVersionString(): string;
 
-	static readonly currentScreenFrames: SentryScreenFrames;
+    static new(): PrivateSentrySDKOnly; // inherited from NSObject
 
-	static framesTrackingMeasurementHybridSDKMode: boolean;
+    static setSdkName(sdkName: string): void;
 
-	static readonly installationID: string;
+    static setSdkNameAndVersionString(sdkName: string, versionString: string): void;
 
-	static readonly isFramesTrackingRunning: boolean;
+    static startProfilerForTrace(traceId: SentryId): number;
 
-	static onAppStartMeasurementAvailable: (p1: SentryAppStartMeasurement) => void;
+    static storeEnvelope(envelope: SentryEnvelope): void;
 
-	static readonly options: SentryOptions;
+    static userWithDictionary(dictionary: NSDictionary<any, any>): SentryUser;
+
+    static readonly appStartMeasurement: SentryAppStartMeasurement;
+
+    static appStartMeasurementHybridSDKMode: boolean;
+
+    static readonly currentScreenFrames: SentryScreenFrames;
+
+    static framesTrackingMeasurementHybridSDKMode: boolean;
+
+    static readonly installationID: string;
+
+    static readonly isFramesTrackingRunning: boolean;
+
+    static onAppStartMeasurementAvailable: (p1: SentryAppStartMeasurement) => void;
+
+    static readonly options: SentryOptions;
 }
 
 declare class SentryAppStartMeasurement extends NSObject {
 
-	static alloc(): SentryAppStartMeasurement; // inherited from NSObject
+    static alloc(): SentryAppStartMeasurement; // inherited from NSObject
 
-	static new(): SentryAppStartMeasurement; // inherited from NSObject
+    static new(): SentryAppStartMeasurement; // inherited from NSObject
 
-	readonly appStartTimestamp: Date;
+    readonly appStartTimestamp: Date;
 
-	readonly didFinishLaunchingTimestamp: Date;
+    readonly didFinishLaunchingTimestamp: Date;
 
-	readonly duration: number;
+    readonly duration: number;
 
-	readonly isPreWarmed: boolean;
+    readonly isPreWarmed: boolean;
 
-	readonly moduleInitializationTimestamp: Date;
+    readonly moduleInitializationTimestamp: Date;
 
-	readonly runtimeInitTimestamp: Date;
+    readonly runtimeInitTimestamp: Date;
 
-	readonly type: SentryAppStartType;
+    readonly sdkStartTimestamp: Date;
 
-	constructor(o: { type: SentryAppStartType; appStartTimestamp: Date; duration: number; runtimeInitTimestamp: Date; didFinishLaunchingTimestamp: Date; });
+    readonly type: SentryAppStartType;
 
-	constructor(o: { type: SentryAppStartType; isPreWarmed: boolean; appStartTimestamp: Date; duration: number; runtimeInitTimestamp: Date; moduleInitializationTimestamp: Date; didFinishLaunchingTimestamp: Date; });
+    constructor(o: { type: SentryAppStartType; isPreWarmed: boolean; appStartTimestamp: Date; duration: number; runtimeInitTimestamp: Date; moduleInitializationTimestamp: Date; sdkStartTimestamp: Date; didFinishLaunchingTimestamp: Date });
 
-	initWithTypeAppStartTimestampDurationRuntimeInitTimestampDidFinishLaunchingTimestamp(type: SentryAppStartType, appStartTimestamp: Date, duration: number, runtimeInitTimestamp: Date, didFinishLaunchingTimestamp: Date): this;
-
-	initWithTypeIsPreWarmedAppStartTimestampDurationRuntimeInitTimestampModuleInitializationTimestampDidFinishLaunchingTimestamp(type: SentryAppStartType, isPreWarmed: boolean, appStartTimestamp: Date, duration: number, runtimeInitTimestamp: Date, moduleInitializationTimestamp: Date, didFinishLaunchingTimestamp: Date): this;
+    initWithTypeIsPreWarmedAppStartTimestampDurationRuntimeInitTimestampModuleInitializationTimestampSdkStartTimestampDidFinishLaunchingTimestamp(type: SentryAppStartType, isPreWarmed: boolean, appStartTimestamp: Date, duration: number, runtimeInitTimestamp: Date, moduleInitializationTimestamp: Date, sdkStartTimestamp: Date, didFinishLaunchingTimestamp: Date): this;
 }
 
 declare const enum SentryAppStartType {
 
-	Warm = 0,
+    Warm = 0,
 
-	Cold = 1,
+    Cold = 1,
 
-	Unknown = 2
+    Unknown = 2
 }
 
 declare class SentryAttachment extends NSObject {
 
-	static alloc(): SentryAttachment; // inherited from NSObject
+    static alloc(): SentryAttachment; // inherited from NSObject
 
-	static new(): SentryAttachment; // inherited from NSObject
+    static new(): SentryAttachment; // inherited from NSObject
 
-	readonly contentType: string;
+    readonly contentType: string;
 
-	readonly data: NSData;
+    readonly data: NSData;
 
-	readonly filename: string;
+    readonly filename: string;
 
-	readonly path: string;
+    readonly path: string;
 
-	constructor(o: { data: NSData; filename: string; });
+    constructor(o: { data: NSData; filename: string });
 
-	constructor(o: { data: NSData; filename: string; contentType: string; });
+    constructor(o: { data: NSData; filename: string; contentType: string });
 
-	constructor(o: { path: string; });
+    constructor(o: { path: string });
 
-	constructor(o: { path: string; filename: string; });
+    constructor(o: { path: string; filename: string });
 
-	constructor(o: { path: string; filename: string; contentType: string; });
+    constructor(o: { path: string; filename: string; contentType: string });
 
-	initWithDataFilename(data: NSData, filename: string): this;
+    initWithDataFilename(data: NSData, filename: string): this;
 
-	initWithDataFilenameContentType(data: NSData, filename: string, contentType: string): this;
+    initWithDataFilenameContentType(data: NSData, filename: string, contentType: string): this;
 
-	initWithPath(path: string): this;
+    initWithPath(path: string): this;
 
-	initWithPathFilename(path: string, filename: string): this;
+    initWithPathFilename(path: string, filename: string): this;
 
-	initWithPathFilenameContentType(path: string, filename: string, contentType: string): this;
+    initWithPathFilenameContentType(path: string, filename: string, contentType: string): this;
+}
+
+declare class SentryBinaryImageCache extends NSObject {
+
+    static alloc(): SentryBinaryImageCache; // inherited from NSObject
+
+    static new(): SentryBinaryImageCache; // inherited from NSObject
+
+    imageByAddress(address: number): SentryBinaryImageInfo;
+
+    pathForInAppInclude(inAppInclude: string): string;
+
+    start(): void;
+
+    stop(): void;
+}
+
+declare class SentryBinaryImageInfo extends NSObject {
+
+    static alloc(): SentryBinaryImageInfo; // inherited from NSObject
+
+    static new(): SentryBinaryImageInfo; // inherited from NSObject
+
+    address: number;
+
+    name: string;
+
+    size: number;
 }
 
 declare class SentryBreadcrumb extends NSObject implements SentrySerializable {
 
-	static alloc(): SentryBreadcrumb; // inherited from NSObject
+    static alloc(): SentryBreadcrumb; // inherited from NSObject
 
-	static new(): SentryBreadcrumb; // inherited from NSObject
+    static new(): SentryBreadcrumb; // inherited from NSObject
 
-	category: string;
+    category: string;
 
-	data: NSDictionary<string, any>;
+    data: NSDictionary<string, any>;
 
-	level: SentryLevel;
+    level: SentryLevel;
 
-	message: string;
+    message: string;
 
-	timestamp: Date;
+    timestamp: Date;
 
-	type: string;
+    type: string;
 
-	readonly debugDescription: string; // inherited from NSObjectProtocol
+    readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	readonly description: string; // inherited from NSObjectProtocol
+    readonly description: string; // inherited from NSObjectProtocol
 
-	readonly hash: number; // inherited from NSObjectProtocol
+    readonly hash: number; // inherited from NSObjectProtocol
 
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
+    readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+    readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly  // inherited from NSObjectProtocol
+    readonly;  // inherited from NSObjectProtocol
 
-	constructor(o: { level: SentryLevel; category: string; });
+    constructor(o: { dictionary: NSDictionary<any, any> });
 
-	class(): typeof NSObject;
+    constructor(o: { level: SentryLevel; category: string });
 
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+    class(): typeof NSObject;
 
-	hash(): number;
+    conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	initWithLevelCategory(level: SentryLevel, category: string): this;
+    hash(): number;
 
-	isEqual(object: any): boolean;
+    initWithDictionary(dictionary: NSDictionary<any, any>): this;
 
-	isEqualToBreadcrumb(breadcrumb: SentryBreadcrumb): boolean;
+    initWithLevelCategory(level: SentryLevel, category: string): this;
 
-	isKindOfClass(aClass: typeof NSObject): boolean;
+    isEqual(object: any): boolean;
 
-	isMemberOfClass(aClass: typeof NSObject): boolean;
+    isEqualToBreadcrumb(breadcrumb: SentryBreadcrumb): boolean;
 
-	performSelector(aSelector: string): any;
+    isKindOfClass(aClass: typeof NSObject): boolean;
 
-	performSelectorWithObject(aSelector: string, object: any): any;
+    isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+    performSelector(aSelector: string): any;
 
-	respondsToSelector(aSelector: string): boolean;
+    performSelectorWithObject(aSelector: string, object: any): any;
 
-	retainCount(): number;
+    performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	self(): this;
+    respondsToSelector(aSelector: string): boolean;
 
-	serialize(): NSDictionary<string, any>;
+    retainCount(): number;
+
+    self(): this;
+
+    serialize(): NSDictionary<string, any>;
 }
 
 declare class SentryClient extends NSObject {
 
-	static alloc(): SentryClient; // inherited from NSObject
+    static alloc(): SentryClient; // inherited from NSObject
 
-	static new(): SentryClient; // inherited from NSObject
+    static new(): SentryClient; // inherited from NSObject
 
-	options: SentryOptions;
+    readonly isEnabled: boolean;
 
-	constructor(o: { options: SentryOptions; });
+    options: SentryOptions;
 
-	captureEnvelope(envelope: SentryEnvelope): void;
+    constructor(o: { options: SentryOptions });
 
-	captureError(error: NSError): SentryId;
+    captureError(error: NSError): SentryId;
 
-	captureErrorWithScope(error: NSError, scope: SentryScope): SentryId;
+    captureErrorWithScope(error: NSError, scope: SentryScope): SentryId;
 
-	captureEvent(event: SentryEvent): SentryId;
+    captureEvent(event: SentryEvent): SentryId;
 
-	captureEventWithScope(event: SentryEvent, scope: SentryScope): SentryId;
+    captureEventWithScope(event: SentryEvent, scope: SentryScope): SentryId;
 
-	captureException(exception: NSException): SentryId;
+    captureException(exception: NSException): SentryId;
 
-	captureExceptionWithScope(exception: NSException, scope: SentryScope): SentryId;
+    captureExceptionWithScope(exception: NSException, scope: SentryScope): SentryId;
 
-	captureMessage(message: string): SentryId;
+    captureMessage(message: string): SentryId;
 
-	captureMessageWithScope(message: string, scope: SentryScope): SentryId;
+    captureMessageWithScope(message: string, scope: SentryScope): SentryId;
 
-	captureSession(session: SentrySession): void;
+    captureUserFeedback(userFeedback: SentryUserFeedback): void;
 
-	captureUserFeedback(userFeedback: SentryUserFeedback): void;
+    close(): void;
 
-	flush(timeout: number): void;
+    flush(timeout: number): void;
 
-	initWithOptions(options: SentryOptions): this;
+    initWithOptions(options: SentryOptions): this;
 }
 
 declare class SentryCrashExceptionApplication extends NSObject {
 
-	static alloc(): SentryCrashExceptionApplication; // inherited from NSObject
+    static alloc(): SentryCrashExceptionApplication; // inherited from NSObject
 
-	static new(): SentryCrashExceptionApplication; // inherited from NSObject
+    static new(): SentryCrashExceptionApplication; // inherited from NSObject
 }
 
 declare class SentryDebugImageProvider extends NSObject {
 
-	static alloc(): SentryDebugImageProvider; // inherited from NSObject
+    static alloc(): SentryDebugImageProvider; // inherited from NSObject
 
-	static new(): SentryDebugImageProvider; // inherited from NSObject
+    static new(): SentryDebugImageProvider; // inherited from NSObject
 
-	getDebugImages(): NSArray<SentryDebugMeta>;
+    getDebugImages(): NSArray<SentryDebugMeta>;
 
-	getDebugImagesForThreads(threads: NSArray<SentryThread> | SentryThread[]): NSArray<SentryDebugMeta>;
+    getDebugImagesCrashed(isCrash: boolean): NSArray<SentryDebugMeta>;
+
+    getDebugImagesForFrames(frames: NSArray<SentryFrame> | SentryFrame[]): NSArray<SentryDebugMeta>;
+
+    getDebugImagesForFramesIsCrash(frames: NSArray<SentryFrame> | SentryFrame[], isCrash: boolean): NSArray<SentryDebugMeta>;
+
+    getDebugImagesForThreads(threads: NSArray<SentryThread> | SentryThread[]): NSArray<SentryDebugMeta>;
+
+    getDebugImagesForThreadsIsCrash(threads: NSArray<SentryThread> | SentryThread[], isCrash: boolean): NSArray<SentryDebugMeta>;
 }
 
 declare class SentryDebugMeta extends NSObject implements SentrySerializable {
 
-	static alloc(): SentryDebugMeta; // inherited from NSObject
+    static alloc(): SentryDebugMeta; // inherited from NSObject
 
-	static new(): SentryDebugMeta; // inherited from NSObject
+    static new(): SentryDebugMeta; // inherited from NSObject
 
-	imageAddress: string;
+    codeFile: string;
 
-	imageSize: number;
+    debugID: string;
 
-	imageVmAddress: string;
+    imageAddress: string;
 
-	name: string;
+    imageSize: number;
 
-	type: string;
+    imageVmAddress: string;
 
-	uuid: string;
+    name: string;
 
-	readonly debugDescription: string; // inherited from NSObjectProtocol
+    type: string;
 
-	readonly description: string; // inherited from NSObjectProtocol
+    uuid: string;
 
-	readonly hash: number; // inherited from NSObjectProtocol
+    readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
+    readonly description: string; // inherited from NSObjectProtocol
 
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+    readonly hash: number; // inherited from NSObjectProtocol
 
-	readonly  // inherited from NSObjectProtocol
+    readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	class(): typeof NSObject;
+    readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+    readonly;  // inherited from NSObjectProtocol
 
-	isEqual(object: any): boolean;
+    class(): typeof NSObject;
 
-	isKindOfClass(aClass: typeof NSObject): boolean;
+    conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	isMemberOfClass(aClass: typeof NSObject): boolean;
+    isEqual(object: any): boolean;
 
-	performSelector(aSelector: string): any;
+    isKindOfClass(aClass: typeof NSObject): boolean;
 
-	performSelectorWithObject(aSelector: string, object: any): any;
+    isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+    performSelector(aSelector: string): any;
 
-	respondsToSelector(aSelector: string): boolean;
+    performSelectorWithObject(aSelector: string, object: any): any;
 
-	retainCount(): number;
+    performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	self(): this;
+    respondsToSelector(aSelector: string): boolean;
 
-	serialize(): NSDictionary<string, any>;
+    retainCount(): number;
+
+    self(): this;
+
+    serialize(): NSDictionary<string, any>;
+}
+
+declare class SentryDependencyContainer extends NSObject {
+
+    static alloc(): SentryDependencyContainer; // inherited from NSObject
+
+    static new(): SentryDependencyContainer; // inherited from NSObject
+
+    static reset(): void;
+
+    static sharedInstance(): SentryDependencyContainer;
+
+    binaryImageCache: SentryBinaryImageCache;
+
+    debugImageProvider: SentryDebugImageProvider;
+
+    metricKitManager: SentryMXManager;
+
+    random: any;
 }
 
 declare class SentryDsn extends NSObject {
 
-	static alloc(): SentryDsn; // inherited from NSObject
+    static alloc(): SentryDsn; // inherited from NSObject
 
-	static new(): SentryDsn; // inherited from NSObject
+    static new(): SentryDsn; // inherited from NSObject
 
-	readonly url: NSURL;
+    readonly url: NSURL;
 
-	constructor(o: { string: string; });
+    constructor(o: { string: string });
 
-	getEnvelopeEndpoint(): NSURL;
+    getEnvelopeEndpoint(): NSURL;
 
-	getHash(): string;
+    getHash(): string;
 
-	getStoreEndpoint(): NSURL;
+    getStoreEndpoint(): NSURL;
 
-	initWithStringDidFailWithError(dsnString: string): this;
+    initWithStringDidFailWithError(dsnString: string): this;
 }
 
 declare class SentryEnvelope extends NSObject {
 
-	static alloc(): SentryEnvelope; // inherited from NSObject
+    static alloc(): SentryEnvelope; // inherited from NSObject
 
-	static new(): SentryEnvelope; // inherited from NSObject
+    static new(): SentryEnvelope; // inherited from NSObject
 
-	readonly header: SentryEnvelopeHeader;
+    readonly header: SentryEnvelopeHeader;
 
-	readonly items: NSArray<SentryEnvelopeItem>;
+    readonly items: NSArray<SentryEnvelopeItem>;
 
-	constructor(o: { event: SentryEvent; });
+    constructor(o: { event: SentryEvent });
 
-	constructor(o: { header: SentryEnvelopeHeader; items: NSArray<SentryEnvelopeItem> | SentryEnvelopeItem[]; });
+    constructor(o: { header: SentryEnvelopeHeader; items: NSArray<SentryEnvelopeItem> | SentryEnvelopeItem[] });
 
-	constructor(o: { header: SentryEnvelopeHeader; singleItem: SentryEnvelopeItem; });
+    constructor(o: { header: SentryEnvelopeHeader; singleItem: SentryEnvelopeItem });
 
-	constructor(o: { id: SentryId; items: NSArray<SentryEnvelopeItem> | SentryEnvelopeItem[]; });
+    constructor(o: { id: SentryId; items: NSArray<SentryEnvelopeItem> | SentryEnvelopeItem[] });
 
-	constructor(o: { id: SentryId; singleItem: SentryEnvelopeItem; });
+    constructor(o: { id: SentryId; singleItem: SentryEnvelopeItem });
 
-	constructor(o: { session: SentrySession; });
+    constructor(o: { userFeedback: SentryUserFeedback });
 
-	constructor(o: { sessions: NSArray<SentrySession> | SentrySession[]; });
+    initWithEvent(event: SentryEvent): this;
 
-	constructor(o: { userFeedback: SentryUserFeedback; });
+    initWithHeaderItems(header: SentryEnvelopeHeader, items: NSArray<SentryEnvelopeItem> | SentryEnvelopeItem[]): this;
 
-	initWithEvent(event: SentryEvent): this;
+    initWithHeaderSingleItem(header: SentryEnvelopeHeader, item: SentryEnvelopeItem): this;
 
-	initWithHeaderItems(header: SentryEnvelopeHeader, items: NSArray<SentryEnvelopeItem> | SentryEnvelopeItem[]): this;
+    initWithIdItems(id: SentryId, items: NSArray<SentryEnvelopeItem> | SentryEnvelopeItem[]): this;
 
-	initWithHeaderSingleItem(header: SentryEnvelopeHeader, item: SentryEnvelopeItem): this;
+    initWithIdSingleItem(id: SentryId, item: SentryEnvelopeItem): this;
 
-	initWithIdItems(id: SentryId, items: NSArray<SentryEnvelopeItem> | SentryEnvelopeItem[]): this;
-
-	initWithIdSingleItem(id: SentryId, item: SentryEnvelopeItem): this;
-
-	initWithSession(session: SentrySession): this;
-
-	initWithSessions(sessions: NSArray<SentrySession> | SentrySession[]): this;
-
-	initWithUserFeedback(userFeedback: SentryUserFeedback): this;
+    initWithUserFeedback(userFeedback: SentryUserFeedback): this;
 }
 
 declare class SentryEnvelopeHeader extends NSObject {
 
-	static alloc(): SentryEnvelopeHeader; // inherited from NSObject
+    static alloc(): SentryEnvelopeHeader; // inherited from NSObject
 
-	static new(): SentryEnvelopeHeader; // inherited from NSObject
+    static new(): SentryEnvelopeHeader; // inherited from NSObject
 
-	readonly eventId: SentryId;
+    readonly eventId: SentryId;
 
-	readonly sdkInfo: SentrySdkInfo;
+    sentAt: Date;
 
-	constructor(o: { id: SentryId; });
+    constructor(o: { id: SentryId });
 
-	initWithId(eventId: SentryId): this;
+    initWithId(eventId: SentryId): this;
 }
 
 declare class SentryEnvelopeItem extends NSObject {
 
-	static alloc(): SentryEnvelopeItem; // inherited from NSObject
+    static alloc(): SentryEnvelopeItem; // inherited from NSObject
 
-	static new(): SentryEnvelopeItem; // inherited from NSObject
+    static new(): SentryEnvelopeItem; // inherited from NSObject
 
-	readonly data: NSData;
+    readonly data: NSData;
 
-	readonly header: SentryEnvelopeItemHeader;
+    readonly header: SentryEnvelopeItemHeader;
 
-	constructor(o: { attachment: SentryAttachment; maxAttachmentSize: number; });
+    constructor(o: { attachment: SentryAttachment; maxAttachmentSize: number });
 
-	constructor(o: { event: SentryEvent; });
+    constructor(o: { event: SentryEvent });
 
-	constructor(o: { header: SentryEnvelopeItemHeader; data: NSData; });
+    constructor(o: { header: SentryEnvelopeItemHeader; data: NSData });
 
-	constructor(o: { session: SentrySession; });
+    constructor(o: { userFeedback: SentryUserFeedback });
 
-	constructor(o: { userFeedback: SentryUserFeedback; });
+    initWithAttachmentMaxAttachmentSize(attachment: SentryAttachment, maxAttachmentSize: number): this;
 
-	initWithAttachmentMaxAttachmentSize(attachment: SentryAttachment, maxAttachmentSize: number): this;
+    initWithEvent(event: SentryEvent): this;
 
-	initWithEvent(event: SentryEvent): this;
+    initWithHeaderData(header: SentryEnvelopeItemHeader, data: NSData): this;
 
-	initWithHeaderData(header: SentryEnvelopeItemHeader, data: NSData): this;
-
-	initWithSession(session: SentrySession): this;
-
-	initWithUserFeedback(userFeedback: SentryUserFeedback): this;
+    initWithUserFeedback(userFeedback: SentryUserFeedback): this;
 }
 
-declare class SentryEnvelopeItemHeader extends NSObject {
+declare class SentryEnvelopeItemHeader extends NSObject implements SentrySerializable {
 
-	static alloc(): SentryEnvelopeItemHeader; // inherited from NSObject
+    static alloc(): SentryEnvelopeItemHeader; // inherited from NSObject
 
-	static new(): SentryEnvelopeItemHeader; // inherited from NSObject
+    static new(): SentryEnvelopeItemHeader; // inherited from NSObject
 
-	readonly contentType: string;
+    readonly contentType: string;
 
-	readonly filename: string;
+    readonly filename: string;
 
-	readonly length: number;
+    readonly length: number;
 
-	readonly type: string;
+    readonly type: string;
 
-	constructor(o: { type: string; length: number; });
+    readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	constructor(o: { type: string; length: number; filenname: string; contentType: string; });
+    readonly description: string; // inherited from NSObjectProtocol
 
-	initWithTypeLength(type: string, length: number): this;
+    readonly hash: number; // inherited from NSObjectProtocol
 
-	initWithTypeLengthFilennameContentType(type: string, length: number, filename: string, contentType: string): this;
+    readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+    readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+    readonly;  // inherited from NSObjectProtocol
+
+    constructor(o: { type: string; length: number });
+
+    constructor(o: { type: string; length: number; filenname: string; contentType: string });
+
+    class(): typeof NSObject;
+
+    conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+    initWithTypeLength(type: string, length: number): this;
+
+    initWithTypeLengthFilennameContentType(type: string, length: number, filename: string, contentType: string): this;
+
+    isEqual(object: any): boolean;
+
+    isKindOfClass(aClass: typeof NSObject): boolean;
+
+    isMemberOfClass(aClass: typeof NSObject): boolean;
+
+    performSelector(aSelector: string): any;
+
+    performSelectorWithObject(aSelector: string, object: any): any;
+
+    performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+    respondsToSelector(aSelector: string): boolean;
+
+    retainCount(): number;
+
+    self(): this;
+
+    serialize(): NSDictionary<string, any>;
 }
 
 declare const enum SentryError {
 
-	kSentryErrorUnknownError = -1,
+    kSentryErrorUnknownError = -1,
 
-	kSentryErrorInvalidDsnError = 100,
+    kSentryErrorInvalidDsnError = 100,
 
-	kSentryErrorSentryCrashNotInstalledError = 101,
+    kSentryErrorSentryCrashNotInstalledError = 101,
 
-	kSentryErrorInvalidCrashReportError = 102,
+    kSentryErrorInvalidCrashReportError = 102,
 
-	kSentryErrorCompressionError = 103,
+    kSentryErrorCompressionError = 103,
 
-	kSentryErrorJsonConversionError = 104,
+    kSentryErrorJsonConversionError = 104,
 
-	kSentryErrorCouldNotFindDirectory = 105,
+    kSentryErrorCouldNotFindDirectory = 105,
 
-	kSentryErrorRequestError = 106,
+    kSentryErrorRequestError = 106,
 
-	kSentryErrorEventNotSent = 107
+    kSentryErrorEventNotSent = 107,
+
+    kSentryErrorFileIO = 108,
+
+    kSentryErrorKernel = 109
 }
 
-declare var SentryErrorDomain: string;
+declare let SentryErrorDomain: string;
 
 declare class SentryEvent extends NSObject implements SentrySerializable {
 
-	static alloc(): SentryEvent; // inherited from NSObject
+    static alloc(): SentryEvent; // inherited from NSObject
 
-	static new(): SentryEvent; // inherited from NSObject
+    static new(): SentryEvent; // inherited from NSObject
 
-	breadcrumbs: NSArray<SentryBreadcrumb>;
+    breadcrumbs: NSArray<SentryBreadcrumb>;
 
-	context: NSDictionary<string, NSDictionary<string, any>>;
+    context: NSDictionary<string, NSDictionary<string, any>>;
 
-	debugMeta: NSArray<SentryDebugMeta>;
+    debugMeta: NSArray<SentryDebugMeta>;
 
-	dist: string;
+    dist: string;
 
-	environment: string;
+    environment: string;
 
-	error: NSError;
+    error: NSError;
 
-	eventId: SentryId;
+    eventId: SentryId;
 
-	exceptions: NSArray<SentryException>;
+    exceptions: NSArray<SentryException>;
 
-	extra: NSDictionary<string, any>;
+    extra: NSDictionary<string, any>;
 
-	fingerprint: NSArray<string>;
+    fingerprint: NSArray<string>;
 
-	level: SentryLevel;
+    level: SentryLevel;
 
-	logger: string;
+    logger: string;
 
-	message: SentryMessage;
+    message: SentryMessage;
 
-	modules: NSDictionary<string, string>;
+    modules: NSDictionary<string, string>;
 
-	platform: string;
+    platform: string;
 
-	releaseName: string;
+    releaseName: string;
 
-	request: SentryRequest;
+    request: SentryRequest;
 
-	sdk: NSDictionary<string, any>;
+    sdk: NSDictionary<string, any>;
 
-	serverName: string;
+    serverName: string;
 
-	stacktrace: SentryStacktrace;
+    stacktrace: SentryStacktrace;
 
-	startTimestamp: Date;
+    startTimestamp: Date;
 
-	tags: NSDictionary<string, string>;
+    tags: NSDictionary<string, string>;
 
-	threads: NSArray<SentryThread>;
+    threads: NSArray<SentryThread>;
 
-	timestamp: Date;
+    timestamp: Date;
 
-	transaction: string;
+    transaction: string;
 
-	type: string;
+    type: string;
 
-	user: SentryUser;
+    user: SentryUser;
 
-	readonly debugDescription: string; // inherited from NSObjectProtocol
+    readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	readonly description: string; // inherited from NSObjectProtocol
+    readonly description: string; // inherited from NSObjectProtocol
 
-	readonly hash: number; // inherited from NSObjectProtocol
+    readonly hash: number; // inherited from NSObjectProtocol
 
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
+    readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+    readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly  // inherited from NSObjectProtocol
+    readonly;  // inherited from NSObjectProtocol
 
-	constructor(o: { error: NSError; });
+    constructor(o: { error: NSError });
 
-	constructor(o: { level: SentryLevel; });
+    constructor(o: { level: SentryLevel });
 
-	class(): typeof NSObject;
+    class(): typeof NSObject;
 
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+    conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	initWithError(error: NSError): this;
+    initWithError(error: NSError): this;
 
-	initWithLevel(level: SentryLevel): this;
+    initWithLevel(level: SentryLevel): this;
 
-	isEqual(object: any): boolean;
+    isEqual(object: any): boolean;
 
-	isKindOfClass(aClass: typeof NSObject): boolean;
+    isKindOfClass(aClass: typeof NSObject): boolean;
 
-	isMemberOfClass(aClass: typeof NSObject): boolean;
+    isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	performSelector(aSelector: string): any;
+    performSelector(aSelector: string): any;
 
-	performSelectorWithObject(aSelector: string, object: any): any;
+    performSelectorWithObject(aSelector: string, object: any): any;
 
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+    performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	respondsToSelector(aSelector: string): boolean;
+    respondsToSelector(aSelector: string): boolean;
 
-	retainCount(): number;
+    retainCount(): number;
 
-	self(): this;
+    self(): this;
 
-	serialize(): NSDictionary<string, any>;
+    serialize(): NSDictionary<string, any>;
 }
 
 declare class SentryException extends NSObject implements SentrySerializable {
 
-	static alloc(): SentryException; // inherited from NSObject
+    static alloc(): SentryException; // inherited from NSObject
 
-	static new(): SentryException; // inherited from NSObject
+    static new(): SentryException; // inherited from NSObject
 
-	mechanism: SentryMechanism;
+    mechanism: SentryMechanism;
 
-	module: string;
+    module: string;
 
-	stacktrace: SentryStacktrace;
+    stacktrace: SentryStacktrace;
 
-	threadId: number;
+    threadId: number;
 
-	type: string;
+    type: string;
 
-	value: string;
+    value: string;
 
-	readonly debugDescription: string; // inherited from NSObjectProtocol
+    readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	readonly description: string; // inherited from NSObjectProtocol
+    readonly description: string; // inherited from NSObjectProtocol
 
-	readonly hash: number; // inherited from NSObjectProtocol
+    readonly hash: number; // inherited from NSObjectProtocol
 
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
+    readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+    readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly  // inherited from NSObjectProtocol
+    readonly;  // inherited from NSObjectProtocol
 
-	constructor(o: { value: string; type: string; });
+    constructor(o: { value: string; type: string });
 
-	class(): typeof NSObject;
+    class(): typeof NSObject;
 
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+    conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	initWithValueType(value: string, type: string): this;
+    initWithValueType(value: string, type: string): this;
 
-	isEqual(object: any): boolean;
+    isEqual(object: any): boolean;
 
-	isKindOfClass(aClass: typeof NSObject): boolean;
+    isKindOfClass(aClass: typeof NSObject): boolean;
 
-	isMemberOfClass(aClass: typeof NSObject): boolean;
+    isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	performSelector(aSelector: string): any;
+    performSelector(aSelector: string): any;
 
-	performSelectorWithObject(aSelector: string, object: any): any;
+    performSelectorWithObject(aSelector: string, object: any): any;
 
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+    performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	respondsToSelector(aSelector: string): boolean;
+    respondsToSelector(aSelector: string): boolean;
 
-	retainCount(): number;
+    retainCount(): number;
 
-	self(): this;
+    self(): this;
 
-	serialize(): NSDictionary<string, any>;
+    serialize(): NSDictionary<string, any>;
 }
 
 declare class SentryFrame extends NSObject implements SentrySerializable {
 
-	static alloc(): SentryFrame; // inherited from NSObject
+    static alloc(): SentryFrame; // inherited from NSObject
 
-	static new(): SentryFrame; // inherited from NSObject
+    static new(): SentryFrame; // inherited from NSObject
 
-	columnNumber: number;
+    columnNumber: number;
 
-	fileName: string;
+    fileName: string;
 
-	function: string;
+    function: string;
 
-	imageAddress: string;
+    imageAddress: string;
 
-	inApp: number;
+    inApp: number;
 
-	instructionAddress: string;
+    instruction: number;
 
-	lineNumber: number;
+    instructionAddress: string;
 
-	module: string;
+    lineNumber: number;
 
-	package: string;
+    module: string;
 
-	platform: string;
+    package: string;
 
-	stackStart: number;
+    platform: string;
 
-	symbolAddress: string;
+    stackStart: number;
 
-	readonly debugDescription: string; // inherited from NSObjectProtocol
+    symbolAddress: string;
 
-	readonly description: string; // inherited from NSObjectProtocol
+    readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	readonly hash: number; // inherited from NSObjectProtocol
+    readonly description: string; // inherited from NSObjectProtocol
 
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
+    readonly hash: number; // inherited from NSObjectProtocol
 
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+    readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly  // inherited from NSObjectProtocol
+    readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	class(): typeof NSObject;
+    readonly;  // inherited from NSObjectProtocol
 
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+    class(): typeof NSObject;
 
-	isEqual(object: any): boolean;
+    conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	isKindOfClass(aClass: typeof NSObject): boolean;
+    isEqual(object: any): boolean;
 
-	isMemberOfClass(aClass: typeof NSObject): boolean;
+    isKindOfClass(aClass: typeof NSObject): boolean;
 
-	performSelector(aSelector: string): any;
+    isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	performSelectorWithObject(aSelector: string, object: any): any;
+    performSelector(aSelector: string): any;
 
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+    performSelectorWithObject(aSelector: string, object: any): any;
 
-	respondsToSelector(aSelector: string): boolean;
+    performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	retainCount(): number;
+    respondsToSelector(aSelector: string): boolean;
 
-	self(): this;
+    retainCount(): number;
 
-	serialize(): NSDictionary<string, any>;
+    self(): this;
+
+    serialize(): NSDictionary<string, any>;
+}
+
+declare class SentryGeo extends NSObject implements NSCopying, SentrySerializable {
+
+    static alloc(): SentryGeo; // inherited from NSObject
+
+    static new(): SentryGeo; // inherited from NSObject
+
+    city: string;
+
+    countryCode: string;
+
+    region: string;
+
+    readonly debugDescription: string; // inherited from NSObjectProtocol
+
+    readonly description: string; // inherited from NSObjectProtocol
+
+    readonly hash: number; // inherited from NSObjectProtocol
+
+    readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+    readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+    readonly;  // inherited from NSObjectProtocol
+
+    class(): typeof NSObject;
+
+    conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+    copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+    hash(): number;
+
+    isEqual(object: any): boolean;
+
+    isEqualToGeo(geo: SentryGeo): boolean;
+
+    isKindOfClass(aClass: typeof NSObject): boolean;
+
+    isMemberOfClass(aClass: typeof NSObject): boolean;
+
+    performSelector(aSelector: string): any;
+
+    performSelectorWithObject(aSelector: string, object: any): any;
+
+    performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+    respondsToSelector(aSelector: string): boolean;
+
+    retainCount(): number;
+
+    self(): this;
+
+    serialize(): NSDictionary<string, any>;
 }
 
 declare class SentryHttpStatusCodeRange extends NSObject {
 
-	static alloc(): SentryHttpStatusCodeRange; // inherited from NSObject
+    static alloc(): SentryHttpStatusCodeRange; // inherited from NSObject
 
-	static new(): SentryHttpStatusCodeRange; // inherited from NSObject
+    static new(): SentryHttpStatusCodeRange; // inherited from NSObject
 
-	readonly max: number;
+    readonly max: number;
 
-	readonly min: number;
+    readonly min: number;
 
-	constructor(o: { min: number; max: number; });
+    constructor(o: { min: number; max: number });
 
-	constructor(o: { statusCode: number; });
+    constructor(o: { statusCode: number });
 
-	initWithMinMax(min: number, max: number): this;
+    initWithMinMax(min: number, max: number): this;
 
-	initWithStatusCode(statusCode: number): this;
+    initWithStatusCode(statusCode: number): this;
 }
 
 declare class SentryHub extends NSObject {
 
-	static alloc(): SentryHub; // inherited from NSObject
+    static alloc(): SentryHub; // inherited from NSObject
 
-	static new(): SentryHub; // inherited from NSObject
+    static new(): SentryHub; // inherited from NSObject
 
-	readonly scope: SentryScope;
+    readonly scope: SentryScope;
 
-	readonly session: SentrySession;
+    constructor(o: { client: SentryClient; andScope: SentryScope });
 
-	constructor(o: { client: SentryClient; andScope: SentryScope; });
+    addBreadcrumb(crumb: SentryBreadcrumb): void;
 
-	addBreadcrumb(crumb: SentryBreadcrumb): void;
+    bindClient(client: SentryClient): void;
 
-	bindClient(client: SentryClient): void;
+    captureError(error: NSError): SentryId;
 
-	captureEnvelope(envelope: SentryEnvelope): void;
+    captureErrorWithScope(error: NSError, scope: SentryScope): SentryId;
 
-	captureError(error: NSError): SentryId;
+    captureEvent(event: SentryEvent): SentryId;
 
-	captureErrorWithScope(error: NSError, scope: SentryScope): SentryId;
+    captureEventWithScope(event: SentryEvent, scope: SentryScope): SentryId;
 
-	captureEvent(event: SentryEvent): SentryId;
+    captureException(exception: NSException): SentryId;
 
-	captureEventWithScope(event: SentryEvent, scope: SentryScope): SentryId;
+    captureExceptionWithScope(exception: NSException, scope: SentryScope): SentryId;
 
-	captureException(exception: NSException): SentryId;
+    captureMessage(message: string): SentryId;
 
-	captureExceptionWithScope(exception: NSException, scope: SentryScope): SentryId;
+    captureMessageWithScope(message: string, scope: SentryScope): SentryId;
 
-	captureMessage(message: string): SentryId;
+    captureUserFeedback(userFeedback: SentryUserFeedback): void;
 
-	captureMessageWithScope(message: string, scope: SentryScope): SentryId;
+    close(): void;
 
-	captureUserFeedback(userFeedback: SentryUserFeedback): void;
+    configureScope(callback: (p1: SentryScope) => void): void;
 
-	configureScope(callback: (p1: SentryScope) => void): void;
+    endSession(): void;
 
-	endSession(): void;
+    endSessionWithTimestamp(timestamp: Date): void;
 
-	endSessionWithTimestamp(timestamp: Date): void;
+    flush(timeout: number): void;
 
-	flush(timeout: number): void;
+    getClient(): SentryClient;
 
-	getClient(): SentryClient;
+    hasIntegration(integrationName: string): boolean;
 
-	hasIntegration(integrationName: string): boolean;
+    initWithClientAndScope(client: SentryClient, scope: SentryScope): this;
 
-	initWithClientAndScope(client: SentryClient, scope: SentryScope): this;
+    isIntegrationInstalled(integrationClass: typeof NSObject): boolean;
 
-	isIntegrationInstalled(integrationClass: typeof NSObject): boolean;
+    reportFullyDisplayed(): void;
 
-	setUser(user: SentryUser): void;
+    setUser(user: SentryUser): void;
 
-	startSession(): void;
+    startSession(): void;
 
-	startTransactionWithContext(transactionContext: SentryTransactionContext): SentrySpan;
+    startTransactionWithContext(transactionContext: SentryTransactionContext): SentrySpan;
 
-	startTransactionWithContextBindToScope(transactionContext: SentryTransactionContext, bindToScope: boolean): SentrySpan;
+    startTransactionWithContextBindToScope(transactionContext: SentryTransactionContext, bindToScope: boolean): SentrySpan;
 
-	startTransactionWithContextBindToScopeCustomSamplingContext(transactionContext: SentryTransactionContext, bindToScope: boolean, customSamplingContext: NSDictionary<string, any>): SentrySpan;
+    startTransactionWithContextBindToScopeCustomSamplingContext(transactionContext: SentryTransactionContext, bindToScope: boolean, customSamplingContext: NSDictionary<string, any>): SentrySpan;
 
-	startTransactionWithContextCustomSamplingContext(transactionContext: SentryTransactionContext, customSamplingContext: NSDictionary<string, any>): SentrySpan;
+    startTransactionWithContextCustomSamplingContext(transactionContext: SentryTransactionContext, customSamplingContext: NSDictionary<string, any>): SentrySpan;
 
-	startTransactionWithNameOperation(name: string, operation: string): SentrySpan;
+    startTransactionWithNameOperation(name: string, operation: string): SentrySpan;
 
-	startTransactionWithNameOperationBindToScope(name: string, operation: string, bindToScope: boolean): SentrySpan;
+    startTransactionWithNameOperationBindToScope(name: string, operation: string, bindToScope: boolean): SentrySpan;
 }
 
 declare class SentryId extends NSObject {
 
-	static alloc(): SentryId; // inherited from NSObject
+    static alloc(): SentryId; // inherited from NSObject
 
-	static new(): SentryId; // inherited from NSObject
+    static new(): SentryId; // inherited from NSObject
 
-	readonly sentryIdString: string;
+    readonly sentryIdString: string;
 
-	static readonly empty: SentryId;
+    static readonly empty: SentryId;
 
-	constructor(o: { UUID: NSUUID; });
+    constructor(o: { UUID: NSUUID });
 
-	constructor(o: { UUIDString: string; });
+    constructor(o: { UUIDString: string });
 
-	initWithUUID(uuid: NSUUID): this;
+    initWithUUID(uuid: NSUUID): this;
 
-	initWithUUIDString(string: string): this;
+    initWithUUIDString(string: string): this;
 }
 
 interface SentryIntegrationProtocol extends NSObjectProtocol {
 
-	installWithOptions(options: SentryOptions): boolean;
+    installWithOptions(options: SentryOptions): boolean;
 
-	uninstall?(): void;
+    uninstall?(): void;
 }
 declare var SentryIntegrationProtocol: {
 
-	prototype: SentryIntegrationProtocol;
+    prototype: SentryIntegrationProtocol;
 };
 
 declare const enum SentryLevel {
 
-	kSentryLevelNone = 0,
+    kSentryLevelNone = 0,
 
-	kSentryLevelDebug = 1,
+    kSentryLevelDebug = 1,
 
-	kSentryLevelInfo = 2,
+    kSentryLevelInfo = 2,
 
-	kSentryLevelWarning = 3,
+    kSentryLevelWarning = 3,
 
-	kSentryLevelError = 4,
+    kSentryLevelError = 4,
 
-	kSentryLevelFatal = 5
+    kSentryLevelFatal = 5
 }
 
 declare const enum SentryLogLevel {
 
-	kSentryLogLevelNone = 1,
+    kSentryLogLevelNone = 1,
 
-	kSentryLogLevelError = 2,
+    kSentryLogLevelError = 2,
 
-	kSentryLogLevelDebug = 3,
+    kSentryLogLevelDebug = 3,
 
-	kSentryLogLevelVerbose = 4
+    kSentryLogLevelVerbose = 4
 }
 
 declare class SentryMeasurementUnit extends NSObject implements NSCopying {
 
-	static alloc(): SentryMeasurementUnit; // inherited from NSObject
+    static alloc(): SentryMeasurementUnit; // inherited from NSObject
 
-	static new(): SentryMeasurementUnit; // inherited from NSObject
+    static new(): SentryMeasurementUnit; // inherited from NSObject
 
-	readonly unit: string;
+    readonly unit: string;
 
-	static readonly none: SentryMeasurementUnit;
+    static readonly none: SentryMeasurementUnit;
 
-	constructor(o: { unit: string; });
+    constructor(o: { unit: string });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+    copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	initWithUnit(unit: string): this;
+    initWithUnit(unit: string): this;
 }
 
 declare class SentryMeasurementUnitDuration extends SentryMeasurementUnit {
 
-	static alloc(): SentryMeasurementUnitDuration; // inherited from NSObject
+    static alloc(): SentryMeasurementUnitDuration; // inherited from NSObject
 
-	static new(): SentryMeasurementUnitDuration; // inherited from NSObject
+    static new(): SentryMeasurementUnitDuration; // inherited from NSObject
 
-	static readonly day: SentryMeasurementUnitDuration;
+    static readonly day: SentryMeasurementUnitDuration;
 
-	static readonly hour: SentryMeasurementUnitDuration;
+    static readonly hour: SentryMeasurementUnitDuration;
 
-	static readonly microsecond: SentryMeasurementUnitDuration;
+    static readonly microsecond: SentryMeasurementUnitDuration;
 
-	static readonly millisecond: SentryMeasurementUnitDuration;
+    static readonly millisecond: SentryMeasurementUnitDuration;
 
-	static readonly minute: SentryMeasurementUnitDuration;
+    static readonly minute: SentryMeasurementUnitDuration;
 
-	static readonly nanosecond: SentryMeasurementUnitDuration;
+    static readonly nanosecond: SentryMeasurementUnitDuration;
 
-	static readonly second: SentryMeasurementUnitDuration;
+    static readonly second: SentryMeasurementUnitDuration;
 
-	static readonly week: SentryMeasurementUnitDuration;
+    static readonly week: SentryMeasurementUnitDuration;
 }
 
 declare class SentryMeasurementUnitFraction extends SentryMeasurementUnit {
 
-	static alloc(): SentryMeasurementUnitFraction; // inherited from NSObject
+    static alloc(): SentryMeasurementUnitFraction; // inherited from NSObject
 
-	static new(): SentryMeasurementUnitFraction; // inherited from NSObject
+    static new(): SentryMeasurementUnitFraction; // inherited from NSObject
 
-	static readonly percent: SentryMeasurementUnitFraction;
+    static readonly percent: SentryMeasurementUnitFraction;
 
-	static readonly ratio: SentryMeasurementUnitFraction;
+    static readonly ratio: SentryMeasurementUnitFraction;
 }
 
 declare class SentryMeasurementUnitInformation extends SentryMeasurementUnit {
 
-	static alloc(): SentryMeasurementUnitInformation; // inherited from NSObject
+    static alloc(): SentryMeasurementUnitInformation; // inherited from NSObject
 
-	static new(): SentryMeasurementUnitInformation; // inherited from NSObject
+    static new(): SentryMeasurementUnitInformation; // inherited from NSObject
 
-	static readonly bit: SentryMeasurementUnitInformation;
+    static readonly bit: SentryMeasurementUnitInformation;
 
-	static readonly byte: SentryMeasurementUnitInformation;
+    static readonly byte: SentryMeasurementUnitInformation;
 
-	static readonly exabyte: SentryMeasurementUnitInformation;
+    static readonly exabyte: SentryMeasurementUnitInformation;
 
-	static readonly exbibyte: SentryMeasurementUnitInformation;
+    static readonly exbibyte: SentryMeasurementUnitInformation;
 
-	static readonly gibibyte: SentryMeasurementUnitInformation;
+    static readonly gibibyte: SentryMeasurementUnitInformation;
 
-	static readonly gigabyte: SentryMeasurementUnitInformation;
+    static readonly gigabyte: SentryMeasurementUnitInformation;
 
-	static readonly kibibyte: SentryMeasurementUnitInformation;
+    static readonly kibibyte: SentryMeasurementUnitInformation;
 
-	static readonly kilobyte: SentryMeasurementUnitInformation;
+    static readonly kilobyte: SentryMeasurementUnitInformation;
 
-	static readonly mebibyte: SentryMeasurementUnitInformation;
+    static readonly mebibyte: SentryMeasurementUnitInformation;
 
-	static readonly megabyte: SentryMeasurementUnitInformation;
+    static readonly megabyte: SentryMeasurementUnitInformation;
 
-	static readonly pebibyte: SentryMeasurementUnitInformation;
+    static readonly pebibyte: SentryMeasurementUnitInformation;
 
-	static readonly petabyte: SentryMeasurementUnitInformation;
+    static readonly petabyte: SentryMeasurementUnitInformation;
 
-	static readonly tebibyte: SentryMeasurementUnitInformation;
+    static readonly tebibyte: SentryMeasurementUnitInformation;
 
-	static readonly terabyte: SentryMeasurementUnitInformation;
+    static readonly terabyte: SentryMeasurementUnitInformation;
 }
 
 declare class SentryMechanism extends NSObject implements SentrySerializable {
 
-	static alloc(): SentryMechanism; // inherited from NSObject
+    static alloc(): SentryMechanism; // inherited from NSObject
 
-	static new(): SentryMechanism; // inherited from NSObject
+    static new(): SentryMechanism; // inherited from NSObject
 
-	data: NSDictionary<string, any>;
+    data: NSDictionary<string, any>;
 
-	desc: string;
+    desc: string;
 
-	handled: number;
+    handled: number;
 
-	helpLink: string;
+    helpLink: string;
 
-	meta: SentryMechanismMeta;
+    meta: SentryMechanismMeta;
 
-	type: string;
+    synthetic: number;
 
-	readonly debugDescription: string; // inherited from NSObjectProtocol
+    type: string;
 
-	readonly description: string; // inherited from NSObjectProtocol
+    readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	readonly hash: number; // inherited from NSObjectProtocol
+    readonly description: string; // inherited from NSObjectProtocol
 
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
+    readonly hash: number; // inherited from NSObjectProtocol
 
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+    readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly  // inherited from NSObjectProtocol
+    readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	constructor(o: { type: string; });
+    readonly;  // inherited from NSObjectProtocol
 
-	class(): typeof NSObject;
+    constructor(o: { type: string });
 
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+    class(): typeof NSObject;
 
-	initWithType(type: string): this;
+    conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	isEqual(object: any): boolean;
+    initWithType(type: string): this;
 
-	isKindOfClass(aClass: typeof NSObject): boolean;
+    isEqual(object: any): boolean;
 
-	isMemberOfClass(aClass: typeof NSObject): boolean;
+    isKindOfClass(aClass: typeof NSObject): boolean;
 
-	performSelector(aSelector: string): any;
+    isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	performSelectorWithObject(aSelector: string, object: any): any;
+    performSelector(aSelector: string): any;
 
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+    performSelectorWithObject(aSelector: string, object: any): any;
 
-	respondsToSelector(aSelector: string): boolean;
+    performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	retainCount(): number;
+    respondsToSelector(aSelector: string): boolean;
 
-	self(): this;
+    retainCount(): number;
 
-	serialize(): NSDictionary<string, any>;
+    self(): this;
+
+    serialize(): NSDictionary<string, any>;
 }
 
 declare class SentryMechanismMeta extends NSObject implements SentrySerializable {
 
-	static alloc(): SentryMechanismMeta; // inherited from NSObject
+    static alloc(): SentryMechanismMeta; // inherited from NSObject
 
-	static new(): SentryMechanismMeta; // inherited from NSObject
+    static new(): SentryMechanismMeta; // inherited from NSObject
 
-	error: SentryNSError;
+    error: SentryNSError;
 
-	machException: NSDictionary<string, any>;
+    machException: NSDictionary<string, any>;
 
-	signal: NSDictionary<string, any>;
+    signal: NSDictionary<string, any>;
 
-	readonly debugDescription: string; // inherited from NSObjectProtocol
+    readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	readonly description: string; // inherited from NSObjectProtocol
+    readonly description: string; // inherited from NSObjectProtocol
 
-	readonly hash: number; // inherited from NSObjectProtocol
+    readonly hash: number; // inherited from NSObjectProtocol
 
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
+    readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+    readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly  // inherited from NSObjectProtocol
+    readonly;  // inherited from NSObjectProtocol
 
-	class(): typeof NSObject;
+    class(): typeof NSObject;
 
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+    conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	isEqual(object: any): boolean;
+    isEqual(object: any): boolean;
 
-	isKindOfClass(aClass: typeof NSObject): boolean;
+    isKindOfClass(aClass: typeof NSObject): boolean;
 
-	isMemberOfClass(aClass: typeof NSObject): boolean;
+    isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	performSelector(aSelector: string): any;
+    performSelector(aSelector: string): any;
 
-	performSelectorWithObject(aSelector: string, object: any): any;
+    performSelectorWithObject(aSelector: string, object: any): any;
 
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+    performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	respondsToSelector(aSelector: string): boolean;
+    respondsToSelector(aSelector: string): boolean;
 
-	retainCount(): number;
+    retainCount(): number;
 
-	self(): this;
+    self(): this;
 
-	serialize(): NSDictionary<string, any>;
+    serialize(): NSDictionary<string, any>;
 }
 
 declare class SentryMessage extends NSObject implements SentrySerializable {
 
-	static alloc(): SentryMessage; // inherited from NSObject
+    static alloc(): SentryMessage; // inherited from NSObject
 
-	static new(): SentryMessage; // inherited from NSObject
+    static new(): SentryMessage; // inherited from NSObject
 
-	readonly formatted: string;
+    readonly formatted: string;
 
-	message: string;
+    message: string;
 
-	params: NSArray<string>;
+    params: NSArray<string>;
 
-	readonly debugDescription: string; // inherited from NSObjectProtocol
+    readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	readonly description: string; // inherited from NSObjectProtocol
+    readonly description: string; // inherited from NSObjectProtocol
 
-	readonly hash: number; // inherited from NSObjectProtocol
+    readonly hash: number; // inherited from NSObjectProtocol
 
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
+    readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+    readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly  // inherited from NSObjectProtocol
+    readonly;  // inherited from NSObjectProtocol
 
-	constructor(o: { formatted: string; });
+    constructor(o: { formatted: string });
 
-	class(): typeof NSObject;
+    class(): typeof NSObject;
 
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+    conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	initWithFormatted(formatted: string): this;
+    initWithFormatted(formatted: string): this;
 
-	isEqual(object: any): boolean;
+    isEqual(object: any): boolean;
 
-	isKindOfClass(aClass: typeof NSObject): boolean;
+    isKindOfClass(aClass: typeof NSObject): boolean;
 
-	isMemberOfClass(aClass: typeof NSObject): boolean;
+    isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	performSelector(aSelector: string): any;
+    performSelector(aSelector: string): any;
 
-	performSelectorWithObject(aSelector: string, object: any): any;
+    performSelectorWithObject(aSelector: string, object: any): any;
 
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+    performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	respondsToSelector(aSelector: string): boolean;
+    respondsToSelector(aSelector: string): boolean;
 
-	retainCount(): number;
+    retainCount(): number;
 
-	self(): this;
+    self(): this;
 
-	serialize(): NSDictionary<string, any>;
+    serialize(): NSDictionary<string, any>;
 }
 
 declare class SentryNSError extends NSObject implements SentrySerializable {
 
-	static alloc(): SentryNSError; // inherited from NSObject
+    static alloc(): SentryNSError; // inherited from NSObject
 
-	static new(): SentryNSError; // inherited from NSObject
+    static new(): SentryNSError; // inherited from NSObject
 
-	code: number;
+    code: number;
 
-	domain: string;
+    domain: string;
 
-	readonly debugDescription: string; // inherited from NSObjectProtocol
+    readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	readonly description: string; // inherited from NSObjectProtocol
+    readonly description: string; // inherited from NSObjectProtocol
 
-	readonly hash: number; // inherited from NSObjectProtocol
+    readonly hash: number; // inherited from NSObjectProtocol
 
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
+    readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+    readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly  // inherited from NSObjectProtocol
+    readonly;  // inherited from NSObjectProtocol
 
-	constructor(o: { domain: string; code: number; });
+    constructor(o: { domain: string; code: number });
 
-	class(): typeof NSObject;
+    class(): typeof NSObject;
 
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+    conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	initWithDomainCode(domain: string, code: number): this;
+    initWithDomainCode(domain: string, code: number): this;
 
-	isEqual(object: any): boolean;
+    isEqual(object: any): boolean;
 
-	isKindOfClass(aClass: typeof NSObject): boolean;
+    isKindOfClass(aClass: typeof NSObject): boolean;
 
-	isMemberOfClass(aClass: typeof NSObject): boolean;
+    isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	performSelector(aSelector: string): any;
+    performSelector(aSelector: string): any;
 
-	performSelectorWithObject(aSelector: string, object: any): any;
+    performSelectorWithObject(aSelector: string, object: any): any;
 
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+    performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	respondsToSelector(aSelector: string): boolean;
+    respondsToSelector(aSelector: string): boolean;
 
-	retainCount(): number;
+    retainCount(): number;
 
-	self(): this;
+    self(): this;
 
-	serialize(): NSDictionary<string, any>;
+    serialize(): NSDictionary<string, any>;
 }
 
 declare class SentryOptions extends NSObject {
 
-	static alloc(): SentryOptions; // inherited from NSObject
+    static alloc(): SentryOptions; // inherited from NSObject
 
-	static defaultIntegrations(): NSArray<string>;
+    static defaultIntegrations(): NSArray<string>;
 
-	static new(): SentryOptions; // inherited from NSObject
+    static new(): SentryOptions; // inherited from NSObject
 
-	appHangTimeoutInterval: number;
+    appHangTimeoutInterval: number;
 
-	attachScreenshot: boolean;
+    attachScreenshot: boolean;
 
-	attachStacktrace: boolean;
+    attachStacktrace: boolean;
 
-	attachViewHierarchy: boolean;
+    attachViewHierarchy: boolean;
 
-	beforeBreadcrumb: (p1: SentryBreadcrumb) => SentryBreadcrumb;
+    beforeBreadcrumb: (p1: SentryBreadcrumb) => SentryBreadcrumb;
 
-	beforeSend: (p1: SentryEvent) => SentryEvent;
+    beforeSend: (p1: SentryEvent) => SentryEvent;
 
-	debug: boolean;
+    cacheDirectoryPath: string;
 
-	diagnosticLevel: SentryLevel;
+    debug: boolean;
 
-	dist: string;
+    diagnosticLevel: SentryLevel;
 
-	dsn: string;
+    dist: string;
 
-	enableAppHangTracking: boolean;
+    dsn: string;
 
-	enableAutoBreadcrumbTracking: boolean;
+    enableAppHangTracking: boolean;
 
-	enableAutoPerformanceTracking: boolean;
+    enableAutoBreadcrumbTracking: boolean;
 
-	enableAutoSessionTracking: boolean;
+    enableAutoPerformanceTracing: boolean;
 
-	enableCaptureFailedRequests: boolean;
+    enableAutoSessionTracking: boolean;
 
-	enableCoreDataTracking: boolean;
+    enableCaptureFailedRequests: boolean;
 
-	enableCrashHandler: boolean;
+    enableCoreDataTracing: boolean;
 
-	enableFileIOTracking: boolean;
+    enableCrashHandler: boolean;
 
-	enableNetworkBreadcrumbs: boolean;
+    enableFileIOTracing: boolean;
 
-	enableNetworkTracking: boolean;
+    enableMetricKit: boolean;
 
-	enableOutOfMemoryTracking: boolean;
+    enableNetworkBreadcrumbs: boolean;
 
-	enablePreWarmedAppStartTracking: boolean;
+    enableNetworkTracking: boolean;
 
-	enableProfiling: boolean;
+    enablePerformanceV2: boolean;
 
-	enableSwizzling: boolean;
+    enablePreWarmedAppStartTracing: boolean;
 
-	enableUIViewControllerTracking: boolean;
+    enableProfiling: boolean;
 
-	enableUserInteractionTracing: boolean;
+    enableSwizzling: boolean;
 
-	enabled: boolean;
+    enableTimeToFullDisplayTracing: boolean;
 
-	environment: string;
+    enableTracing: boolean;
 
-	failedRequestStatusCodes: NSArray<SentryHttpStatusCodeRange>;
+    enableUIViewControllerTracing: boolean;
 
-	failedRequestTargets: NSArray<any>;
+    enableUserInteractionTracing: boolean;
 
-	idleTimeout: number;
+    enableWatchdogTerminationTracking: boolean;
 
-	readonly inAppExcludes: NSArray<string>;
+    enabled: boolean;
 
-	readonly inAppIncludes: NSArray<string>;
+    environment: string;
 
-	integrations: NSArray<string>;
+    failedRequestStatusCodes: NSArray<SentryHttpStatusCodeRange>;
 
-	readonly isProfilingEnabled: boolean;
+    failedRequestTargets: NSArray<any>;
 
-	readonly isTracingEnabled: boolean;
+    idleTimeout: number;
 
-	maxAttachmentSize: number;
+    readonly inAppExcludes: NSArray<string>;
 
-	maxBreadcrumbs: number;
+    readonly inAppIncludes: NSArray<string>;
 
-	maxCacheItems: number;
+    initialScope: (p1: SentryScope) => SentryScope;
 
-	onCrashedLastRun: (p1: SentryEvent) => void;
+    integrations: NSArray<string>;
 
-	parsedDsn: SentryDsn;
+    readonly isProfilingEnabled: boolean;
 
-	profilesSampleRate: number;
+    readonly isTracingEnabled: boolean;
 
-	profilesSampler: (p1: SentrySamplingContext) => number;
+    maxAttachmentSize: number;
 
-	releaseName: string;
+    maxBreadcrumbs: number;
 
-	sampleRate: number;
+    maxCacheItems: number;
 
-	readonly sdkInfo: SentrySdkInfo;
+    onCrashedLastRun: (p1: SentryEvent) => void;
 
-	sendClientReports: boolean;
+    parsedDsn: SentryDsn;
 
-	sendDefaultPii: boolean;
+    profilesSampleRate: number;
 
-	sessionTrackingIntervalMillis: number;
+    profilesSampler: (p1: SentrySamplingContext) => number;
 
-	stitchAsyncCode: boolean;
+    releaseName: string;
 
-	tracePropagationTargets: NSArray<any>;
+    sampleRate: number;
 
-	tracesSampleRate: number;
+    sendClientReports: boolean;
 
-	tracesSampler: (p1: SentrySamplingContext) => number;
+    sendDefaultPii: boolean;
 
-	urlSessionDelegate: NSURLSessionDelegate;
+    sessionTrackingIntervalMillis: number;
 
-	constructor(o: { dict: NSDictionary<string, any>; });
+    shutdownTimeInterval: number;
 
-	addInAppExclude(inAppExclude: string): void;
+    swiftAsyncStacktraces: boolean;
 
-	addInAppInclude(inAppInclude: string): void;
+    tracePropagationTargets: NSArray<any>;
 
-	initWithDictDidFailWithError(options: NSDictionary<string, any>): this;
-}
+    tracesSampleRate: number;
 
-declare const enum SentryPermissionStatus {
+    tracesSampler: (p1: SentrySamplingContext) => number;
 
-	kSentryPermissionStatusUnknown = 0,
+    urlSessionDelegate: NSURLSessionDelegate;
 
-	kSentryPermissionStatusGranted = 1,
+    constructor(o: { dict: NSDictionary<string, any> });
 
-	kSentryPermissionStatusPartial = 2,
+    addInAppExclude(inAppExclude: string): void;
 
-	kSentryPermissionStatusDenied = 3
+    addInAppInclude(inAppInclude: string): void;
+
+    initWithDictDidFailWithError(options: NSDictionary<string, any>): this;
 }
 
 declare class SentryRequest extends NSObject implements SentrySerializable {
 
-	static alloc(): SentryRequest; // inherited from NSObject
+    static alloc(): SentryRequest; // inherited from NSObject
 
-	static new(): SentryRequest; // inherited from NSObject
+    static new(): SentryRequest; // inherited from NSObject
 
-	bodySize: number;
+    bodySize: number;
 
-	cookies: string;
+    cookies: string;
 
-	fragment: string;
+    fragment: string;
 
-	headers: NSDictionary<string, string>;
+    headers: NSDictionary<string, string>;
 
-	method: string;
+    method: string;
 
-	queryString: string;
+    queryString: string;
 
-	url: string;
+    url: string;
 
-	readonly debugDescription: string; // inherited from NSObjectProtocol
+    readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	readonly description: string; // inherited from NSObjectProtocol
+    readonly description: string; // inherited from NSObjectProtocol
 
-	readonly hash: number; // inherited from NSObjectProtocol
+    readonly hash: number; // inherited from NSObjectProtocol
 
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
+    readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+    readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly  // inherited from NSObjectProtocol
+    readonly;  // inherited from NSObjectProtocol
 
-	class(): typeof NSObject;
+    class(): typeof NSObject;
 
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+    conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	isEqual(object: any): boolean;
+    isEqual(object: any): boolean;
 
-	isKindOfClass(aClass: typeof NSObject): boolean;
+    isKindOfClass(aClass: typeof NSObject): boolean;
 
-	isMemberOfClass(aClass: typeof NSObject): boolean;
+    isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	performSelector(aSelector: string): any;
+    performSelector(aSelector: string): any;
 
-	performSelectorWithObject(aSelector: string, object: any): any;
+    performSelectorWithObject(aSelector: string, object: any): any;
 
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+    performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	respondsToSelector(aSelector: string): boolean;
+    respondsToSelector(aSelector: string): boolean;
 
-	retainCount(): number;
+    retainCount(): number;
 
-	self(): this;
+    self(): this;
 
-	serialize(): NSDictionary<string, any>;
+    serialize(): NSDictionary<string, any>;
 }
 
 declare class SentrySDK extends NSObject {
 
-	static addBreadcrumb(crumb: SentryBreadcrumb): void;
+    static addBreadcrumb(crumb: SentryBreadcrumb): void;
 
-	static alloc(): SentrySDK; // inherited from NSObject
+    static alloc(): SentrySDK; // inherited from NSObject
 
-	static captureError(error: NSError): SentryId;
+    static captureError(error: NSError): SentryId;
 
-	static captureErrorWithScope(error: NSError, scope: SentryScope): SentryId;
+    static captureErrorWithScope(error: NSError, scope: SentryScope): SentryId;
 
-	static captureErrorWithScopeBlock(error: NSError, block: (p1: SentryScope) => void): SentryId;
+    static captureErrorWithScopeBlock(error: NSError, block: (p1: SentryScope) => void): SentryId;
 
-	static captureEvent(event: SentryEvent): SentryId;
+    static captureEvent(event: SentryEvent): SentryId;
 
-	static captureEventWithScope(event: SentryEvent, scope: SentryScope): SentryId;
+    static captureEventWithScope(event: SentryEvent, scope: SentryScope): SentryId;
 
-	static captureEventWithScopeBlock(event: SentryEvent, block: (p1: SentryScope) => void): SentryId;
+    static captureEventWithScopeBlock(event: SentryEvent, block: (p1: SentryScope) => void): SentryId;
 
-	static captureException(exception: NSException): SentryId;
+    static captureException(exception: NSException): SentryId;
 
-	static captureExceptionWithScope(exception: NSException, scope: SentryScope): SentryId;
+    static captureExceptionWithScope(exception: NSException, scope: SentryScope): SentryId;
 
-	static captureExceptionWithScopeBlock(exception: NSException, block: (p1: SentryScope) => void): SentryId;
+    static captureExceptionWithScopeBlock(exception: NSException, block: (p1: SentryScope) => void): SentryId;
 
-	static captureMessage(message: string): SentryId;
+    static captureMessage(message: string): SentryId;
 
-	static captureMessageWithScope(message: string, scope: SentryScope): SentryId;
+    static captureMessageWithScope(message: string, scope: SentryScope): SentryId;
 
-	static captureMessageWithScopeBlock(message: string, block: (p1: SentryScope) => void): SentryId;
+    static captureMessageWithScopeBlock(message: string, block: (p1: SentryScope) => void): SentryId;
 
-	static captureUserFeedback(userFeedback: SentryUserFeedback): void;
+    static captureUserFeedback(userFeedback: SentryUserFeedback): void;
 
-	static close(): void;
+    static close(): void;
 
-	static configureScope(callback: (p1: SentryScope) => void): void;
+    static configureScope(callback: (p1: SentryScope) => void): void;
 
-	static crash(): void;
+    static crash(): void;
 
-	static endSession(): void;
+    static endSession(): void;
 
-	static flush(timeout: number): void;
+    static flush(timeout: number): void;
 
-	static new(): SentrySDK; // inherited from NSObject
+    static new(): SentrySDK; // inherited from NSObject
 
-	static setUser(user: SentryUser): void;
+    static reportFullyDisplayed(): void;
 
-	static startSession(): void;
+    static setUser(user: SentryUser): void;
 
-	static startTransactionWithContext(transactionContext: SentryTransactionContext): SentrySpan;
+    static startSession(): void;
 
-	static startTransactionWithContextBindToScope(transactionContext: SentryTransactionContext, bindToScope: boolean): SentrySpan;
+    static startTransactionWithContext(transactionContext: SentryTransactionContext): SentrySpan;
 
-	static startTransactionWithContextBindToScopeCustomSamplingContext(transactionContext: SentryTransactionContext, bindToScope: boolean, customSamplingContext: NSDictionary<string, any>): SentrySpan;
+    static startTransactionWithContextBindToScope(transactionContext: SentryTransactionContext, bindToScope: boolean): SentrySpan;
 
-	static startTransactionWithContextCustomSamplingContext(transactionContext: SentryTransactionContext, customSamplingContext: NSDictionary<string, any>): SentrySpan;
+    static startTransactionWithContextBindToScopeCustomSamplingContext(transactionContext: SentryTransactionContext, bindToScope: boolean, customSamplingContext: NSDictionary<string, any>): SentrySpan;
 
-	static startTransactionWithNameOperation(name: string, operation: string): SentrySpan;
+    static startTransactionWithContextCustomSamplingContext(transactionContext: SentryTransactionContext, customSamplingContext: NSDictionary<string, any>): SentrySpan;
 
-	static startTransactionWithNameOperationBindToScope(name: string, operation: string, bindToScope: boolean): SentrySpan;
+    static startTransactionWithNameOperation(name: string, operation: string): SentrySpan;
 
-	static startWithConfigureOptions(configureOptions: (p1: SentryOptions) => void): void;
+    static startTransactionWithNameOperationBindToScope(name: string, operation: string, bindToScope: boolean): SentrySpan;
 
-	static startWithOptions(optionsDict: NSDictionary<string, any>): void;
+    static startWithConfigureOptions(configureOptions: (p1: SentryOptions) => void): void;
 
-	static startWithOptionsObject(options: SentryOptions): void;
+    static startWithOptions(options: SentryOptions): void;
 
-	static readonly crashedLastRun: boolean;
+    static readonly crashedLastRun: boolean;
 
-	static readonly isEnabled: boolean;
+    static readonly isEnabled: boolean;
 
-	static readonly span: SentrySpan;
+    static readonly span: SentrySpan;
 }
 
 declare const enum SentrySampleDecision {
 
-	kSentrySampleDecisionUndecided = 0,
+    kSentrySampleDecisionUndecided = 0,
 
-	kSentrySampleDecisionYes = 1,
+    kSentrySampleDecisionYes = 1,
 
-	kSentrySampleDecisionNo = 2
+    kSentrySampleDecisionNo = 2
 }
 
 declare class SentrySamplingContext extends NSObject {
 
-	static alloc(): SentrySamplingContext; // inherited from NSObject
+    static alloc(): SentrySamplingContext; // inherited from NSObject
 
-	static new(): SentrySamplingContext; // inherited from NSObject
+    static new(): SentrySamplingContext; // inherited from NSObject
 
-	readonly customSamplingContext: NSDictionary<string, any>;
+    readonly customSamplingContext: NSDictionary<string, any>;
 
-	readonly transactionContext: SentryTransactionContext;
+    readonly transactionContext: SentryTransactionContext;
 
-	constructor(o: { transactionContext: SentryTransactionContext; });
+    constructor(o: { transactionContext: SentryTransactionContext });
 
-	constructor(o: { transactionContext: SentryTransactionContext; customSamplingContext: NSDictionary<string, any>; });
+    constructor(o: { transactionContext: SentryTransactionContext; customSamplingContext: NSDictionary<string, any> });
 
-	initWithTransactionContext(transactionContext: SentryTransactionContext): this;
+    initWithTransactionContext(transactionContext: SentryTransactionContext): this;
 
-	initWithTransactionContextCustomSamplingContext(transactionContext: SentryTransactionContext, customSamplingContext: NSDictionary<string, any>): this;
+    initWithTransactionContextCustomSamplingContext(transactionContext: SentryTransactionContext, customSamplingContext: NSDictionary<string, any>): this;
 }
 
 declare class SentryScope extends NSObject implements SentrySerializable {
 
-	static alloc(): SentryScope; // inherited from NSObject
+    static alloc(): SentryScope; // inherited from NSObject
 
-	static new(): SentryScope; // inherited from NSObject
+    static new(): SentryScope; // inherited from NSObject
 
-	span: SentrySpan;
+    span: SentrySpan;
 
-	readonly debugDescription: string; // inherited from NSObjectProtocol
+    readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	readonly description: string; // inherited from NSObjectProtocol
+    readonly description: string; // inherited from NSObjectProtocol
 
-	readonly hash: number; // inherited from NSObjectProtocol
+    readonly hash: number; // inherited from NSObjectProtocol
 
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
+    readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+    readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly  // inherited from NSObjectProtocol
+    readonly;  // inherited from NSObjectProtocol
 
-	constructor(o: { maxBreadcrumbs: number; });
+    constructor(o: { maxBreadcrumbs: number });
 
-	constructor(o: { scope: SentryScope; });
+    constructor(o: { scope: SentryScope });
 
-	addAttachment(attachment: SentryAttachment): void;
+    add(crumb: SentryBreadcrumb): void;
 
-	addBreadcrumb(crumb: SentryBreadcrumb): void;
+    addAttachment(attachment: SentryAttachment): void;
 
-	applyToEventMaxBreadcrumb(event: SentryEvent, maxBreadcrumbs: number): SentryEvent;
+    addBreadcrumb(crumb: SentryBreadcrumb): void;
 
-	applyToSession(session: SentrySession): void;
+    class(): typeof NSObject;
 
-	class(): typeof NSObject;
+    clear(): void;
 
-	clear(): void;
+    clearAttachments(): void;
 
-	clearAttachments(): void;
+    clearBreadcrumbs(): void;
 
-	clearBreadcrumbs(): void;
+    conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+    includeAttachment(attachment: SentryAttachment): void;
 
-	initWithMaxBreadcrumbs(maxBreadcrumbs: number): this;
+    initWithMaxBreadcrumbs(maxBreadcrumbs: number): this;
 
-	initWithScope(scope: SentryScope): this;
+    initWithScope(scope: SentryScope): this;
 
-	isEqual(object: any): boolean;
+    isEqual(object: any): boolean;
 
-	isKindOfClass(aClass: typeof NSObject): boolean;
+    isKindOfClass(aClass: typeof NSObject): boolean;
 
-	isMemberOfClass(aClass: typeof NSObject): boolean;
+    isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	performSelector(aSelector: string): any;
+    performSelector(aSelector: string): any;
 
-	performSelectorWithObject(aSelector: string, object: any): any;
+    performSelectorWithObject(aSelector: string, object: any): any;
 
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+    performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	removeContextForKey(key: string): void;
+    removeContextForKey(key: string): void;
 
-	removeExtraForKey(key: string): void;
+    removeExtraForKey(key: string): void;
 
-	removeTagForKey(key: string): void;
+    removeTagForKey(key: string): void;
 
-	respondsToSelector(aSelector: string): boolean;
+    respondsToSelector(aSelector: string): boolean;
 
-	retainCount(): number;
+    retainCount(): number;
 
-	self(): this;
+    self(): this;
 
-	serialize(): NSDictionary<string, any>;
+    serialize(): NSDictionary<string, any>;
 
-	setContextValueForKey(value: NSDictionary<string, any>, key: string): void;
+    setContextValueForKey(value: NSDictionary<string, any>, key: string): void;
 
-	setDist(dist: string): void;
+    setDist(dist: string): void;
 
-	setEnvironment(environment: string): void;
+    setEnvironment(environment: string): void;
 
-	setExtraValueForKey(value: any, key: string): void;
+    setExtraValueForKey(value: any, key: string): void;
 
-	setExtras(extras: NSDictionary<string, any>): void;
+    setExtras(extras: NSDictionary<string, any>): void;
 
-	setFingerprint(fingerprint: NSArray<string> | string[]): void;
+    setFingerprint(fingerprint: NSArray<string> | string[]): void;
 
-	setLevel(level: SentryLevel): void;
+    setLevel(level: SentryLevel): void;
 
-	setTagValueForKey(value: string, key: string): void;
+    setTagValueForKey(value: string, key: string): void;
 
-	setTags(tags: NSDictionary<string, string>): void;
+    setTags(tags: NSDictionary<string, string>): void;
 
-	setUser(user: SentryUser): void;
+    setUser(user: SentryUser): void;
 
-	useSpan(callback: (p1: SentrySpan) => void): void;
+    useSpan(callback: (p1: SentrySpan) => void): void;
 }
 
-declare class SentryScreenFrames extends NSObject {
+declare class SentryScreenFrames extends NSObject implements NSCopying {
 
-	static alloc(): SentryScreenFrames; // inherited from NSObject
+    static alloc(): SentryScreenFrames; // inherited from NSObject
 
-	static new(): SentryScreenFrames; // inherited from NSObject
+    static new(): SentryScreenFrames; // inherited from NSObject
 
-	readonly frameRateTimestamps: NSArray<NSDictionary<string, number>>;
+    readonly frameRateTimestamps: NSArray<NSDictionary<string, number>>;
 
-	readonly frameTimestamps: NSArray<NSDictionary<string, number>>;
+    readonly frozen: number;
 
-	readonly frozen: number;
+    readonly frozenFrameTimestamps: NSArray<NSDictionary<string, number>>;
 
-	readonly slow: number;
+    readonly slow: number;
 
-	readonly total: number;
+    readonly slowFrameTimestamps: NSArray<NSDictionary<string, number>>;
 
-	constructor(o: { total: number; frozen: number; slow: number; });
+    readonly total: number;
 
-	constructor(o: { total: number; frozen: number; slow: number; frameTimestamps: NSArray<NSDictionary<string, number>> | NSDictionary<string, number>[]; frameRateTimestamps: NSArray<NSDictionary<string, number>> | NSDictionary<string, number>[]; });
+    constructor(o: { total: number; frozen: number; slow: number });
 
-	initWithTotalFrozenSlow(total: number, frozen: number, slow: number): this;
+    constructor(o: { total: number; frozen: number; slow: number; slowFrameTimestamps: NSArray<NSDictionary<string, number>> | NSDictionary<string, number>[]; frozenFrameTimestamps: NSArray<NSDictionary<string, number>> | NSDictionary<string, number>[]; frameRateTimestamps: NSArray<NSDictionary<string, number>> | NSDictionary<string, number>[] });
 
-	initWithTotalFrozenSlowFrameTimestampsFrameRateTimestamps(total: number, frozen: number, slow: number, frameTimestamps: NSArray<NSDictionary<string, number>> | NSDictionary<string, number>[], frameRateTimestamps: NSArray<NSDictionary<string, number>> | NSDictionary<string, number>[]): this;
-}
+    copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-declare class SentrySdkInfo extends NSObject implements SentrySerializable {
+    initWithTotalFrozenSlow(total: number, frozen: number, slow: number): this;
 
-	static alloc(): SentrySdkInfo; // inherited from NSObject
-
-	static new(): SentrySdkInfo; // inherited from NSObject
-
-	readonly name: string;
-
-	readonly version: string;
-
-	readonly debugDescription: string; // inherited from NSObjectProtocol
-
-	readonly description: string; // inherited from NSObjectProtocol
-
-	readonly hash: number; // inherited from NSObjectProtocol
-
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
-
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
-
-	readonly  // inherited from NSObjectProtocol
-
-	constructor(o: { dict: NSDictionary<any, any>; });
-
-	constructor(o: { dict: NSDictionary<any, any>; orDefaults: SentrySdkInfo; });
-
-	constructor(o: { name: string; andVersion: string; });
-
-	class(): typeof NSObject;
-
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
-
-	initWithDict(dict: NSDictionary<any, any>): this;
-
-	initWithDictOrDefaults(dict: NSDictionary<any, any>, info: SentrySdkInfo): this;
-
-	initWithNameAndVersion(name: string, version: string): this;
-
-	isEqual(object: any): boolean;
-
-	isKindOfClass(aClass: typeof NSObject): boolean;
-
-	isMemberOfClass(aClass: typeof NSObject): boolean;
-
-	performSelector(aSelector: string): any;
-
-	performSelectorWithObject(aSelector: string, object: any): any;
-
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
-
-	respondsToSelector(aSelector: string): boolean;
-
-	retainCount(): number;
-
-	self(): this;
-
-	serialize(): NSDictionary<string, any>;
+    initWithTotalFrozenSlowSlowFrameTimestampsFrozenFrameTimestampsFrameRateTimestamps(total: number, frozen: number, slow: number, slowFrameTimestamps: NSArray<NSDictionary<string, number>> | NSDictionary<string, number>[], frozenFrameTimestamps: NSArray<NSDictionary<string, number>> | NSDictionary<string, number>[], frameRateTimestamps: NSArray<NSDictionary<string, number>> | NSDictionary<string, number>[]): this;
 }
 
 interface SentrySerializable extends NSObjectProtocol {
 
-	serialize(): NSDictionary<string, any>;
+    serialize(): NSDictionary<string, any>;
 }
 declare var SentrySerializable: {
 
-	prototype: SentrySerializable;
+    prototype: SentrySerializable;
 };
-
-declare class SentrySession extends NSObject implements NSCopying, SentrySerializable {
-
-	static alloc(): SentrySession; // inherited from NSObject
-
-	static new(): SentrySession; // inherited from NSObject
-
-	readonly distinctId: string;
-
-	readonly duration: number;
-
-	environment: string;
-
-	readonly errors: number;
-
-	readonly flagInit: number;
-
-	readonly releaseName: string;
-
-	readonly sequence: number;
-
-	readonly sessionId: NSUUID;
-
-	readonly started: Date;
-
-	readonly status: SentrySessionStatus;
-
-	readonly timestamp: Date;
-
-	user: SentryUser;
-
-	readonly debugDescription: string; // inherited from NSObjectProtocol
-
-	readonly description: string; // inherited from NSObjectProtocol
-
-	readonly hash: number; // inherited from NSObjectProtocol
-
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
-
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
-
-	readonly  // inherited from NSObjectProtocol
-
-	constructor(o: { JSONObject: NSDictionary<any, any>; });
-
-	constructor(o: { releaseName: string; });
-
-	class(): typeof NSObject;
-
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
-
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
-
-	endSessionAbnormalWithTimestamp(timestamp: Date): void;
-
-	endSessionCrashedWithTimestamp(timestamp: Date): void;
-
-	endSessionExitedWithTimestamp(timestamp: Date): void;
-
-	incrementErrors(): void;
-
-	initWithJSONObject(jsonObject: NSDictionary<any, any>): this;
-
-	initWithReleaseName(releaseName: string): this;
-
-	isEqual(object: any): boolean;
-
-	isKindOfClass(aClass: typeof NSObject): boolean;
-
-	isMemberOfClass(aClass: typeof NSObject): boolean;
-
-	performSelector(aSelector: string): any;
-
-	performSelectorWithObject(aSelector: string, object: any): any;
-
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
-
-	respondsToSelector(aSelector: string): boolean;
-
-	retainCount(): number;
-
-	self(): this;
-
-	serialize(): NSDictionary<string, any>;
-}
-
-declare const enum SentrySessionStatus {
-
-	kSentrySessionStatusOk = 0,
-
-	kSentrySessionStatusExited = 1,
-
-	kSentrySessionStatusCrashed = 2,
-
-	kSentrySessionStatusAbnormal = 3
-}
 
 interface SentrySpan extends SentrySerializable {
 
-	context: SentrySpanContext;
+    data: NSDictionary<string, any>;
 
-	data: NSDictionary<string, any>;
+    isFinished: boolean;
 
-	isFinished: boolean;
+    operation: string;
 
-	startTimestamp: Date;
+    origin: string;
 
-	tags: NSDictionary<string, string>;
+    parentSpanId: SentrySpanId;
 
-	timestamp: Date;
+    sampled: SentrySampleDecision;
 
-	finish(): void;
+    spanDescription: string;
 
-	finishWithStatus(status: SentrySpanStatus): void;
+    spanId: SentrySpanId;
 
-	removeDataForKey(key: string): void;
+    startTimestamp: Date;
 
-	removeTagForKey(key: string): void;
+    status: SentrySpanStatus;
 
-	setDataValueForKey(value: any, key: string): void;
+    tags: NSDictionary<string, string>;
 
-	setExtraValueForKey(value: any, key: string): void;
+    timestamp: Date;
 
-	setMeasurementValue(name: string, value: number): void;
+    traceId: SentryId;
 
-	setMeasurementValueUnit(name: string, value: number, unit: SentryMeasurementUnit): void;
+    finish(): void;
 
-	setTagValueForKey(value: string, key: string): void;
+    finishWithStatus(status: SentrySpanStatus): void;
 
-	startChildWithOperation(operation: string): SentrySpan;
+    removeDataForKey(key: string): void;
 
-	startChildWithOperationDescription(operation: string, description: string): SentrySpan;
+    removeTagForKey(key: string): void;
 
-	toTraceHeader(): SentryTraceHeader;
+    setDataValueForKey(value: any, key: string): void;
+
+    setExtraValueForKey(value: any, key: string): void;
+
+    setMeasurementValue(name: string, value: number): void;
+
+    setMeasurementValueUnit(name: string, value: number, unit: SentryMeasurementUnit): void;
+
+    setTagValueForKey(value: string, key: string): void;
+
+    startChildWithOperation(operation: string): SentrySpan;
+
+    startChildWithOperationDescription(operation: string, description: string): SentrySpan;
+
+    toTraceHeader(): SentryTraceHeader;
 }
 declare var SentrySpan: {
 
-	prototype: SentrySpan;
+    prototype: SentrySpan;
 };
 
 declare class SentrySpanContext extends NSObject implements SentrySerializable {
 
-	static alloc(): SentrySpanContext; // inherited from NSObject
+    static alloc(): SentrySpanContext; // inherited from NSObject
 
-	static new(): SentrySpanContext; // inherited from NSObject
+    static new(): SentrySpanContext; // inherited from NSObject
 
-	operation: string;
+    readonly operation: string;
 
-	readonly parentSpanId: SentrySpanId;
+    origin: string;
 
-	sampled: SentrySampleDecision;
+    readonly parentSpanId: SentrySpanId;
 
-	spanDescription: string;
+    readonly sampled: SentrySampleDecision;
 
-	readonly spanId: SentrySpanId;
+    readonly spanDescription: string;
 
-	status: SentrySpanStatus;
+    readonly spanId: SentrySpanId;
 
-	readonly tags: NSDictionary<string, string>;
+    readonly traceId: SentryId;
 
-	readonly traceId: SentryId;
+    readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	static readonly type: string;
+    readonly description: string; // inherited from NSObjectProtocol
 
-	readonly debugDescription: string; // inherited from NSObjectProtocol
+    readonly hash: number; // inherited from NSObjectProtocol
 
-	readonly description: string; // inherited from NSObjectProtocol
+    readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly hash: number; // inherited from NSObjectProtocol
+    readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
+    readonly;  // inherited from NSObjectProtocol
 
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+    constructor(o: { operation: string });
 
-	readonly  // inherited from NSObjectProtocol
+    constructor(o: { operation: string; sampled: SentrySampleDecision });
 
-	constructor(o: { operation: string; });
+    constructor(o: { traceId: SentryId; spanId: SentrySpanId; parentId: SentrySpanId; operation: string; sampled: SentrySampleDecision });
 
-	constructor(o: { operation: string; sampled: SentrySampleDecision; });
+    constructor(o: { traceId: SentryId; spanId: SentrySpanId; parentId: SentrySpanId; operation: string; spanDescription: string; sampled: SentrySampleDecision });
 
-	constructor(o: { traceId: SentryId; spanId: SentrySpanId; parentId: SentrySpanId; operation: string; sampled: SentrySampleDecision; });
+    class(): typeof NSObject;
 
-	class(): typeof NSObject;
+    conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+    initWithOperation(operation: string): this;
 
-	initWithOperation(operation: string): this;
+    initWithOperationSampled(operation: string, sampled: SentrySampleDecision): this;
 
-	initWithOperationSampled(operation: string, sampled: SentrySampleDecision): this;
+    initWithTraceIdSpanIdParentIdOperationSampled(traceId: SentryId, spanId: SentrySpanId, parentId: SentrySpanId, operation: string, sampled: SentrySampleDecision): this;
 
-	initWithTraceIdSpanIdParentIdOperationSampled(traceId: SentryId, spanId: SentrySpanId, parentId: SentrySpanId, operation: string, sampled: SentrySampleDecision): this;
+    initWithTraceIdSpanIdParentIdOperationSpanDescriptionSampled(traceId: SentryId, spanId: SentrySpanId, parentId: SentrySpanId, operation: string, description: string, sampled: SentrySampleDecision): this;
 
-	isEqual(object: any): boolean;
+    isEqual(object: any): boolean;
 
-	isKindOfClass(aClass: typeof NSObject): boolean;
+    isKindOfClass(aClass: typeof NSObject): boolean;
 
-	isMemberOfClass(aClass: typeof NSObject): boolean;
+    isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	performSelector(aSelector: string): any;
+    performSelector(aSelector: string): any;
 
-	performSelectorWithObject(aSelector: string, object: any): any;
+    performSelectorWithObject(aSelector: string, object: any): any;
 
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+    performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	removeTagForKey(key: string): void;
+    respondsToSelector(aSelector: string): boolean;
 
-	respondsToSelector(aSelector: string): boolean;
+    retainCount(): number;
 
-	retainCount(): number;
+    self(): this;
 
-	self(): this;
-
-	serialize(): NSDictionary<string, any>;
-
-	setTagValueForKey(value: string, key: string): void;
+    serialize(): NSDictionary<string, any>;
 }
 
 declare class SentrySpanId extends NSObject implements NSCopying {
 
-	static alloc(): SentrySpanId; // inherited from NSObject
+    static alloc(): SentrySpanId; // inherited from NSObject
 
-	static new(): SentrySpanId; // inherited from NSObject
+    static new(): SentrySpanId; // inherited from NSObject
 
-	readonly sentrySpanIdString: string;
+    readonly sentrySpanIdString: string;
 
-	static readonly empty: SentrySpanId;
+    static readonly empty: SentrySpanId;
 
-	constructor(o: { UUID: NSUUID; });
+    constructor(o: { UUID: NSUUID });
 
-	constructor(o: { value: string; });
+    constructor(o: { value: string });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+    copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	initWithUUID(uuid: NSUUID): this;
+    initWithUUID(uuid: NSUUID): this;
 
-	initWithValue(value: string): this;
+    initWithValue(value: string): this;
 }
 
 declare const enum SentrySpanStatus {
 
-	kSentrySpanStatusUndefined = 0,
+    kSentrySpanStatusUndefined = 0,
 
-	kSentrySpanStatusOk = 1,
+    kSentrySpanStatusOk = 1,
 
-	kSentrySpanStatusDeadlineExceeded = 2,
+    kSentrySpanStatusDeadlineExceeded = 2,
 
-	kSentrySpanStatusUnauthenticated = 3,
+    kSentrySpanStatusUnauthenticated = 3,
 
-	kSentrySpanStatusPermissionDenied = 4,
+    kSentrySpanStatusPermissionDenied = 4,
 
-	kSentrySpanStatusNotFound = 5,
+    kSentrySpanStatusNotFound = 5,
 
-	kSentrySpanStatusResourceExhausted = 6,
+    kSentrySpanStatusResourceExhausted = 6,
 
-	kSentrySpanStatusInvalidArgument = 7,
+    kSentrySpanStatusInvalidArgument = 7,
 
-	kSentrySpanStatusUnimplemented = 8,
+    kSentrySpanStatusUnimplemented = 8,
 
-	kSentrySpanStatusUnavailable = 9,
+    kSentrySpanStatusUnavailable = 9,
 
-	kSentrySpanStatusInternalError = 10,
+    kSentrySpanStatusInternalError = 10,
 
-	kSentrySpanStatusUnknownError = 11,
+    kSentrySpanStatusUnknownError = 11,
 
-	kSentrySpanStatusCancelled = 12,
+    kSentrySpanStatusCancelled = 12,
 
-	kSentrySpanStatusAlreadyExists = 13,
+    kSentrySpanStatusAlreadyExists = 13,
 
-	kSentrySpanStatusFailedPrecondition = 14,
+    kSentrySpanStatusFailedPrecondition = 14,
 
-	kSentrySpanStatusAborted = 15,
+    kSentrySpanStatusAborted = 15,
 
-	kSentrySpanStatusOutOfRange = 16,
+    kSentrySpanStatusOutOfRange = 16,
 
-	kSentrySpanStatusDataLoss = 17
+    kSentrySpanStatusDataLoss = 17
 }
 
 declare class SentryStacktrace extends NSObject implements SentrySerializable {
 
-	static alloc(): SentryStacktrace; // inherited from NSObject
+    static alloc(): SentryStacktrace; // inherited from NSObject
 
-	static new(): SentryStacktrace; // inherited from NSObject
+    static new(): SentryStacktrace; // inherited from NSObject
 
-	frames: NSArray<SentryFrame>;
+    frames: NSArray<SentryFrame>;
 
-	registers: NSDictionary<string, string>;
+    registers: NSDictionary<string, string>;
 
-	snapshot: number;
+    snapshot: number;
 
-	readonly debugDescription: string; // inherited from NSObjectProtocol
+    readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	readonly description: string; // inherited from NSObjectProtocol
+    readonly description: string; // inherited from NSObjectProtocol
 
-	readonly hash: number; // inherited from NSObjectProtocol
+    readonly hash: number; // inherited from NSObjectProtocol
 
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
+    readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+    readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly  // inherited from NSObjectProtocol
+    readonly;  // inherited from NSObjectProtocol
 
-	constructor(o: { frames: NSArray<SentryFrame> | SentryFrame[]; registers: NSDictionary<string, string>; });
+    constructor(o: { frames: NSArray<SentryFrame> | SentryFrame[]; registers: NSDictionary<string, string> });
 
-	class(): typeof NSObject;
+    class(): typeof NSObject;
 
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+    conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	fixDuplicateFrames(): void;
+    fixDuplicateFrames(): void;
 
-	initWithFramesRegisters(frames: NSArray<SentryFrame> | SentryFrame[], registers: NSDictionary<string, string>): this;
+    initWithFramesRegisters(frames: NSArray<SentryFrame> | SentryFrame[], registers: NSDictionary<string, string>): this;
 
-	isEqual(object: any): boolean;
+    isEqual(object: any): boolean;
 
-	isKindOfClass(aClass: typeof NSObject): boolean;
+    isKindOfClass(aClass: typeof NSObject): boolean;
 
-	isMemberOfClass(aClass: typeof NSObject): boolean;
+    isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	performSelector(aSelector: string): any;
+    performSelector(aSelector: string): any;
 
-	performSelectorWithObject(aSelector: string, object: any): any;
+    performSelectorWithObject(aSelector: string, object: any): any;
 
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+    performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	respondsToSelector(aSelector: string): boolean;
+    respondsToSelector(aSelector: string): boolean;
 
-	retainCount(): number;
+    retainCount(): number;
 
-	self(): this;
+    self(): this;
 
-	serialize(): NSDictionary<string, any>;
+    serialize(): NSDictionary<string, any>;
 }
 
 declare class SentryThread extends NSObject implements SentrySerializable {
 
-	static alloc(): SentryThread; // inherited from NSObject
+    static alloc(): SentryThread; // inherited from NSObject
 
-	static new(): SentryThread; // inherited from NSObject
+    static new(): SentryThread; // inherited from NSObject
 
-	crashed: number;
+    crashed: number;
 
-	current: number;
+    current: number;
 
-	name: string;
+    isMain: number;
 
-	stacktrace: SentryStacktrace;
+    name: string;
 
-	threadId: number;
+    stacktrace: SentryStacktrace;
 
-	readonly debugDescription: string; // inherited from NSObjectProtocol
+    threadId: number;
 
-	readonly description: string; // inherited from NSObjectProtocol
+    readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	readonly hash: number; // inherited from NSObjectProtocol
+    readonly description: string; // inherited from NSObjectProtocol
 
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
+    readonly hash: number; // inherited from NSObjectProtocol
 
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+    readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly  // inherited from NSObjectProtocol
+    readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	constructor(o: { threadId: number; });
+    readonly;  // inherited from NSObjectProtocol
 
-	class(): typeof NSObject;
+    constructor(o: { threadId: number });
 
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+    class(): typeof NSObject;
 
-	initWithThreadId(threadId: number): this;
+    conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	isEqual(object: any): boolean;
+    initWithThreadId(threadId: number): this;
 
-	isKindOfClass(aClass: typeof NSObject): boolean;
+    isEqual(object: any): boolean;
 
-	isMemberOfClass(aClass: typeof NSObject): boolean;
+    isKindOfClass(aClass: typeof NSObject): boolean;
 
-	performSelector(aSelector: string): any;
+    isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	performSelectorWithObject(aSelector: string, object: any): any;
+    performSelector(aSelector: string): any;
 
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+    performSelectorWithObject(aSelector: string, object: any): any;
 
-	respondsToSelector(aSelector: string): boolean;
+    performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	retainCount(): number;
+    respondsToSelector(aSelector: string): boolean;
 
-	self(): this;
+    retainCount(): number;
 
-	serialize(): NSDictionary<string, any>;
+    self(): this;
+
+    serialize(): NSDictionary<string, any>;
 }
 
 declare class SentryTraceHeader extends NSObject {
 
-	static alloc(): SentryTraceHeader; // inherited from NSObject
+    static alloc(): SentryTraceHeader; // inherited from NSObject
 
-	static new(): SentryTraceHeader; // inherited from NSObject
+    static new(): SentryTraceHeader; // inherited from NSObject
 
-	readonly sampled: SentrySampleDecision;
+    readonly sampled: SentrySampleDecision;
 
-	readonly spanId: SentrySpanId;
+    readonly spanId: SentrySpanId;
 
-	readonly traceId: SentryId;
+    readonly traceId: SentryId;
 
-	constructor(o: { traceId: SentryId; spanId: SentrySpanId; sampled: SentrySampleDecision; });
+    constructor(o: { traceId: SentryId; spanId: SentrySpanId; sampled: SentrySampleDecision });
 
-	initWithTraceIdSpanIdSampled(traceId: SentryId, spanId: SentrySpanId, sampled: SentrySampleDecision): this;
+    initWithTraceIdSpanIdSampled(traceId: SentryId, spanId: SentrySpanId, sampled: SentrySampleDecision): this;
 
-	value(): string;
+    value(): string;
 }
 
 declare class SentryTransactionContext extends SentrySpanContext {
 
-	static alloc(): SentryTransactionContext; // inherited from NSObject
+    static alloc(): SentryTransactionContext; // inherited from NSObject
 
-	static new(): SentryTransactionContext; // inherited from NSObject
+    static new(): SentryTransactionContext; // inherited from NSObject
 
-	readonly name: string;
+    readonly name: string;
 
-	readonly nameSource: SentryTransactionNameSource;
+    readonly nameSource: SentryTransactionNameSource;
 
-	parentSampled: SentrySampleDecision;
+    parentSampled: SentrySampleDecision;
 
-	sampleRate: number;
+    sampleRate: number;
 
-	constructor(o: { name: string; operation: string; });
+    constructor(o: { name: string; operation: string });
 
-	constructor(o: { name: string; operation: string; sampled: SentrySampleDecision; });
+    constructor(o: { name: string; operation: string; sampled: SentrySampleDecision });
 
-	constructor(o: { name: string; operation: string; traceId: SentryId; spanId: SentrySpanId; parentSpanId: SentrySpanId; parentSampled: SentrySampleDecision; });
+    constructor(o: { name: string; operation: string; traceId: SentryId; spanId: SentrySpanId; parentSpanId: SentrySpanId; parentSampled: SentrySampleDecision });
 
-	initWithNameOperation(name: string, operation: string): this;
+    initWithNameOperation(name: string, operation: string): this;
 
-	initWithNameOperationSampled(name: string, operation: string, sampled: SentrySampleDecision): this;
+    initWithNameOperationSampled(name: string, operation: string, sampled: SentrySampleDecision): this;
 
-	initWithNameOperationTraceIdSpanIdParentSpanIdParentSampled(name: string, operation: string, traceId: SentryId, spanId: SentrySpanId, parentSpanId: SentrySpanId, parentSampled: SentrySampleDecision): this;
+    initWithNameOperationTraceIdSpanIdParentSpanIdParentSampled(name: string, operation: string, traceId: SentryId, spanId: SentrySpanId, parentSpanId: SentrySpanId, parentSampled: SentrySampleDecision): this;
 }
 
 declare const enum SentryTransactionNameSource {
 
-	kSentryTransactionNameSourceCustom = 0,
+    kSentryTransactionNameSourceCustom = 0,
 
-	kSentryTransactionNameSourceUrl = 1,
+    kSentryTransactionNameSourceUrl = 1,
 
-	kSentryTransactionNameSourceRoute = 2,
+    kSentryTransactionNameSourceRoute = 2,
 
-	kSentryTransactionNameSourceView = 3,
+    kSentryTransactionNameSourceView = 3,
 
-	kSentryTransactionNameSourceComponent = 4,
+    kSentryTransactionNameSourceComponent = 4,
 
-	kSentryTransactionNameSourceTask = 5
+    kSentryTransactionNameSourceTask = 5
 }
 
 declare class SentryUser extends NSObject implements NSCopying, SentrySerializable {
 
-	static alloc(): SentryUser; // inherited from NSObject
+    static alloc(): SentryUser; // inherited from NSObject
 
-	static new(): SentryUser; // inherited from NSObject
+    static new(): SentryUser; // inherited from NSObject
 
-	data: NSDictionary<string, any>;
+    data: NSDictionary<string, any>;
 
-	email: string;
+    email: string;
 
-	ipAddress: string;
+    geo: SentryGeo;
 
-	segment: string;
+    ipAddress: string;
 
-	userId: string;
+    name: string;
 
-	username: string;
+    segment: string;
 
-	readonly debugDescription: string; // inherited from NSObjectProtocol
+    userId: string;
 
-	readonly description: string; // inherited from NSObjectProtocol
+    username: string;
 
-	readonly hash: number; // inherited from NSObjectProtocol
+    readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
+    readonly description: string; // inherited from NSObjectProtocol
 
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+    readonly hash: number; // inherited from NSObjectProtocol
 
-	readonly  // inherited from NSObjectProtocol
+    readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	constructor(o: { userId: string; });
+    readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	class(): typeof NSObject;
+    readonly;  // inherited from NSObjectProtocol
 
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+    constructor(o: { dictionary: NSDictionary<any, any> });
 
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+    constructor(o: { userId: string });
 
-	hash(): number;
+    class(): typeof NSObject;
 
-	initWithUserId(userId: string): this;
+    conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	isEqual(object: any): boolean;
+    copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	isEqualToUser(user: SentryUser): boolean;
+    hash(): number;
 
-	isKindOfClass(aClass: typeof NSObject): boolean;
+    initWithDictionary(dictionary: NSDictionary<any, any>): this;
 
-	isMemberOfClass(aClass: typeof NSObject): boolean;
+    initWithUserId(userId: string): this;
 
-	performSelector(aSelector: string): any;
+    isEqual(object: any): boolean;
 
-	performSelectorWithObject(aSelector: string, object: any): any;
+    isEqualToUser(user: SentryUser): boolean;
 
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+    isKindOfClass(aClass: typeof NSObject): boolean;
 
-	respondsToSelector(aSelector: string): boolean;
+    isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	retainCount(): number;
+    performSelector(aSelector: string): any;
 
-	self(): this;
+    performSelectorWithObject(aSelector: string, object: any): any;
 
-	serialize(): NSDictionary<string, any>;
+    performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+    respondsToSelector(aSelector: string): boolean;
+
+    retainCount(): number;
+
+    self(): this;
+
+    serialize(): NSDictionary<string, any>;
 }
 
 declare class SentryUserFeedback extends NSObject implements SentrySerializable {
 
-	static alloc(): SentryUserFeedback; // inherited from NSObject
+    static alloc(): SentryUserFeedback; // inherited from NSObject
 
-	static new(): SentryUserFeedback; // inherited from NSObject
+    static new(): SentryUserFeedback; // inherited from NSObject
 
-	comments: string;
+    comments: string;
 
-	email: string;
+    email: string;
 
-	readonly eventId: SentryId;
+    readonly eventId: SentryId;
 
-	name: string;
+    name: string;
 
-	readonly debugDescription: string; // inherited from NSObjectProtocol
+    readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	readonly description: string; // inherited from NSObjectProtocol
+    readonly description: string; // inherited from NSObjectProtocol
 
-	readonly hash: number; // inherited from NSObjectProtocol
+    readonly hash: number; // inherited from NSObjectProtocol
 
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
+    readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+    readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	readonly  // inherited from NSObjectProtocol
+    readonly;  // inherited from NSObjectProtocol
 
-	constructor(o: { eventId: SentryId; });
+    constructor(o: { eventId: SentryId });
 
-	class(): typeof NSObject;
+    class(): typeof NSObject;
 
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+    conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	initWithEventId(eventId: SentryId): this;
+    initWithEventId(eventId: SentryId): this;
 
-	isEqual(object: any): boolean;
+    isEqual(object: any): boolean;
 
-	isKindOfClass(aClass: typeof NSObject): boolean;
+    isKindOfClass(aClass: typeof NSObject): boolean;
 
-	isMemberOfClass(aClass: typeof NSObject): boolean;
+    isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	performSelector(aSelector: string): any;
+    performSelector(aSelector: string): any;
 
-	performSelectorWithObject(aSelector: string, object: any): any;
+    performSelectorWithObject(aSelector: string, object: any): any;
 
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+    performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	respondsToSelector(aSelector: string): boolean;
+    respondsToSelector(aSelector: string): boolean;
 
-	retainCount(): number;
+    retainCount(): number;
 
-	self(): this;
+    self(): this;
 
-	serialize(): NSDictionary<string, any>;
+    serialize(): NSDictionary<string, any>;
 }
 
-declare var SentryVersionNumber: number;
+declare let SentryVersionNumber: number;
 
-declare var SentryVersionNumberVar: number;
+declare let SentryVersionNumberVar: number;
 
-declare var SentryVersionString: interop.Reference<number>;
+declare let SentryVersionString: interop.Reference<number>;
 
-declare var SentryVersionStringVar: interop.Reference<number>;
+declare let SentryVersionStringVar: interop.Reference<number>;
 
-declare var defaultMaxBreadcrumbs: number;
+declare let defaultMaxBreadcrumbs: number;
 
-declare var kSentrySampleDecisionNameNo: string;
+declare let kSentrySpanStatusNameAborted: string;
 
-declare var kSentrySampleDecisionNameUndecided: string;
+declare let kSentrySpanStatusNameAlreadyExists: string;
 
-declare var kSentrySampleDecisionNameYes: string;
+declare let kSentrySpanStatusNameCancelled: string;
 
-declare var kSentrySpanStatusNameAborted: string;
+declare let kSentrySpanStatusNameDataLoss: string;
 
-declare var kSentrySpanStatusNameAlreadyExists: string;
+declare let kSentrySpanStatusNameDeadlineExceeded: string;
 
-declare var kSentrySpanStatusNameCancelled: string;
+declare let kSentrySpanStatusNameFailedPrecondition: string;
 
-declare var kSentrySpanStatusNameDataLoss: string;
+declare let kSentrySpanStatusNameInternalError: string;
 
-declare var kSentrySpanStatusNameDeadlineExceeded: string;
+declare let kSentrySpanStatusNameInvalidArgument: string;
 
-declare var kSentrySpanStatusNameFailedPrecondition: string;
+declare let kSentrySpanStatusNameNotFound: string;
 
-declare var kSentrySpanStatusNameInternalError: string;
+declare let kSentrySpanStatusNameOk: string;
 
-declare var kSentrySpanStatusNameInvalidArgument: string;
+declare let kSentrySpanStatusNameOutOfRange: string;
 
-declare var kSentrySpanStatusNameNotFound: string;
+declare let kSentrySpanStatusNamePermissionDenied: string;
 
-declare var kSentrySpanStatusNameOk: string;
+declare let kSentrySpanStatusNameResourceExhausted: string;
 
-declare var kSentrySpanStatusNameOutOfRange: string;
+declare let kSentrySpanStatusNameUnauthenticated: string;
 
-declare var kSentrySpanStatusNamePermissionDenied: string;
+declare let kSentrySpanStatusNameUnavailable: string;
 
-declare var kSentrySpanStatusNameResourceExhausted: string;
+declare let kSentrySpanStatusNameUndefined: string;
 
-declare var kSentrySpanStatusNameUnauthenticated: string;
+declare let kSentrySpanStatusNameUnimplemented: string;
 
-declare var kSentrySpanStatusNameUnavailable: string;
-
-declare var kSentrySpanStatusNameUndefined: string;
-
-declare var kSentrySpanStatusNameUnimplemented: string;
-
-declare var kSentrySpanStatusNameUnknownError: string;
-
-declare function nameForSentrySampleDecision(decision: SentrySampleDecision): string;
+declare let kSentrySpanStatusNameUnknownError: string;
 
 declare function nameForSentrySpanStatus(status: SentrySpanStatus): string;

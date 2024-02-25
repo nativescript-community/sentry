@@ -3,8 +3,8 @@ import { SentryError, logger } from '@sentry/utils';
 import { parseErrorStack } from './integrations/debugsymbolicator';
 import { isHardCrash } from './misc';
 import { NativescriptOptions } from './options';
-import { rewriteFrameIntegration } from './sdk';
 import { utf8ToBytes } from './vendor';
+import { rewriteFrameIntegration } from './integrations/default';
 
 const numberHasDecimals = function (value: number): boolean {
     return !(value % 1 === 0);
@@ -124,13 +124,13 @@ export namespace NATIVE {
     }
 
     export function fetchNativeSdkInfo() {
-        if (sentryOptions) {
-            return {
-                name: nSentryOptions.sdkInfo.name,
-                version: nSentryOptions.sdkInfo.version
-            };
-        }
-        return {};
+        // if (sentryOptions) {
+        return {
+            name: PrivateSentrySDKOnly.getSdkName(),
+            version: PrivateSentrySDKOnly.getSdkVersionString()
+        };
+        // }
+        // return {};
     }
     let nativeRelease;
     export function fetchNativeRelease () {
@@ -396,7 +396,7 @@ export namespace NATIVE {
                 NSSentrySDK.appStartMeasurementHybridSDKMode = toPassOptions.enableAutoPerformanceTracking;
                 NSSentrySDK.framesTrackingMeasurementHybridSDKMode = toPassOptions.enableAutoPerformanceTracking;
             }
-            NSSentrySDK.startWithOptionsObject(nSentryOptions);
+            NSSentrySDK.startWithOptions(nSentryOptions);
 
             return (true);
         } catch (error) {
@@ -420,19 +420,34 @@ export namespace NATIVE {
         if (!enableNative) {
             throw _DisabledNativeError;
         }
-        let contexts = {};
+        let serializedScope: any = {};
         NSSentrySDK.configureScope((scope) => {
             try {
                 const result = dictToJSON( scope.serialize());
                 result['user'] = result['user'] || { id: NSSentrySDK.installationID };
-                contexts =  result;
+                serializedScope =  result;
             } catch (error) {
                 console.error('fetchNativeDeviceContexts', error, error.stack);
             }
         });
-        return (contexts);
-
+        const contexts = serializedScope.context;
+        const extraContextDict = PrivateSentrySDKOnly.getExtraContext();
+        if (extraContextDict) {
+            const extraContext = dictToJSON(extraContextDict);
+            if (extraContext?.device) {
+                contexts.device = contexts.device || {};
+                Object.assign(contexts.device, extraContext.device);
+            }
+            if (extraContext?.app) {
+                contexts.app = contexts.app || {};
+                Object.assign(contexts.app, extraContext.app);
+            }
+        }
+        serializedScope.contexts = contexts;
+        delete serializedScope.context;
+        return serializedScope;
     }
+
     // export function captureUserFeedback(feedback: UserFeedback) {
     //     if (!enableNative) {
     //         return;
@@ -584,6 +599,14 @@ export namespace NATIVE {
     //         }
     //     });
     // }
+
+    export function enableNativeFramesTracking()
+    {
+    // Do nothing on iOS, this bridge method only has an effect on android.
+    // If you're starting the Cocoa SDK manually,
+    // you can set the 'enableAutoPerformanceTracing: true' option and
+    // the 'tracesSampleRate' or 'tracesSampler' option.
+    }
 
     export function disableNativeFramesTracking() {
         // only for android
