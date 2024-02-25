@@ -362,8 +362,7 @@ export class NativescriptTracing implements Integration {
 
         idleTransaction.registerBeforeFinishCallback((transaction) => {
             if (this.options.enableAppStartTracking && this._awaitingAppStartData) {
-                transaction.startTimestamp =
-          this._awaitingAppStartData.appStartTime / 1000;
+                transaction.startTimestamp = this._awaitingAppStartData.appStartTime / 1000;
                 transaction.op = 'ui.load';
 
                 this._addAppStartData(transaction, this._awaitingAppStartData);
