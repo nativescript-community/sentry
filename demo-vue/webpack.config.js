@@ -47,10 +47,15 @@ module.exports = (env, params = {}) => {
             project: process.env.SENTRY_PROJECT,
             authToken: process.env.SENTRY_AUTH_TOKEN,
             release: {
-                create: true,
-                cleanArtifacts: true,
-                name: `${nconfig.id}@${appVersion}+${buildNumber}`,
+                name: `${config.id}@${appVersion}+${buildNumber}`,
                 dist: `${buildNumber}.${platform}`,
+                setCommits: {
+                    auto: true,
+                    ignoreEmpty: true,
+                    ignoreMissing: true
+                },
+                create: true,
+                cleanArtifacts: true
             },
             sourcemaps: {
                 ignore: ['tns-java-classes', 'hot-update'],
