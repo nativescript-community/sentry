@@ -32,6 +32,9 @@ async function startSentry() {
                     enableStallTracking: true,
                 }),
             ],
+            enableUIViewControllerTracing: false,
+            enableUserInteractionTracing: false,
+            enableAutoBreadcrumbTracking: false,
         });
         setTimeout(()=>{
             Sentry.withScope(scope => {
