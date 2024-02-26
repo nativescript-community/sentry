@@ -306,7 +306,7 @@ export namespace NATIVE {
             const options = {
                 enableNative: true,
                 ...originalOptions,
-            };
+            } as NativescriptOptions;
             if (!options.enableNative) {
                 if (options.enableNativeNagger) {
                     console.warn('Note: Native Sentry SDK is disabled.');
