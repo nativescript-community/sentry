@@ -16,6 +16,7 @@ import { NATIVE } from './wrapper';
 import { Screenshot } from './integrations/screenshot';
 import { NativescriptTracing } from './tracing';
 import { rewriteFrameIntegration } from './integrations/default';
+import { parseErrorStack } from './integrations/debugsymbolicator';
 
 
 /**
@@ -52,18 +53,38 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
     /**
    * @inheritDoc
    */
-    public eventFromException(exception: unknown, hint?: EventHint): PromiseLike<Event> {
+    public async eventFromException(exception: unknown, hint?: EventHint): Promise<Event> {
         // N put stackTrace in "stackTrace" instead of "stacktrace"
-        if (exception['stackTrace']) {
+        if (exception['nativeException']) {
+            // in case of nativeException we have:
+            // - stack with only the JS error stack
+            // stackTrace with a mix of JS/Java error
+            exception['stacktrace'] = exception.toString() + '\n at ' + exception['stack'];
+            // console.log('eventFromException', exception['stack']);
+            // console.log('eventFromException1', exception['stackTrace']);
+        } else if (exception['stackTrace']) {
             exception['stacktrace'] = exception['stackTrace'];
         }
         const hintWithScreenshot =  Screenshot.attachScreenshotToEventHint(hint, this._options);
-        return eventFromException(
+        const event=  await eventFromException(
             this._options.stackParser,
             exception,
             hintWithScreenshot,
             this._options.attachStacktrace,
         );
+        if(exception['nativeException'])  {
+            const stack = parseErrorStack({ stack: 'at ' + exception['stackTrace'] } as any).filter(f=>f.platform !== 'javascript');
+            stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
+            event.exception.values.unshift({
+                type:'NativeException',
+                value:exception.toString(),
+                stacktrace:{
+                    frames:stack
+                }
+            });
+        }
+        // event.exception.values.forEach(ex=>console.log('event.exception.values', JSON.stringify(ex.stacktrace.frames.reverse())));
+        return event;
         // return this._browserClient.eventFromException(exception, hint);
     }
 
@@ -78,7 +99,8 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
             hint,
             this._options.attachStacktrace,
         ).then((event: Event) => {
-        // TMP! Remove this function once JS SDK uses threads for messages
+            console.log('eventFromMessage');
+            // TMP! Remove this function once JS SDK uses threads for messages
             if (!event.exception?.values || event.exception.values.length <= 0) {
                 return event;
             }
