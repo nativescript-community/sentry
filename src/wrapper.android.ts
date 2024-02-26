@@ -480,7 +480,7 @@ export namespace NATIVE {
                             if (options.enableFragmentLifecycleBreadcrumbs !== undefined || options.enableAutoFragmentLifecycleTracing !== undefined) {
                                 config.addIntegration(
                                     new io.sentry.android.fragment.FragmentLifecycleIntegration(
-                                        this,
+                                        Application.android.getNativeApplication(),
                                         options.enableFragmentLifecycleBreadcrumbs ?? true, // enabled by default
                                         options.enableAutoFragmentLifecycleTracing ?? false  // disabled by default
                                     )
