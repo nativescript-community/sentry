@@ -1,6 +1,6 @@
 import * as Sentry from '@nativescript-community/sentry';
 import * as Tracing from '@nativescript-community/sentry/tracing';
-import { Application, Trace, Utils } from '@nativescript/core';
+import { Application, NavigatedData, Page, Trace, Utils, View } from '@nativescript/core';
 import { on as applicationOn, launchEvent } from '@nativescript/core/application';
 import Vue from 'nativescript-vue';
 import Home from './views/Home';
@@ -35,6 +35,42 @@ async function startSentry() {
             enableUIViewControllerTracing: false,
             enableUserInteractionTracing: false,
             enableAutoBreadcrumbTracking: false,
+        });
+        Page.on('navigatingTo', (event: NavigatedData) => {
+            Sentry.addBreadcrumb({
+                category: 'navigation',
+                type: 'navigation',
+                // We assume that context.name is the name of the route.
+                message: `Navigation to ${event.object}`,
+                data: {
+                    isBackNavigation: event.isBackNavigation,
+                    from: `${(event.object as Page).frame?.currentPage}`,
+                    to: `${event.object}`
+                }
+            });
+        });
+        View.on('showingModally', (event: NavigatedData) => {
+            Sentry.addBreadcrumb({
+                category: 'navigation',
+                type: 'navigation',
+                // We assume that context.name is the name of the route.
+                message: `Navigation to Modal ${event.object}`,
+                data: {
+                    from: `${(event.object as View)._modalParent}`,
+                    to: `${event.object}`
+                }
+            });
+        });
+        View.on('closingModally', (event: NavigatedData) => {
+            Sentry.addBreadcrumb({
+                category: 'navigation',
+                type: 'navigation',
+                // We assume that context.name is the name of the route.
+                message: `Closing modal ${event.object}`,
+                data: {
+                    from: `${event.object as View}`
+                }
+            });
         });
         setTimeout(()=>{
             Sentry.withScope(scope => {
