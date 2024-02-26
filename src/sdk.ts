@@ -124,8 +124,9 @@ export function init(passedOptions: NativescriptOptions): void {
       typeof options.tracesSampler !== 'undefined' ||
       typeof options.tracesSampleRate !== 'undefined';
 
+    const DEFAULT_INTEGRATIONS = getDefaultIntegrations(options);
     const defaultIntegrations: false | Integration[] = passedOptions.defaultIntegrations === undefined
-        ? getDefaultIntegrations(options)
+        ? DEFAULT_INTEGRATIONS
         : passedOptions.defaultIntegrations;
     // if (passedOptions.defaultIntegrations === undefined) {
     //     rewriteFrameIntegration = new RewriteFrames({

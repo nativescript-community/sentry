@@ -60,8 +60,6 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
             // - stack with only the JS error stack
             // stackTrace with a mix of JS/Java error
             exception['stacktrace'] = exception.toString() + '\n at ' + exception['stack'];
-            // console.log('eventFromException', exception['stack']);
-            // console.log('eventFromException1', exception['stackTrace']);
         } else if (exception['stackTrace']) {
             exception['stacktrace'] = exception['stackTrace'];
         }
@@ -73,17 +71,21 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
             this._options.attachStacktrace,
         );
         if(exception['nativeException'])  {
-            const stack = parseErrorStack({ stack: 'at ' + exception['stackTrace'] } as any).filter(f=>f.platform !== 'javascript');
-            stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
-            event.exception.values.unshift({
-                type:'NativeException',
-                value:exception.toString(),
-                stacktrace:{
-                    frames:stack
-                }
-            });
+            try {
+                const stack = parseErrorStack({ stack: 'at ' + exception['stackTrace'] } as any).filter(f=>f.platform !== 'javascript');
+                stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
+                event.exception.values.unshift({
+                    type:'NativeException',
+                    value:exception.toString(),
+                    stacktrace:{
+                        frames:stack
+                    }
+                });
+            } catch (error) {
+                console.error(error, error.stack);
+            }
+
         }
-        // event.exception.values.forEach(ex=>console.log('event.exception.values', JSON.stringify(ex.stacktrace.frames.reverse())));
         return event;
         // return this._browserClient.eventFromException(exception, hint);
     }

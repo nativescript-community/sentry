@@ -32,33 +32,35 @@ export let rewriteFrameIntegration: {
  */
 export function getDefaultIntegrations(options: NativescriptClientOptions & NativescriptOptions): Integration[] {
     const integrations: Integration[] = [];
+    const iteratee = (frame: StackFrame) => {
+        if (frame.platform === 'javascript' && frame.filename) {
+            let filename = frame.filename
+                .replace(/^file\:\/\//, '')
+                .replace(/^address at /, '')
+                .replace(/^.*\/[^\.]+(\.app|CodePush|.*(?=\/))/, '');
+
+            if (frame.filename.indexOf('[native code]') === -1) {
+                const appPrefix = options.appPrefix ?? '~/';
+                if (appPrefix.endsWith('//') && !appPrefix.endsWith('///')) {
+                    filename = filename.indexOf('/') === 0 ? `${appPrefix}${filename}` : `${appPrefix}/${filename}`;
+                } else {
+                    filename = filename.indexOf('/') === 0 ? `${appPrefix}${filename.slice(1)}` : `${appPrefix}${filename}`;
+                }
+            }
+
+            frame.filename = filename;
+            if (options.colnoOffset) {
+                frame.colno += options.colnoOffset;
+            }
+            // We always want to have a tripple slash
+        }
+        return frame;
+    };
 
     rewriteFrameIntegration = new RewriteFrames({
-        iteratee: (frame: StackFrame) => {
-            if (frame.platform === 'javascript' && frame.filename) {
-                let filename = frame.filename
-                    .replace(/^file\:\/\//, '')
-                    .replace(/^address at /, '')
-                    .replace(/^.*\/[^\.]+(\.app|CodePush|.*(?=\/))/, '');
 
-                if (frame.filename.indexOf('[native code]') === -1) {
-                    const appPrefix = options.appPrefix ?? '~/';
-                    if (appPrefix.endsWith('//') && !appPrefix.endsWith('///')) {
-                        filename = filename.indexOf('/') === 0 ? `${appPrefix}${filename}` : `${appPrefix}/${filename}`;
-                    } else {
-                        filename = filename.indexOf('/') === 0 ? `${appPrefix}${filename.slice(1)}` : `${appPrefix}${filename}`;
-                    }
-                }
-
-                frame.filename = filename;
-                if (options.colnoOffset) {
-                    frame.colno += options.colnoOffset;
-                }
-                // We always want to have a tripple slash
-            }
-            return frame;
-        }
     }) as any;
+    rewriteFrameIntegration._iteratee =iteratee;
 
     // if (notWeb()) {
     integrations.push(
