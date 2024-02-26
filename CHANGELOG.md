@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.21](https://github.com/nativescript-community/sentry/compare/v4.6.20...v4.6.21) (2024-02-26)
+
+
+### Bug Fixes
+
+* better handle of stack trace for native thrown exceptions ([2b77cbf](https://github.com/nativescript-community/sentry/commit/2b77cbfae85481e41d4efcc94757277d905ff855))
+* update to latest sdk ([5f4e3eb](https://github.com/nativescript-community/sentry/commit/5f4e3eb4707924b45d607d430001290fc7eda88b))
+
+
+
+
+
 ## [4.6.20](https://github.com/nativescript-community/sentry/compare/v4.6.19...v4.6.20) (2024-02-25)
 
 
