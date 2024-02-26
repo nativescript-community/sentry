@@ -110,8 +110,7 @@ export default {
                 // console.error('error', error);
                 // console.error('keys', Object.keys(error));
                 // console.error('nativeExceptio',  error.nativeException);
-                console.error('stackTrace', error.stackTrace);
-                console.error('stack', error.stack);
+                // console.error('stackTrace', error.stackTrace);
                 // console.error('stack', error.stack);
                 // console.error('stacktrace', error.stacktrace);
                 Sentry.captureException(error);
