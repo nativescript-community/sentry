@@ -349,7 +349,7 @@ export namespace NATIVE {
                 enableNative: true,
                 autoInitializeNativeSdk: true,
                 ...originalOptions,
-            };
+            } as NativescriptOptions;
             if (!options.enableNative) {
                 if (options.enableNativeNagger) {
                     console.warn('Note: Native Sentry SDK is disabled.');
@@ -477,6 +477,15 @@ export namespace NATIVE {
                             // } else {
                             //     disableNativeFramesTracking();
                             // }
+                            if (options.enableFragmentLifecycleBreadcrumbs !== undefined || options.enableAutoFragmentLifecycleTracing !== undefined) {
+                                config.addIntegration(
+                                    new io.sentry.android.fragment.FragmentLifecycleIntegration(
+                                        this,
+                                        options.enableFragmentLifecycleBreadcrumbs ?? true, // enabled by default
+                                        options.enableAutoFragmentLifecycleTracing ?? false  // disabled by default
+                                    )
+                                );
+                            }
 
                             // config.setEnableNdk(true);
                             if (enableNativeCrashHandling === false) {
