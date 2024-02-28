@@ -1,0 +1,13 @@
+// Add compatibility options to be comptible with Java 1.8
+apply plugin: 'io.sentry.android.gradle'
+android {
+    compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+    }
+}
+dependencies {
+    def sentryVersion =  project.hasProperty("sentryVersion") ? project.sentryVersion : "7.4.0"
+    println("sentryVersion $sentryVersion")
+    implementation "io.sentry:sentry-android:$sentryVersion"
+}

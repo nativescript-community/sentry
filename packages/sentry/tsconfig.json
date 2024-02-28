@@ -4,5 +4,6 @@
         "rootDir": "../../src/sentry",
         "outDir": "./"
     },
-    "include": ["../../src/sentry/**/*", "../../references.d.ts", "../../tools/references.d.ts", "../../src/references.d.ts"]
+    "include": ["../../src/sentry/**/*", "../../references.d.ts", "../../tools/references.d.ts", "../../src/references.d.ts"],
+    "exclude": ["node_modules", "node_modules", "../../src/sentry/hooks"]
 }

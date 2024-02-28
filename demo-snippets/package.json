@@ -1,0 +1,11 @@
+{
+    "name": "@nativescript-community/template-snippet",
+    "private": true,
+    "version": "0.0.1",
+    "dependencies": {
+        "@nativescript-community/sentry": "*"
+    },
+    "devDependencies": {
+        "@sentry/webpack-plugin": "2.14.2"
+    }
+}
