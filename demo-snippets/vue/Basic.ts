@@ -1,4 +1,4 @@
-import * as Sentry from '@nativescript-community/sentry';
+import * as Sentry from 'src';
 import { File, knownFolders, path } from '@nativescript/core';
 import { TextEncoder } from '@nativescript/core/text';
 import { createArrayBuffer } from '@nativescript-community/arraybuffers';

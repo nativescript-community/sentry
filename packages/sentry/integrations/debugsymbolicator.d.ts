@@ -2,7 +2,7 @@ import { Integration, StackFrame } from '@sentry/types';
 /**
  * React Native Error
  */
-declare type NativescriptError = Error & {
+type NativescriptError = Error & {
     stackTrace?: string;
     framesToPop?: number;
     jsEngine?: string;

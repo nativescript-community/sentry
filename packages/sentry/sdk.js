@@ -66,16 +66,29 @@ const DEFAULT_OPTIONS = {
  * Inits the SDK
  */
 export function init(passedOptions) {
-    var _a, _b, _c, _d;
     const NativescriptHub = new Hub(undefined, new Scope());
     // const NativescriptHub = new Hub(undefined, new NativescriptScope());
     makeMain(NativescriptHub);
-    const maxQueueSize = (_c = (_a = passedOptions.maxQueueSize) !== null && _a !== void 0 ? _a : (_b = passedOptions.transportOptions) === null || _b === void 0 ? void 0 : _b.bufferSize) !== null && _c !== void 0 ? _c : DEFAULT_OPTIONS.maxQueueSize;
-    const options = Object.assign(Object.assign(Object.assign({}, DEFAULT_OPTIONS), passedOptions), { 
+    const maxQueueSize = passedOptions.maxQueueSize
+        ?? passedOptions.transportOptions?.bufferSize
+        ?? DEFAULT_OPTIONS.maxQueueSize;
+    const options = {
+        ...DEFAULT_OPTIONS,
+        ...passedOptions,
         // If custom transport factory fails the SDK won't initialize
-        transport: passedOptions.transport || makeNativescriptTransport, transportOptions: Object.assign(Object.assign(Object.assign({}, DEFAULT_OPTIONS.transportOptions), ((_d = passedOptions.transportOptions) !== null && _d !== void 0 ? _d : {})), { bufferSize: maxQueueSize }), maxQueueSize, integrations: [], 
+        transport: passedOptions.transport || makeNativescriptTransport,
+        transportOptions: {
+            ...DEFAULT_OPTIONS.transportOptions,
+            ...(passedOptions.transportOptions ?? {}),
+            bufferSize: maxQueueSize,
+        },
+        maxQueueSize,
+        integrations: [],
         // integrations: getIntegrationsToSetup(passedOptions),
-        stackParser: stackParserFromStackParserOptions(passedOptions.stackParser || defaultStackParser), beforeBreadcrumb: safeFactory(passedOptions.beforeBreadcrumb, { loggerMessage: 'The beforeBreadcrumb threw an error' }), initialScope: safeFactory(passedOptions.initialScope, { loggerMessage: 'The initialScope threw an error' }) });
+        stackParser: stackParserFromStackParserOptions(passedOptions.stackParser || defaultStackParser),
+        beforeBreadcrumb: safeFactory(passedOptions.beforeBreadcrumb, { loggerMessage: 'The beforeBreadcrumb threw an error' }),
+        initialScope: safeFactory(passedOptions.initialScope, { loggerMessage: 'The initialScope threw an error' }),
+    };
     if ('tracesSampler' in options) {
         options.tracesSampler = safeTracesSampler(options.tracesSampler);
     }
@@ -205,8 +218,7 @@ export async function close() {
  * Captures user feedback and sends it to Sentry.
  */
 export function captureUserFeedback(feedback) {
-    var _a;
-    (_a = getCurrentHub().getClient()) === null || _a === void 0 ? void 0 : _a.captureUserFeedback(feedback);
+    getCurrentHub().getClient()?.captureUserFeedback(feedback);
 }
 /**
  * Creates a new scope with and executes the given operation within.

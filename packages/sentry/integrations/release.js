@@ -13,26 +13,25 @@ export class Release {
      */
     setupOnce() {
         addGlobalEventProcessor(async (event) => {
-            var _a, _b, _c;
             const self = getCurrentHub().getIntegration(Release);
             if (!self) {
                 return event;
             }
-            const options = (_a = getCurrentHub().getClient()) === null || _a === void 0 ? void 0 : _a.getOptions();
+            const options = getCurrentHub().getClient()?.getOptions();
             /*
             __sentry_release and __sentry_dist is set by the user with setRelease and setDist. If this is used then this is the strongest.
             Otherwise we check for the release and dist in the options passed on init, as this is stronger than the release/dist from the native build.
             */
-            if (typeof ((_b = event.extra) === null || _b === void 0 ? void 0 : _b.__sentry_release) === 'string') {
+            if (typeof event.extra?.__sentry_release === 'string') {
                 event.release = `${event.extra.__sentry_release}`;
             }
-            else if (typeof (options === null || options === void 0 ? void 0 : options.release) === 'string') {
+            else if (typeof options?.release === 'string') {
                 event.release = options.release;
             }
-            if (typeof ((_c = event.extra) === null || _c === void 0 ? void 0 : _c.__sentry_dist) === 'string') {
+            if (typeof event.extra?.__sentry_dist === 'string') {
                 event.dist = `${event.extra.__sentry_dist}`;
             }
-            else if (typeof (options === null || options === void 0 ? void 0 : options.dist) === 'string') {
+            else if (typeof options?.dist === 'string') {
                 event.dist = options.dist;
             }
             if (event.release && event.dist) {

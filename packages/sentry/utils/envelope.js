@@ -5,10 +5,15 @@ export const items = 1;
    * Creates an envelope from a user feedback.
    */
 export function createUserFeedbackEnvelope(feedback, { metadata, tunnel, dsn, }) {
-    const headers = Object.assign(Object.assign({ event_id: feedback.event_id, sent_at: new Date().toISOString() }, (metadata && metadata.sdk && { sdk: {
-            name: metadata.sdk.name,
-            version: metadata.sdk.version,
-        } })), (!!tunnel && !!dsn && { dsn: dsnToString(dsn) }));
+    const headers = {
+        event_id: feedback.event_id,
+        sent_at: new Date().toISOString(),
+        ...(metadata && metadata.sdk && { sdk: {
+                name: metadata.sdk.name,
+                version: metadata.sdk.version,
+            } }),
+        ...(!!tunnel && !!dsn && { dsn: dsnToString(dsn) }),
+    };
     const item = createUserFeedbackEnvelopeItem(feedback);
     return createEnvelope(headers, [item]);
 }

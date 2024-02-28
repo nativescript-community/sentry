@@ -1,5 +1,5 @@
 import { NativescriptOptions } from '../options';
-declare type DangerTypesWithoutCallSignature = Object | null | undefined;
+type DangerTypesWithoutCallSignature = Object | null | undefined;
 /**
  * Returns callback factory wrapped with try/catch
  * or the original passed value is it's not a function.

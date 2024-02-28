@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-duplicate-imports
 import { addTracingExtensions, getCurrentHub, getMainCarrier } from '@sentry/core';
-import { NativescriptTracing } from '../tracing/nstracing';
-import { DEFAULT } from '../tracing/ops';
+import { NativescriptTracing } from './nstracing';
+import { DEFAULT } from './ops';
 /**
  * Adds React Native's extensions. Needs to be called before any transactions are created.
  */
@@ -35,9 +35,11 @@ const _patchStartTransaction = (originalStartTransaction) => {
         }
         const transaction = originalStartTransaction.apply(this, [transactionContext, customSamplingContext]);
         const originalStartChild = transaction.startChild.bind(transaction);
-        transaction.startChild = (spanContext) => originalStartChild(Object.assign(Object.assign({}, spanContext), { 
+        transaction.startChild = (spanContext) => originalStartChild({
+            ...spanContext,
             // Native SDKs require op to be set
-            op: (spanContext === null || spanContext === void 0 ? void 0 : spanContext.op) || DEFAULT }));
+            op: spanContext?.op || DEFAULT,
+        });
         const reactNativeTracing = getCurrentHub().getIntegration(NativescriptTracing);
         if (reactNativeTracing) {
             reactNativeTracing.onTransactionStart(transaction);

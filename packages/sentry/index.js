@@ -29,10 +29,10 @@ export { Integrations, SDK_NAME, SDK_VERSION };
 export const SentryTraceCategory = 'Sentry';
 export var CLogTypes;
 (function (CLogTypes) {
-    CLogTypes[CLogTypes["log"] = Trace.messageType.log] = "log";
-    CLogTypes[CLogTypes["info"] = Trace.messageType.info] = "info";
-    CLogTypes[CLogTypes["warning"] = Trace.messageType.warn] = "warning";
-    CLogTypes[CLogTypes["error"] = Trace.messageType.error] = "error";
+    CLogTypes[CLogTypes["log"] = 0] = "log";
+    CLogTypes[CLogTypes["info"] = 1] = "info";
+    CLogTypes[CLogTypes["warning"] = 2] = "warning";
+    CLogTypes[CLogTypes["error"] = 3] = "error";
 })(CLogTypes || (CLogTypes = {}));
 export const CLog = (type, ...args) => {
     Trace.write(args.map((a) => (a && typeof a === 'object' ? JSON.stringify(a) : a)).join(' '), SentryTraceCategory, type);

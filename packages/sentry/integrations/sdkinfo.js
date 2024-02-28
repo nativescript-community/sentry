@@ -25,7 +25,6 @@ export class SdkInfo {
    */
     setupOnce(addGlobalEventProcessor) {
         addGlobalEventProcessor(async (event) => {
-            var _a;
             // The native SDK info package here is only used on iOS as `beforeSend` is not called on `captureEnvelope`.
             // this._nativeSdkInfo should be defined a following time so this call won't always be awaited.
             if (__IOS__ && this._nativeSdkInfo === null) {
@@ -39,11 +38,15 @@ export class SdkInfo {
                 }
             }
             event.platform = event.platform || 'javascript';
-            event.sdk = Object.assign(Object.assign(Object.assign({}, ((_a = event.sdk) !== null && _a !== void 0 ? _a : {})), defaultSdkInfo), { packages: [
+            event.sdk = {
+                ...(event.sdk ?? {}),
+                ...defaultSdkInfo,
+                packages: [
                     ...((event.sdk && event.sdk.packages) || []),
                     ...((this._nativeSdkInfo && [this._nativeSdkInfo]) || []),
                     ...defaultSdkInfo.packages,
-                ] });
+                ],
+            };
             return event;
         });
     }

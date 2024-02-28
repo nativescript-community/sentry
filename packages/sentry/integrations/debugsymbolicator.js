@@ -57,7 +57,7 @@ const androidFunc = line => {
 const androidLineParser = [50, androidFunc];
 const stackParser = stackParserFromStackParserOptions([nativescriptLineParser, androidLineParser]);
 export function parseErrorStack(e) {
-    const stack = (e === null || e === void 0 ? void 0 : e['stackTrace']) || (e === null || e === void 0 ? void 0 : e.stack);
+    const stack = e?.['stackTrace'] || e?.stack;
     if (!stack) {
         return [];
     }
@@ -86,7 +86,11 @@ export class DebugSymbolicator {
             const stack = parseErrorStack(error);
             // console.log('stack', stack);
             // Ideally this should go into contexts but android sdk doesn't support it
-            event.extra = Object.assign(Object.assign({}, event.extra), { componentStack: error.componentStack, jsEngine: error.jsEngine });
+            event.extra = {
+                ...event.extra,
+                componentStack: error.componentStack,
+                jsEngine: error.jsEngine
+            };
             await self._symbolicate(event, stack);
             event.platform = 'node'; // Setting platform node makes sure we do not show source maps errors
             return event;
@@ -113,8 +117,7 @@ export class DebugSymbolicator {
      * @param frames StackFrame[]
      */
     _replaceFramesInEvent(event, frames) {
-        var _a, _b;
-        if ((_b = (_a = event.exception) === null || _a === void 0 ? void 0 : _a.values) === null || _b === void 0 ? void 0 : _b[0].stacktrace) {
+        if (event.exception?.values?.[0].stacktrace) {
             event.exception.values[0].stacktrace.frames = frames.reverse();
         }
     }

@@ -26,14 +26,13 @@ export let rewriteFrameIntegration;
 export function getDefaultIntegrations(options) {
     const integrations = [];
     const iteratee = (frame) => {
-        var _a;
         if (frame.platform === 'javascript' && frame.filename) {
             let filename = frame.filename
                 .replace(/^file\:\/\//, '')
                 .replace(/^address at /, '')
                 .replace(/^.*\/[^\.]+(\.app|CodePush|.*(?=\/))/, '');
             if (frame.filename.indexOf('[native code]') === -1) {
-                const appPrefix = (_a = options.appPrefix) !== null && _a !== void 0 ? _a : '~/';
+                const appPrefix = options.appPrefix ?? '~/';
                 if (appPrefix.endsWith('//') && !appPrefix.endsWith('///')) {
                     filename = filename.indexOf('/') === 0 ? `${appPrefix}${filename}` : `${appPrefix}/${filename}`;
                 }

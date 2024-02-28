@@ -150,10 +150,16 @@ export var NATIVE;
    * @returns Event with more widely supported Severity level strings
    */
     function _processLevels(event) {
-        var _a;
-        const processed = Object.assign(Object.assign({}, event), { level: event.level ? _processLevel(event.level) : undefined, breadcrumbs: (_a = event.breadcrumbs) === null || _a === void 0 ? void 0 : _a.map((breadcrumb) => (Object.assign(Object.assign({}, breadcrumb), { level: breadcrumb.level
+        const processed = {
+            ...event,
+            level: event.level ? _processLevel(event.level) : undefined,
+            breadcrumbs: event.breadcrumbs?.map((breadcrumb) => ({
+                ...breadcrumb,
+                level: breadcrumb.level
                     ? _processLevel(breadcrumb.level)
-                    : undefined }))) });
+                    : undefined,
+            })),
+        };
         return processed;
     }
     /**
@@ -263,7 +269,10 @@ export var NATIVE;
     let nSentryOptions;
     async function initNativeSdk(originalOptions = {}) {
         try {
-            const options = Object.assign({ enableNative: true }, originalOptions);
+            const options = {
+                enableNative: true,
+                ...originalOptions,
+            };
             if (!options.enableNative) {
                 if (options.enableNativeNagger) {
                     console.warn('Note: Native Sentry SDK is disabled.');
@@ -282,7 +291,7 @@ export var NATIVE;
                 return false;
             }
             sentryOptions = options;
-            const { tracesSampleRate, tracesSampler, beforeSend, beforeBreadcrumb } = options, toPassOptions = __rest(options, ["tracesSampleRate", "tracesSampler", "beforeSend", "beforeBreadcrumb"]);
+            const { tracesSampleRate, tracesSampler, beforeSend, beforeBreadcrumb, ...toPassOptions } = options;
             Object.keys(toPassOptions).forEach((k) => {
                 const value = toPassOptions[k];
                 const valuetype = typeof value;
@@ -294,9 +303,8 @@ export var NATIVE;
             nSentryOptions = SentryOptions.alloc().initWithDictDidFailWithError(mutDict);
             // before send right now is never called when we send the envelope. Only on native crash
             nSentryOptions.beforeSend = (event) => {
-                var _a;
-                const exception = (_a = event.exceptions) === null || _a === void 0 ? void 0 : _a.objectAtIndex(0);
-                const exceptionvalue = exception === null || exception === void 0 ? void 0 : exception.value;
+                const exception = event.exceptions?.objectAtIndex(0);
+                const exceptionvalue = exception?.value;
                 if (exceptionvalue) {
                     const matches = exceptionvalue.match(FATAL_ERROR_REGEXP);
                     if (matches) {
@@ -383,11 +391,11 @@ export var NATIVE;
         const extraContextDict = PrivateSentrySDKOnly.getExtraContext();
         if (extraContextDict) {
             const extraContext = dictToJSON(extraContextDict);
-            if (extraContext === null || extraContext === void 0 ? void 0 : extraContext.device) {
+            if (extraContext?.device) {
                 contexts.device = contexts.device || {};
                 Object.assign(contexts.device, extraContext.device);
             }
-            if (extraContext === null || extraContext === void 0 ? void 0 : extraContext.app) {
+            if (extraContext?.app) {
                 contexts.app = contexts.app || {};
                 Object.assign(contexts.app, extraContext.app);
             }

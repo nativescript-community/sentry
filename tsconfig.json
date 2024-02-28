@@ -1,32 +1,9 @@
 {
+    "extends": "./tools/tsconfig",
     "compilerOptions": {
-        "target": "es2017",
-        "module": "esnext",
-        "moduleResolution": "node",
-        "declaration": true,
-        "removeComments": false,
-        "noLib": false,
-        "emitDecoratorMetadata": false,
-        "experimentalDecorators": true,
-        "lib": ["es6", "dom"],
-        "sourceMap": true,
-        "pretty": true,
-        "allowUnreachableCode": false,
-        "allowUnusedLabels": false,
-        "noEmitHelpers": true,
-        "noEmitOnError": false,
-        "noImplicitAny": false,
-        "noImplicitReturns": true,
-        "noImplicitUseStrict": false,
-        "noFallthroughCasesInSwitch": true,
-        "baseUrl": ".",
-        "outDir": "./plugin",
-        "rootDir": "src",
         "paths": {
-            "@nativescript-community/sentry": ["./src/index"]
+            "@nativescript-community/sentry": ["src/sentry/index"],
+            "@nativescript-community/sentry/*": ["src/sentry/*"]
         }
-    },
-    "include": ["src/**/*.ts", "references.d.ts", "src/references.d.ts"],
-    "exclude": ["node_modules", ".git", "dist"],
-    "compileOnSave": false
+    }
 }

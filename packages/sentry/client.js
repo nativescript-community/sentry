@@ -79,10 +79,9 @@ export class NativescriptClient extends BaseClient {
    */
     eventFromMessage(message, level, hint) {
         return eventFromMessage(this._options.stackParser, message, level, hint, this._options.attachStacktrace).then((event) => {
-            var _a;
             console.log('eventFromMessage');
             // TMP! Remove this function once JS SDK uses threads for messages
-            if (!((_a = event.exception) === null || _a === void 0 ? void 0 : _a.values) || event.exception.values.length <= 0) {
+            if (!event.exception?.values || event.exception.values.length <= 0) {
                 return event;
             }
             const values = event.exception.values.map((exception) => {
@@ -144,14 +143,13 @@ export class NativescriptClient extends BaseClient {
    * Sets up the integrations
    */
     setupIntegrations() {
-        var _a;
         super.setupIntegrations();
         const tracing = this.getIntegration(NativescriptTracing);
-        const routingName = (_a = tracing === null || tracing === void 0 ? void 0 : tracing.options.routingInstrumentation) === null || _a === void 0 ? void 0 : _a.name;
+        const routingName = tracing?.options.routingInstrumentation?.name;
         if (routingName) {
             this.addIntegration(createIntegration(routingName));
         }
-        const enableUserInteractionTracing = tracing === null || tracing === void 0 ? void 0 : tracing.options.enableUserInteractionTracing;
+        const enableUserInteractionTracing = tracing?.options.enableUserInteractionTracing;
         if (enableUserInteractionTracing) {
             this.addIntegration(createIntegration('ReactNativeUserInteractionTracing'));
         }
@@ -191,17 +189,16 @@ export class NativescriptClient extends BaseClient {
  * Starts native client with dsn and options
  */
     async _initNativeSdk() {
-        var _a, _b, _c, _d;
         let didCallNativeInit = false;
         try {
             didCallNativeInit = await NATIVE.initNativeSdk(this._options);
         }
         catch (_) {
             this._showCannotConnectDialog();
-            (_b = (_a = this._options).onReady) === null || _b === void 0 ? void 0 : _b.call(_a, { didCallNativeInit: false });
+            this._options.onReady?.({ didCallNativeInit: false });
             return;
         }
-        (_d = (_c = this._options).onReady) === null || _d === void 0 ? void 0 : _d.call(_c, { didCallNativeInit });
+        this._options.onReady?.({ didCallNativeInit });
     }
     /**
    * If the user is in development mode, and the native nagger is enabled then it will show an alert.

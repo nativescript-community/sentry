@@ -3,8 +3,8 @@ import type { Hub, Transaction } from '@sentry/core';
 import { addTracingExtensions, getCurrentHub, getMainCarrier } from '@sentry/core';
 import type { CustomSamplingContext, Span, SpanContext, TransactionContext } from '@sentry/types';
 
-import { NativescriptTracing } from '../tracing/nstracing';
-import { DEFAULT } from '../tracing/ops';
+import { NativescriptTracing } from './nstracing';
+import { DEFAULT } from './ops';
 
 /**
  * Adds React Native's extensions. Needs to be called before any transactions are created.
