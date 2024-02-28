@@ -10,7 +10,6 @@ import { SDK_NAME } from './version';
 import { CLog, CLogTypes } from '.';
 import { rewriteFrameIntegration } from './integrations/default';
 
-
 function capitalize(value) {
     return value.charAt(0).toUpperCase() + value.substr(1);
 }
@@ -107,15 +106,15 @@ export namespace NATIVE {
     }
 
     /**
-   * Get breadcrumbs (removes breadcrumbs from handled exceptions on Android)
-   *
-   * We do this to avoid duplicate breadcrumbs on Android as sentry-android applies the breadcrumbs
-   * from the native scope onto every envelope sent through it. This scope will contain the breadcrumbs
-   * sent through the scope sync feature. This causes duplicate breadcrumbs.
-   * We then remove the breadcrumbs in all cases but if it is handled == false,
-   * this is a signal that the app would crash and android would lose the breadcrumbs by the time the app is restarted to read
-   * the envelope.
-   */
+     * Get breadcrumbs (removes breadcrumbs from handled exceptions on Android)
+     *
+     * We do this to avoid duplicate breadcrumbs on Android as sentry-android applies the breadcrumbs
+     * from the native scope onto every envelope sent through it. This scope will contain the breadcrumbs
+     * sent through the scope sync feature. This causes duplicate breadcrumbs.
+     * We then remove the breadcrumbs in all cases but if it is handled == false,
+     * this is a signal that the app would crash and android would lose the breadcrumbs by the time the app is restarted to read
+     * the envelope.
+     */
     function _getBreadcrumbs(event: Event): Breadcrumb[] | undefined {
         const breadcrumbs: Breadcrumb[] | undefined = event.breadcrumbs;
 
@@ -124,19 +123,20 @@ export namespace NATIVE {
         //     breadcrumbs = undefined;
         // }
 
-        breadcrumbs && breadcrumbs.forEach(b=>{
-            // fix for native SDK not supporting number
-            b.timestamp = new Date(b.timestamp* 1000).toISOString() as any;
-        });
+        breadcrumbs &&
+            breadcrumbs.forEach((b) => {
+                // fix for native SDK not supporting number
+                b.timestamp = new Date(b.timestamp * 1000).toISOString() as any;
+            });
 
         return breadcrumbs && breadcrumbs.length ? breadcrumbs : undefined;
     }
 
     /**
-   * Convert js severity level in event.level and event.breadcrumbs to more widely supported levels.
-   * @param event
-   * @returns Event with more widely supported Severity level strings
-   */
+     * Convert js severity level in event.level and event.breadcrumbs to more widely supported levels.
+     * @param event
+     * @returns Event with more widely supported Severity level strings
+     */
 
     function _processLevels(event: Event): Event {
         const processed: Event = {
@@ -144,34 +144,31 @@ export namespace NATIVE {
             level: event.level ? _processLevel(event.level) : undefined,
             breadcrumbs: event.breadcrumbs?.map((breadcrumb) => ({
                 ...breadcrumb,
-                level: breadcrumb.level
-                    ? _processLevel(breadcrumb.level)
-                    : undefined,
-            })),
+                level: breadcrumb.level ? _processLevel(breadcrumb.level) : undefined
+            }))
         };
 
         return processed;
     }
     /**
-   * Convert js severity level which has critical and log to more widely supported levels.
-   * @param level
-   * @returns More widely supported Severity level strings
-   */
+     * Convert js severity level which has critical and log to more widely supported levels.
+     * @param level
+     * @returns More widely supported Severity level strings
+     */
 
     function _processLevel(level: SeverityLevel): SeverityLevel {
-        if (level === 'log' as SeverityLevel) {
+        if (level === ('log' as SeverityLevel)) {
             return 'debug' as SeverityLevel;
-        }
-        else if (level === 'critical' as SeverityLevel) {
+        } else if (level === ('critical' as SeverityLevel)) {
             return 'fatal' as SeverityLevel;
         }
         return level;
     }
     /**
-   * Gets the event from envelopeItem and applies the level filter to the selected event.
-   * @param data An envelope item containing the event.
-   * @returns The event from envelopeItem or undefined.
-   */
+     * Gets the event from envelopeItem and applies the level filter to the selected event.
+     * @param data An envelope item containing the event.
+     * @returns The event from envelopeItem or undefined.
+     */
     function _processItem(item: EnvelopeItem): EnvelopeItem {
         const [itemHeader, itemPayload] = item;
 
@@ -179,7 +176,7 @@ export namespace NATIVE {
             const event = _processLevels(itemPayload as Event);
 
             // fix for native SDK
-            event.timestamp = new Date(event.timestamp* 1000).toISOString() as any;
+            event.timestamp = new Date(event.timestamp * 1000).toISOString() as any;
             if ('message' in event) {
                 // @ts-ignore Android still uses the old message object, without this the serialization of events will break.
                 event.message = { message: event.message };
@@ -221,15 +218,11 @@ export namespace NATIVE {
             if (typeof itemPayload === 'string') {
                 bytesPayload = utf8ToBytes(itemPayload);
             } else if (itemPayload instanceof Uint8Array) {
-                bytesContentType = typeof itemHeader.content_type === 'string'
-                    ? itemHeader.content_type
-                    : 'application/octet-stream';
+                bytesContentType = typeof itemHeader.content_type === 'string' ? itemHeader.content_type : 'application/octet-stream';
                 bytesPayload = [...itemPayload];
             } else if (itemPayload instanceof ArrayBuffer) {
                 bytesPayload = [...new Uint8Array(itemPayload)];
-                bytesContentType = typeof itemHeader.content_type === 'string'
-                    ? itemHeader.content_type
-                    : 'application/octet-stream';
+                bytesContentType = typeof itemHeader.content_type === 'string' ? itemHeader.content_type : 'application/octet-stream';
             } else {
                 bytesContentType = 'application/json';
                 bytesPayload = utf8ToBytes(JSON.stringify(itemPayload));
@@ -288,7 +281,7 @@ export namespace NATIVE {
         return envelopeBytes;
     }
 
-    export async function captureEnvelope(envelope: string | Uint8Array | number[], {store}: {store?: boolean} = {}) {
+    export async function captureEnvelope(envelope: string | Uint8Array | number[], { store }: { store?: boolean } = {}) {
         try {
             const outboxPath = new java.io.File(nSentryOptions.getOutboxPath(), java.util.UUID.randomUUID().toString());
             const out = new java.io.FileOutputStream(outboxPath);
@@ -300,7 +293,7 @@ export namespace NATIVE {
                 out.write(new java.lang.String(envelope).getBytes(java.nio.charset.Charset.forName('UTF-8')));
             }
             return true;
-        } catch(err) {
+        } catch (err) {
             console.error('captureEnvelope error', err, err.stack);
             return false;
         }
@@ -313,13 +306,12 @@ export namespace NATIVE {
         io.sentry.Sentry.flush(timeout);
     }
     let initialized = false;
-    let sentryOptions: NativescriptOptions ;
-    let nSentryOptions: io.sentry.SentryOptions ;
+    let sentryOptions: NativescriptOptions;
+    let nSentryOptions: io.sentry.SentryOptions;
     let logger: io.sentry.android.core.AndroidLogger;
     let buildInfo: io.sentry.android.core.BuildInfoProvider;
 
-
-    function addPackages( event: io.sentry.SentryEvent,  sdk: io.sentry.protocol.SdkVersion) {
+    function addPackages(event: io.sentry.SentryEvent, sdk: io.sentry.protocol.SdkVersion) {
         const eventSdk = event.getSdk();
         if (eventSdk && sdk && eventSdk.getName() === SDK_NAME) {
             const sentryPackages = sdk.getPackages();
@@ -327,7 +319,6 @@ export namespace NATIVE {
                 for (let index = 0; index < sentryPackages.size(); index++) {
                     const sentryPackage = sentryPackages.get(index);
                     eventSdk.addPackage(sentryPackage.getName(), sentryPackage.getVersion());
-
                 }
             }
             const integrations = sdk.getIntegrations();
@@ -341,14 +332,14 @@ export namespace NATIVE {
     }
     export async function initNativeSdk(originalOptions: NativescriptOptions = {}): Promise<boolean> {
         if (initialized) {
-            return (true);
+            return true;
         }
 
         try {
             const options = {
                 enableNative: true,
                 autoInitializeNativeSdk: true,
-                ...originalOptions,
+                ...originalOptions
             } as NativescriptOptions;
             if (!options.enableNative) {
                 if (options.enableNativeNagger) {
@@ -367,9 +358,7 @@ export namespace NATIVE {
             }
 
             if (!options.dsn) {
-                console.warn(
-                    'Warning: No DSN was provided. The Sentry SDK will be disabled. Native SDK will also not be initalized.'
-                );
+                console.warn('Warning: No DSN was provided. The Sentry SDK will be disabled. Native SDK will also not be initalized.');
                 return false;
             }
             io.sentry.android.core.SentryAndroid.init(
@@ -378,24 +367,21 @@ export namespace NATIVE {
                     configure(config: io.sentry.android.core.SentryAndroidOptions) {
                         // config.setLogger(new io.sentry.SystemOutLogger());
                         try {
-
-                            const {dsn, debug, enableNativeCrashHandling, beforeSend, beforeBreadcrumb, headers,  ...otherOptions} = options;
+                            const { dsn, debug, enableNativeCrashHandling, beforeSend, beforeBreadcrumb, headers, ...otherOptions } = options;
 
                             config.setDsn(dsn || '');
                             if (!!debug) {
                                 io.sentry.Sentry.setLevel(io.sentry.SentryLevel.DEBUG);
                                 config.setDebug(debug);
                             }
-                            Object.keys(otherOptions).forEach(k => {
+                            Object.keys(otherOptions).forEach((k) => {
                                 const methodName = `set${capitalize(k)}`;
                                 const value = otherOptions[k];
                                 if (value && typeof config[methodName] === 'function') {
                                     if (typeof value === 'number') {
                                         config[methodName](java.lang.Double.valueOf(value));
-
                                     } else {
                                         config[methodName](value);
-
                                     }
                                 }
                             });
@@ -482,7 +468,7 @@ export namespace NATIVE {
                                     new io.sentry.android.fragment.FragmentLifecycleIntegration(
                                         Application.android.getNativeApplication(),
                                         options.enableFragmentLifecycleBreadcrumbs ?? true, // enabled by default
-                                        options.enableAutoFragmentLifecycleTracing ?? false  // disabled by default
+                                        options.enableAutoFragmentLifecycleTracing ?? false // disabled by default
                                     )
                                 );
                             }
@@ -508,19 +494,20 @@ export namespace NATIVE {
                             if (activity != null) {
                                 currentActivityHolder.setActivity(activity);
                             }
-                            config.setTransportFactory(new io.sentry.ITransportFactory({
-                                create( sopt: io.sentry.SentryOptions,  requestDetails: io.sentry.RequestDetails) {
-                                    const map =requestDetails.getHeaders();
-                                    map.put('X-Forwarded-Protocol', 'https');
-                                    if (headers) {
-                                        Object.keys(headers).forEach(k=>{
-                                            map.put(k, headers[k]);
-                                        });
+                            config.setTransportFactory(
+                                new io.sentry.ITransportFactory({
+                                    create(sopt: io.sentry.SentryOptions, requestDetails: io.sentry.RequestDetails) {
+                                        const map = requestDetails.getHeaders();
+                                        map.put('X-Forwarded-Protocol', 'https');
+                                        if (headers) {
+                                            Object.keys(headers).forEach((k) => {
+                                                map.put(k, headers[k]);
+                                            });
+                                        }
+                                        return new io.sentry.transport.AsyncHttpTransport(sopt, new io.sentry.transport.RateLimiter(sopt), sopt.getTransportGate(), requestDetails);
                                     }
-                                    return new io.sentry.transport.AsyncHttpTransport(
-                                        sopt, new io.sentry.transport.RateLimiter(sopt), sopt.getTransportGate(), requestDetails);
-                                }
-                            }));
+                                })
+                            );
                             config.setBeforeSend(
                                 new io.sentry.SentryOptions.BeforeSendCallback({
                                     execute(event, hint) {
@@ -532,42 +519,44 @@ export namespace NATIVE {
                                         // we use this callback to actually try and get the JS stack when a native error is catched
                                         try {
                                             const exceptions = event.getExceptions();
-                                            const count  = exceptions.size();
-                                            for (let index = 0; index < count; index++) {
-                                                const ex: io.sentry.protocol.SentryException = exceptions.get(index);
-                                                if (ex && ex.getType() === 'NativeScriptException') {
-                                                    let mechanism = event.getThrowableMechanism?.();
-                                                    if (!mechanism) {
-                                                        const privateMethod = io.sentry.SentryEvent.class.getDeclaredMethod('getThrowable', null);
-                                                        privateMethod.setAccessible(true);
-                                                        mechanism = privateMethod.invoke(event, null);
-                                                    }
-
-                                                    let throwable;
-                                                    if (mechanism instanceof io.sentry.exception.ExceptionMechanismException) {
-                                                        throwable = mechanism.getThrowable();
-                                                    } else if (mechanism instanceof (com as any).tns.NativeScriptException) {
-                                                        throwable = mechanism;
-                                                    }
-                                                    if (throwable ) {
-                                                        const jsStackTrace: string = (throwable ).getIncomingStackTrace?.();
-                                                        if (jsStackTrace) {
-                                                            const stack = parseErrorStack({ stack: 'at ' + jsStackTrace } as any).reverse();
-                                                            stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
-                                                            addJavascriptExceptionInterface(event, 'Error', throwable.getMessage(), stack.reverse());
+                                            if (exceptions) {
+                                                console.log('exceptions', event, exceptions);
+                                                const count = exceptions.size();
+                                                for (let index = 0; index < count; index++) {
+                                                    const ex: io.sentry.protocol.SentryException = exceptions.get(index);
+                                                    if (ex && ex.getType() === 'NativeScriptException') {
+                                                        let mechanism = event.getThrowableMechanism?.();
+                                                        if (!mechanism) {
+                                                            const privateMethod = io.sentry.SentryEvent.class.getDeclaredMethod('getThrowable', null);
+                                                            privateMethod.setAccessible(true);
+                                                            mechanism = privateMethod.invoke(event, null);
                                                         }
+
+                                                        let throwable;
+                                                        if (mechanism instanceof io.sentry.exception.ExceptionMechanismException) {
+                                                            throwable = mechanism.getThrowable();
+                                                        } else if (mechanism instanceof (com as any).tns.NativeScriptException) {
+                                                            throwable = mechanism;
+                                                        }
+                                                        if (throwable) {
+                                                            const jsStackTrace: string = throwable.getIncomingStackTrace?.();
+                                                            if (jsStackTrace) {
+                                                                const stack = parseErrorStack({ stack: 'at ' + jsStackTrace } as any).reverse();
+                                                                stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
+                                                                addJavascriptExceptionInterface(event, 'Error', throwable.getMessage(), stack.reverse());
+                                                            }
+                                                        }
+                                                        break;
                                                     }
-                                                    break;
                                                 }
                                             }
-
                                         } catch (e) {
                                             console.error('Sentry error while processing BeforeSendCallback callback', e, e.stack);
                                         }
                                         setEventOriginTag(event);
                                         addPackages(event, config.getSdkVersion());
                                         return event;
-                                    },
+                                    }
                                 })
                             );
                             config.setBeforeBreadcrumb(
@@ -583,12 +572,11 @@ export namespace NATIVE {
                             );
                             nSentryOptions = config;
                             sentryOptions = options;
-                        } catch(err) {
+                        } catch (err) {
                             console.error('Error starting Sentry', err, err.stack);
                             throw err;
                         }
-
-                    },
+                    }
                 })
             );
 
@@ -597,10 +585,10 @@ export namespace NATIVE {
             initialized = true;
         } catch (e) {
             console.error('Catching on startWithOptions, calling callback', e);
-            throw (e);
+            throw e;
         }
 
-        return (true);
+        return true;
     }
     export function disableNativeFramesTracking() {
         if (frameMetricsAggregator) {
@@ -609,7 +597,7 @@ export namespace NATIVE {
         }
     }
 
-    function setEventOriginTag( event: io.sentry.SentryEvent) {
+    function setEventOriginTag(event: io.sentry.SentryEvent) {
         const sdk = event.getSdk();
         if (sdk) {
             switch (sdk.getName()) {
@@ -627,7 +615,7 @@ export namespace NATIVE {
             }
         }
     }
-    function setEventEnvironmentTag(event: io.sentry.SentryEvent,  environment: string) {
+    function setEventEnvironmentTag(event: io.sentry.SentryEvent, environment: string) {
         event.setTag('event.origin', 'android');
         event.setTag('event.environment', environment);
     }
@@ -648,29 +636,28 @@ export namespace NATIVE {
         }
     }
 
-    export function fetchNativeSdkInfo () {
+    export function fetchNativeSdkInfo() {
         return null;
     }
 
     let nativeRelease;
-    export function fetchNativeRelease () {
+    export function fetchNativeRelease() {
         if (!enableNative) {
             throw _DisabledNativeError;
         }
         if (!nativeRelease) {
             const context = Utils.ad.getApplicationContext();
             const packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
-            nativeRelease =  {
-                'id': packageInfo.packageName,
-                'version': packageInfo.versionName,
-                'build': packageInfo.versionCode + ''
+            nativeRelease = {
+                id: packageInfo.packageName,
+                version: packageInfo.versionName,
+                build: packageInfo.versionCode + ''
             };
         }
         return nativeRelease;
-
     }
 
-    export function closeNativeSdk () {
+    export function closeNativeSdk() {
         io.sentry.Sentry.close();
     }
 
@@ -681,15 +668,17 @@ export namespace NATIVE {
         return {};
     }
 
-    export  function captureScreenshot(fileName = 'screenshot') {
+    export function captureScreenshot(fileName = 'screenshot') {
         const activity = Application.android.foregroundActivity || Application.android.startActivity;
         const raw = io.sentry.android.core.internal.util.ScreenshotUtils.takeScreenshot(activity, logger, buildInfo);
         if (raw !== null) {
-            return [{
-                'contentType': 'image/png',
-                data:new Uint8Array((ArrayBuffer as any).from(java.nio.ByteBuffer.wrap(raw))),
-                filename:fileName + '.png'
-            }];
+            return [
+                {
+                    contentType: 'image/png',
+                    data: new Uint8Array((ArrayBuffer as any).from(java.nio.ByteBuffer.wrap(raw))),
+                    filename: fileName + '.png'
+                }
+            ];
         }
         return null;
     }
@@ -754,7 +743,7 @@ export namespace NATIVE {
         const appStartTime = appStartInstance.getAppStartTime();
         const isColdStart = appStartInstance.isColdStart();
 
-        const wasFetched  =didFetchAppStart;
+        const wasFetched = didFetchAppStart;
         // This is always set to true, as we would only allow an app start fetch to only
         // happen once in the case of a JS bundle reload, we do not want it to be
         // instrumented again.
@@ -766,13 +755,11 @@ export namespace NATIVE {
             console.warn("App start won't be sent due to missing isColdStart.");
             return null;
         } else {
-
             return {
-                appStartTime: appStartTime.nanoTimestamp()/ 1000000,
+                appStartTime: appStartTime.nanoTimestamp() / 1000000,
                 isColdStart,
                 didFetchAppStart: wasFetched
             };
-
         }
     }
 }
