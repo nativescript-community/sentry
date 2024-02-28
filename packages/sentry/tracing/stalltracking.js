@@ -80,7 +80,7 @@ export class StallTrackingInstrumentation {
             this._shouldStopTracking();
             return;
         }
-        const endTimestamp = passedEndTimestamp !== null && passedEndTimestamp !== void 0 ? passedEndTimestamp : transaction.endTimestamp;
+        const endTimestamp = passedEndTimestamp ?? transaction.endTimestamp;
         const spans = transaction.spanRecorder
             ? transaction.spanRecorder.spans
             : [];
@@ -153,14 +153,20 @@ export class StallTrackingInstrumentation {
                 if (previousStats.atTimestamp &&
                     previousStats.atTimestamp.timestamp < spanEndTimestamp) {
                     // We also need to delete the stat for the last span, as the transaction would be trimmed to this span not the last one.
-                    this._statsByTransaction.set(transaction, Object.assign(Object.assign({}, previousStats), { atTimestamp: null }));
+                    this._statsByTransaction.set(transaction, {
+                        ...previousStats,
+                        atTimestamp: null,
+                    });
                 }
             }
             else {
-                this._statsByTransaction.set(transaction, Object.assign(Object.assign({}, previousStats), { atTimestamp: {
+                this._statsByTransaction.set(transaction, {
+                    ...previousStats,
+                    atTimestamp: {
                         timestamp: spanEndTimestamp,
                         stats: this._getCurrentStats(transaction),
-                    } }));
+                    },
+                });
             }
         }
     }
@@ -168,12 +174,11 @@ export class StallTrackingInstrumentation {
    * Get the current stats for a transaction at a given time.
    */
     _getCurrentStats(transaction) {
-        var _a, _b;
         return {
             stall_count: { value: this._stallCount, unit: 'none' },
             stall_total_time: { value: this._totalStallTime, unit: 'millisecond' },
             stall_longest_time: {
-                value: (_b = (_a = this._statsByTransaction.get(transaction)) === null || _a === void 0 ? void 0 : _a.longestStallTime) !== null && _b !== void 0 ? _b : 0, unit: 'millisecond'
+                value: this._statsByTransaction.get(transaction)?.longestStallTime ?? 0, unit: 'millisecond'
             },
         };
     }
@@ -220,7 +225,6 @@ export class StallTrackingInstrumentation {
    * long the stall is for.
    */
     _iteration() {
-        var _a;
         const now = timestampInSeconds() * 1000;
         const totalTimeTaken = now - this._lastIntervalMs;
         if (totalTimeTaken >=
@@ -229,8 +233,11 @@ export class StallTrackingInstrumentation {
             this._stallCount += 1;
             this._totalStallTime += stallTime;
             for (const [transaction, value] of this._statsByTransaction.entries()) {
-                const longestStallTime = Math.max((_a = value.longestStallTime) !== null && _a !== void 0 ? _a : 0, stallTime);
-                this._statsByTransaction.set(transaction, Object.assign(Object.assign({}, value), { longestStallTime }));
+                const longestStallTime = Math.max(value.longestStallTime ?? 0, stallTime);
+                this._statsByTransaction.set(transaction, {
+                    ...value,
+                    longestStallTime,
+                });
             }
         }
         this._lastIntervalMs = now;

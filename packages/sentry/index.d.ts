@@ -9,9 +9,9 @@ export { NativescriptTracing, } from './tracing';
 export { Integrations, SDK_NAME, SDK_VERSION };
 export declare const SentryTraceCategory = "Sentry";
 export declare enum CLogTypes {
-    log,
-    info,
-    warning,
-    error
+    log = 0,
+    info = 1,
+    warning = 2,
+    error = 3
 }
 export declare const CLog: (type: CLogTypes, ...args: any[]) => void;

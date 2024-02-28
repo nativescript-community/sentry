@@ -16,7 +16,6 @@ export class DeviceContext {
      */
     setupOnce() {
         addEventProcessor(async (event) => {
-            var _a;
             const self = getCurrentHub().getIntegration(DeviceContext);
             if (!self) {
                 return event;
@@ -38,25 +37,28 @@ export class DeviceContext {
             let nativeContexts = native.contexts;
             // if (AppState.currentState !== 'unknown') {
             nativeContexts = nativeContexts || {};
-            nativeContexts.app = Object.assign(Object.assign({}, nativeContexts.app), { in_foreground: !Application.inBackground });
+            nativeContexts.app = {
+                ...nativeContexts.app,
+                in_foreground: !Application.inBackground,
+            };
             // }
             if (nativeContexts) {
-                event.contexts = Object.assign(Object.assign({}, nativeContexts), event.contexts);
+                event.contexts = { ...nativeContexts, ...event.contexts };
                 if (nativeContexts.app) {
-                    event.contexts.app = Object.assign(Object.assign({}, nativeContexts.app), event.contexts.app);
+                    event.contexts.app = { ...nativeContexts.app, ...event.contexts.app };
                 }
             }
             const nativeTags = native.tags;
             if (nativeTags) {
-                event.tags = Object.assign(Object.assign({}, nativeTags), event.tags);
+                event.tags = { ...nativeTags, ...event.tags };
             }
             const nativeExtra = native.extra;
             if (nativeExtra) {
-                event.extra = Object.assign(Object.assign({}, nativeExtra), event.extra);
+                event.extra = { ...nativeExtra, ...event.extra };
             }
             const nativeFingerprint = native.fingerprint;
             if (nativeFingerprint) {
-                event.fingerprint = ((_a = event.fingerprint) !== null && _a !== void 0 ? _a : []).concat(nativeFingerprint.filter(item => { var _a; return ((_a = event.fingerprint) !== null && _a !== void 0 ? _a : []).indexOf(item) < 0; }));
+                event.fingerprint = (event.fingerprint ?? []).concat(nativeFingerprint.filter(item => (event.fingerprint ?? []).indexOf(item) < 0));
             }
             const nativeLevel = typeof native['level'] === 'string' ? severityLevelFromString(native['level']) : undefined;
             if (!event.level && nativeLevel) {

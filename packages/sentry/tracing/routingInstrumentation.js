@@ -14,10 +14,9 @@ export class RoutingInstrumentation {
     }
     /** @inheritdoc */
     onRouteWillChange(context) {
-        var _a, _b;
-        const transaction = (_a = this._tracingListener) === null || _a === void 0 ? void 0 : _a.call(this, context);
+        const transaction = this._tracingListener?.(context);
         if (transaction) {
-            (_b = this._onConfirmRoute) === null || _b === void 0 ? void 0 : _b.call(this, context);
+            this._onConfirmRoute?.(context);
         }
         return transaction;
     }
@@ -29,8 +28,7 @@ RoutingInstrumentation.instrumentationName = 'base-routing-instrumentation';
 export class InternalRoutingInstrumentation extends RoutingInstrumentation {
     /** @inheritdoc */
     onRouteWillChange(context) {
-        var _a;
-        return (_a = this._tracingListener) === null || _a === void 0 ? void 0 : _a.call(this, context);
+        return this._tracingListener?.(context);
     }
 }
 //# sourceMappingURL=routingInstrumentation.js.map

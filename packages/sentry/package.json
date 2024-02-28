@@ -11,6 +11,14 @@
             "ios": "6.1.0"
         }
     },
+    "scripts": {
+        "build": "npm run tsc",
+        "build.all": "npm run build",
+        "build.angular": "ng-packagr -p ../../src/sentry/angular/ng-package.json -c ../../src/sentry/angular/tsconfig.json && rm angular/.npmignore",
+        "readme": "readme generate -c ../../tools/readme/blueprint.json",
+        "tsc": "cpy '**/*.d.ts' '../../packages/sentry' --parents --cwd=../../src/sentry && tsc -skipLibCheck -d",
+        "clean": "rimraf ./*.d.ts ./*.js ./*.js.map"
+    },
     "keywords": [
         "NativeScript",
         "JavaScript",

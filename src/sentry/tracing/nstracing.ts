@@ -11,7 +11,7 @@ import {
 import { logger } from '@sentry/utils';
 
 import { APP_START_COLD, APP_START_WARM } from '../measurements';
-import { RoutingInstrumentationInstance } from '../tracing/routingInstrumentation';
+import { RoutingInstrumentationInstance } from './routingInstrumentation';
 import { NATIVE, NativeAppStartResponse } from '../wrapper';
 import { NativeFramesInstrumentation } from './nativeframes';
 import { APP_START_COLD as APP_START_COLD_OP, APP_START_WARM as APP_START_WARM_OP, UI_LOAD } from './ops';

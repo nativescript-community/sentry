@@ -18,7 +18,7 @@ export class Screenshot {
         if (screenshots !== null && screenshots.length > 0) {
             hint.attachments = [
                 ...screenshots,
-                ...((hint === null || hint === void 0 ? void 0 : hint.attachments) || []),
+                ...(hint?.attachments || []),
             ];
         }
         return hint;

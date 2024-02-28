@@ -1,7 +1,7 @@
 import { Hub } from '@sentry/hub';
 import { RequestInstrumentationOptions, Transaction } from '@sentry/tracing';
 import { EventProcessor, Integration, Transaction as TransactionType } from '@sentry/types';
-import { RoutingInstrumentationInstance } from '../tracing/routingInstrumentation';
+import { RoutingInstrumentationInstance } from './routingInstrumentation';
 import { NativeFramesInstrumentation } from './nativeframes';
 import { StallTrackingInstrumentation } from './stalltracking';
 import { BeforeNavigate } from './types';

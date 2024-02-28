@@ -1,8 +1,8 @@
 import { Hub } from '@sentry/hub';
 import { Transaction, TransactionContext } from '@sentry/types';
 import { BeforeNavigate } from './types';
-export declare type TransactionCreator = (context: TransactionContext) => Transaction | undefined;
-export declare type OnConfirmRoute = (context: TransactionContext) => void;
+export type TransactionCreator = (context: TransactionContext) => Transaction | undefined;
+export type OnConfirmRoute = (context: TransactionContext) => void;
 export interface RoutingInstrumentationInstance {
     /**
      * Name of the routing instrumentation

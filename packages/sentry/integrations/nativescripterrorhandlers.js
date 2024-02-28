@@ -12,9 +12,13 @@ export class NativescriptErrorHandlers {
          */
         this.name = NativescriptErrorHandlers.id;
         this.handlingFatal = false;
-        this._options = Object.assign({ 
+        this._options = {
             // uncaughtErrors: false,
-            onerror: false, onunhandledrejection: false, patchGlobalPromise: true }, options);
+            onerror: false,
+            onunhandledrejection: false,
+            patchGlobalPromise: true,
+            ...options,
+        };
     }
     /**
      * @inheritDoc

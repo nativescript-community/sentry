@@ -1,0 +1,20 @@
+{
+    "terminal.integrated.env.osx": {
+        "SENTRY_DSN": "https://f749f6c54aa80fd6622f817867048b22@bugs.akylas.fr/3",
+        "SENTRY_PREFIX": "app:///",
+        "SOURCEMAP_REL_DIR": "../../sourcemaps",
+        "SENTRY_URL": "https://bugs.akylas.fr",
+        "SENTRY_PROJECT": "demoapp",
+        "SENTRY_AUTH_TOKEN": "12b4fe0499218b528bf51c2bf148674505e3d571d47683b497ff2bdaa3d7312c",
+        "SENTRY_ORG": "akylas"
+    },
+    "terminal.integrated.env.linux": {
+        "SENTRY_DSN": "https://f749f6c54aa80fd6622f817867048b22@bugs.akylas.fr/3",
+        "SENTRY_PREFIX": "app:///",
+        "SOURCEMAP_REL_DIR": "../../sourcemaps",
+        "SENTRY_URL": "https://bugs.akylas.fr",
+        "SENTRY_PROJECT": "demoapp",
+        "SENTRY_AUTH_TOKEN": "12b4fe0499218b528bf51c2bf148674505e3d571d47683b497ff2bdaa3d7312c",
+        "SENTRY_ORG": "akylas"
+    },
+}

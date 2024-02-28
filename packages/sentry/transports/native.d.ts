@@ -1,7 +1,7 @@
 import { BaseTransportOptions, Envelope, Transport } from '@sentry/types';
 import { PromiseBuffer } from '@sentry/utils';
 export declare const DEFAULT_BUFFER_SIZE = 30;
-export declare type BaseNativeTransport = BaseTransportOptions;
+export type BaseNativeTransport = BaseTransportOptions;
 export interface BaseNativeTransportOptions {
     bufferSize?: number;
 }

@@ -113,10 +113,16 @@ export var NATIVE;
    * @returns Event with more widely supported Severity level strings
    */
     function _processLevels(event) {
-        var _a;
-        const processed = Object.assign(Object.assign({}, event), { level: event.level ? _processLevel(event.level) : undefined, breadcrumbs: (_a = event.breadcrumbs) === null || _a === void 0 ? void 0 : _a.map((breadcrumb) => (Object.assign(Object.assign({}, breadcrumb), { level: breadcrumb.level
+        const processed = {
+            ...event,
+            level: event.level ? _processLevel(event.level) : undefined,
+            breadcrumbs: event.breadcrumbs?.map((breadcrumb) => ({
+                ...breadcrumb,
+                level: breadcrumb.level
                     ? _processLevel(breadcrumb.level)
-                    : undefined }))) });
+                    : undefined,
+            })),
+        };
         return processed;
     }
     /**
@@ -301,7 +307,11 @@ export var NATIVE;
             return (true);
         }
         try {
-            const options = Object.assign({ enableNative: true, autoInitializeNativeSdk: true }, originalOptions);
+            const options = {
+                enableNative: true,
+                autoInitializeNativeSdk: true,
+                ...originalOptions,
+            };
             if (!options.enableNative) {
                 if (options.enableNativeNagger) {
                     console.warn('Note: Native Sentry SDK is disabled.');
@@ -321,10 +331,9 @@ export var NATIVE;
             }
             io.sentry.android.core.SentryAndroid.init(Utils.android.getApplicationContext(), new io.sentry.Sentry.OptionsConfiguration({
                 configure(config) {
-                    var _a, _b;
                     // config.setLogger(new io.sentry.SystemOutLogger());
                     try {
-                        const { dsn, debug, enableNativeCrashHandling, beforeSend, beforeBreadcrumb, headers } = options, otherOptions = __rest(options, ["dsn", "debug", "enableNativeCrashHandling", "beforeSend", "beforeBreadcrumb", "headers"]);
+                        const { dsn, debug, enableNativeCrashHandling, beforeSend, beforeBreadcrumb, headers, ...otherOptions } = options;
                         config.setDsn(dsn || '');
                         if (!!debug) {
                             io.sentry.Sentry.setLevel(io.sentry.SentryLevel.DEBUG);
@@ -413,8 +422,8 @@ export var NATIVE;
                         //     disableNativeFramesTracking();
                         // }
                         if (options.enableFragmentLifecycleBreadcrumbs !== undefined || options.enableAutoFragmentLifecycleTracing !== undefined) {
-                            config.addIntegration(new io.sentry.android.fragment.FragmentLifecycleIntegration(Application.android.getNativeApplication(), (_a = options.enableFragmentLifecycleBreadcrumbs) !== null && _a !== void 0 ? _a : true, // enabled by default
-                            (_b = options.enableAutoFragmentLifecycleTracing) !== null && _b !== void 0 ? _b : false // disabled by default
+                            config.addIntegration(new io.sentry.android.fragment.FragmentLifecycleIntegration(Application.android.getNativeApplication(), options.enableFragmentLifecycleBreadcrumbs ?? true, // enabled by default
+                            options.enableAutoFragmentLifecycleTracing ?? false // disabled by default
                             ));
                         }
                         // config.setEnableNdk(true);
@@ -449,7 +458,6 @@ export var NATIVE;
                         }));
                         config.setBeforeSend(new io.sentry.SentryOptions.BeforeSendCallback({
                             execute(event, hint) {
-                                var _a, _b, _c;
                                 if (beforeSend) {
                                     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
                                     beforeSend(event, hint);
@@ -461,7 +469,7 @@ export var NATIVE;
                                     for (let index = 0; index < count; index++) {
                                         const ex = exceptions.get(index);
                                         if (ex && ex.getType() === 'NativeScriptException') {
-                                            let mechanism = (_a = event.getThrowableMechanism) === null || _a === void 0 ? void 0 : _a.call(event);
+                                            let mechanism = event.getThrowableMechanism?.();
                                             if (!mechanism) {
                                                 const privateMethod = io.sentry.SentryEvent.class.getDeclaredMethod('getThrowable', null);
                                                 privateMethod.setAccessible(true);
@@ -475,7 +483,7 @@ export var NATIVE;
                                                 throwable = mechanism;
                                             }
                                             if (throwable) {
-                                                const jsStackTrace = (_c = (_b = (throwable)).getIncomingStackTrace) === null || _c === void 0 ? void 0 : _c.call(_b);
+                                                const jsStackTrace = (throwable).getIncomingStackTrace?.();
                                                 if (jsStackTrace) {
                                                     const stack = parseErrorStack({ stack: 'at ' + jsStackTrace }).reverse();
                                                     stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));

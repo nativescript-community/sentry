@@ -117,7 +117,6 @@ export class NativeFramesInstrumentation {
    * Fetch finish frames for a transaction at the current time. Calls any awaiting listeners.
    */
     async _fetchFramesForTransaction(transaction) {
-        var _a;
         const startFrames = transaction.data.__startFrames;
         // This timestamp marks when the finish frames were retrieved. It should be pretty close to the transaction finish.
         const timestamp = timestampInSeconds();
@@ -129,7 +128,7 @@ export class NativeFramesInstrumentation {
             nativeFrames: finishFrames,
             timestamp,
         });
-        (_a = this._framesListeners.get(transaction.traceId)) === null || _a === void 0 ? void 0 : _a();
+        this._framesListeners.get(transaction.traceId)?.();
         setTimeout(() => this._cancelFinishFrames(transaction), 2000);
     }
     /**
@@ -146,7 +145,6 @@ export class NativeFramesInstrumentation {
    * Awaits for finish frames if needed.
    */
     async _processEvent(event, doesExist) {
-        var _a, _b;
         if (!doesExist()) {
             return event;
         }
@@ -156,14 +154,17 @@ export class NativeFramesInstrumentation {
             event.contexts.trace) {
             const traceContext = event.contexts.trace;
             const traceId = traceContext.trace_id;
-            if (traceId && ((_a = traceContext.data) === null || _a === void 0 ? void 0 : _a.__startFrames) && event.timestamp) {
+            if (traceId && traceContext.data?.__startFrames && event.timestamp) {
                 const measurements = await this._getFramesMeasurements(traceId, event.timestamp, traceContext.data.__startFrames);
                 if (!measurements) {
                     logger.log(`[NativeFrames] Could not fetch native frames for ${traceContext.op} transaction ${event.transaction}. Not adding native frames measurements.`);
                 }
                 else {
                     logger.log(`[Measurements] Adding measurements to ${traceContext.op} transaction ${event.transaction}: ${JSON.stringify(measurements, undefined, 2)}`);
-                    event.measurements = Object.assign(Object.assign({}, ((_b = event.measurements) !== null && _b !== void 0 ? _b : {})), measurements);
+                    event.measurements = {
+                        ...(event.measurements ?? {}),
+                        ...measurements,
+                    };
                     this._finishFrames.delete(traceId);
                 }
                 delete traceContext.data.__startFrames;

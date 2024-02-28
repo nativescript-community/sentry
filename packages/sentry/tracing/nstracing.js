@@ -8,13 +8,24 @@ import { StallTrackingInstrumentation } from './stalltracking';
 import { adjustTransactionDuration, getTimeOriginMilliseconds, isNearToNow } from './utils';
 import { getActiveTransaction, getCurrentHub } from '@sentry/core';
 const DEFAULT_TRACE_PROPAGATION_TARGETS = ['localhost', /^\/(?!\/)/];
-const defaultNativescriptTracingOptions = Object.assign(Object.assign({}, defaultRequestInstrumentationOptions), { idleTimeout: 1000, maxTransactionDuration: 600, idleTimeoutMs: 1000, finalTimeoutMs: 600000, ignoreEmptyBackNavigationTransactions: true, beforeNavigate: context => context, enableAppStartTracking: true, enableNativeFramesTracking: true, enableStallTracking: true, enableUserInteractionTracing: false });
+const defaultNativescriptTracingOptions = {
+    ...defaultRequestInstrumentationOptions,
+    idleTimeout: 1000,
+    maxTransactionDuration: 600,
+    idleTimeoutMs: 1000,
+    finalTimeoutMs: 600000,
+    ignoreEmptyBackNavigationTransactions: true,
+    beforeNavigate: context => context,
+    enableAppStartTracking: true,
+    enableNativeFramesTracking: true,
+    enableStallTracking: true,
+    enableUserInteractionTracing: false,
+};
 /**
  * Tracing integration for React Native.
  */
 export class NativescriptTracing {
     constructor(options = {}) {
-        var _a, _b, _c, _d;
         /**
        * @inheritDoc
        */
@@ -24,10 +35,19 @@ export class NativescriptTracing {
             options.tracePropagationTargets);
         this._hasSetTracingOrigins = !!(options &&
             options.tracingOrigins);
-        this.options = Object.assign(Object.assign(Object.assign({}, defaultNativescriptTracingOptions), options), { finalTimeoutMs: (_b = (_a = options.finalTimeoutMs) !== null && _a !== void 0 ? _a : (typeof options.maxTransactionDuration === 'number'
-                ?
-                    options.maxTransactionDuration * 1000
-                : undefined)) !== null && _b !== void 0 ? _b : defaultNativescriptTracingOptions.finalTimeoutMs, idleTimeoutMs: (_d = (_c = options.idleTimeoutMs) !== null && _c !== void 0 ? _c : options.idleTimeout) !== null && _d !== void 0 ? _d : defaultNativescriptTracingOptions.idleTimeoutMs });
+        this.options = {
+            ...defaultNativescriptTracingOptions,
+            ...options,
+            finalTimeoutMs: options.finalTimeoutMs ??
+                (typeof options.maxTransactionDuration === 'number'
+                    ?
+                        options.maxTransactionDuration * 1000
+                    : undefined) ??
+                defaultNativescriptTracingOptions.finalTimeoutMs,
+            idleTimeoutMs: options.idleTimeoutMs ??
+                options.idleTimeout ??
+                defaultNativescriptTracingOptions.idleTimeoutMs,
+        };
     }
     /**
    *  Registers routing and request instrumentation.
@@ -99,20 +119,18 @@ export class NativescriptTracing {
    * To be called on a transaction start. Can have async methods
    */
     onTransactionStart(transaction) {
-        var _a, _b;
         if (isNearToNow(transaction.startTimestamp)) {
             // Only if this method is called at or within margin of error to the start timestamp.
-            (_a = this.nativeFramesInstrumentation) === null || _a === void 0 ? void 0 : _a.onTransactionStart(transaction);
-            (_b = this.stallTrackingInstrumentation) === null || _b === void 0 ? void 0 : _b.onTransactionStart(transaction);
+            this.nativeFramesInstrumentation?.onTransactionStart(transaction);
+            this.stallTrackingInstrumentation?.onTransactionStart(transaction);
         }
     }
     /**
    * To be called on a transaction finish. Cannot have async methods.
    */
     onTransactionFinish(transaction, endTimestamp) {
-        var _a, _b;
-        (_a = this.nativeFramesInstrumentation) === null || _a === void 0 ? void 0 : _a.onTransactionFinish(transaction);
-        (_b = this.stallTrackingInstrumentation) === null || _b === void 0 ? void 0 : _b.onTransactionFinish(transaction, endTimestamp);
+        this.nativeFramesInstrumentation?.onTransactionFinish(transaction);
+        this.stallTrackingInstrumentation?.onTransactionFinish(transaction, endTimestamp);
     }
     /**
    * Called by the NativescriptProfiler component on first component mount.
@@ -125,7 +143,6 @@ export class NativescriptTracing {
    * @param userInteractionId Consists of `op` representation UI Event and `elementId` unique element identifier on current screen.
    */
     startUserInteractionTransaction(userInteractionId) {
-        var _a, _b;
         const { elementId, op } = userInteractionId;
         if (!this.options.enableUserInteractionTracing) {
             logger.log('[ReactNativeTracing] User Interaction Tracing is disabled.');
@@ -143,9 +160,9 @@ export class NativescriptTracing {
             logger.log('[ReactNativeTracing] User Interaction Tracing can not create transaction without a current route.');
             return undefined;
         }
-        const hub = ((_a = this._getCurrentHub) === null || _a === void 0 ? void 0 : _a.call(this)) || getCurrentHub();
+        const hub = this._getCurrentHub?.() || getCurrentHub();
         const activeTransaction = getActiveTransaction(hub);
-        const activeTransactionIsNotInteraction = (activeTransaction === null || activeTransaction === void 0 ? void 0 : activeTransaction.spanId) !== ((_b = this._inflightInteractionTransaction) === null || _b === void 0 ? void 0 : _b.spanId);
+        const activeTransactionIsNotInteraction = activeTransaction?.spanId !== this._inflightInteractionTransaction?.spanId;
         if (activeTransaction && activeTransactionIsNotInteraction) {
             logger.warn(`[ReactNativeTracing] Did not create ${op} transaction because active transaction ${activeTransaction.name} exists on the scope.`);
             return undefined;
@@ -176,7 +193,7 @@ export class NativescriptTracing {
    */
     _getCurrentViewEventProcessor(event) {
         if (event.contexts && this._currentViewName) {
-            event.contexts.app = Object.assign({ view_names: [this._currentViewName] }, event.contexts.app);
+            event.contexts.app = { view_names: [this._currentViewName], ...event.contexts.app };
         }
         return event;
     }
@@ -247,11 +264,9 @@ export class NativescriptTracing {
    * Creates a breadcrumb and sets the current route as a tag.
    */
     _onConfirmRoute(context) {
-        var _a, _b, _c;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        this._currentRoute = (_b = (_a = context.data) === null || _a === void 0 ? void 0 : _a.route) === null || _b === void 0 ? void 0 : _b.name;
-        (_c = this._getCurrentHub) === null || _c === void 0 ? void 0 : _c.call(this).configureScope(scope => {
-            var _a;
+        this._currentRoute = context.data?.route?.name;
+        this._getCurrentHub?.().configureScope(scope => {
             if (context.data) {
                 const contextData = context.data;
                 scope.addBreadcrumb({
@@ -260,7 +275,7 @@ export class NativescriptTracing {
                     // We assume that context.name is the name of the route.
                     message: `Navigation to ${context.name}`,
                     data: {
-                        from: (_a = contextData.previousRoute) === null || _a === void 0 ? void 0 : _a.name,
+                        from: contextData.previousRoute?.name,
                         to: contextData.route.name,
                     },
                 });
@@ -284,7 +299,10 @@ export class NativescriptTracing {
             this._inflightInteractionTransaction.finish();
         }
         const { finalTimeoutMs } = this.options;
-        const expandedContext = Object.assign(Object.assign({}, context), { trimEnd: true });
+        const expandedContext = {
+            ...context,
+            trimEnd: true,
+        };
         const idleTransaction = this._startIdleTransaction(expandedContext);
         this.onTransactionStart(idleTransaction);
         logger.log(`[ReactNativeTracing] Starting ${context.op} transaction "${context.name}" on scope`);
@@ -303,10 +321,9 @@ export class NativescriptTracing {
         });
         if (this.options.ignoreEmptyBackNavigationTransactions) {
             idleTransaction.registerBeforeFinishCallback(transaction => {
-                var _a, _b;
                 if (
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                ((_b = (_a = transaction.data) === null || _a === void 0 ? void 0 : _a.route) === null || _b === void 0 ? void 0 : _b.hasBeenSeen) &&
+                transaction.data?.route?.hasBeenSeen &&
                     (!transaction.spanRecorder ||
                         transaction.spanRecorder.spans.filter(span => span.spanId !== transaction.spanId).length === 0)) {
                     logger.log('[ReactNativeTracing] Not sampling transaction as route has been seen before. Pass ignoreEmptyBackNavigationTransactions = false to disable this feature.');
@@ -321,9 +338,8 @@ export class NativescriptTracing {
    * Start app state aware idle transaction on the scope.
    */
     _startIdleTransaction(context) {
-        var _a;
         const { idleTimeoutMs, finalTimeoutMs } = this.options;
-        const hub = ((_a = this._getCurrentHub) === null || _a === void 0 ? void 0 : _a.call(this)) || getCurrentHub();
+        const hub = this._getCurrentHub?.() || getCurrentHub();
         const tx = startIdleTransaction(hub, context, idleTimeoutMs, finalTimeoutMs, true);
         cancelInBackground(tx);
         return tx;
