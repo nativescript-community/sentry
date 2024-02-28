@@ -1,7 +1,10 @@
-[![npm](https://img.shields.io/npm/v/@nativescript-community/sentry.svg)](https://www.npmjs.com/package/@nativescript-community/sentry)
+<!-- ⚠️ This README has been generated from the file(s) "blueprint.md" ⚠️-->[![npm](https://img.shields.io/npm/v/@nativescript-community/sentry.svg)](https://www.npmjs.com/package/@nativescript-community/sentry)
 [![npm](https://img.shields.io/npm/dt/@nativescript-community/sentry.svg?label=npm%20downloads)](https://www.npmjs.com/package/@nativescript-community/sentry)
 [![GitHub forks](https://img.shields.io/github/forks/nativescript-community/sentry.svg)](https://github.com/nativescript-community/sentry/network)
 [![GitHub stars](https://img.shields.io/github/stars/nativescript-community/sentry.svg)](https://github.com/nativescript-community/sentry/stargazers)
+
+
+[](#installation)
 
 # Installation
 
@@ -9,7 +12,13 @@
 
 Be sure to run a new build after adding plugins to avoid any issues.
 
+
+[](#configuration)
+
 # Configuration
+
+
+[](#webpack-)
 
 ## Webpack 
 
@@ -62,6 +71,9 @@ nsWebpack.chainWebpack(config=>{
 });
 ```
 
+
+[](#fastlane)
+
 ## Fastlane
 
 If you use fastlane you can use it to create release and upload dsyms
@@ -94,6 +106,9 @@ sentry_create_release(
 sentry_upload_dsym
 ```
 
+
+[](#usage-in-the-app)
+
 # Usage in the app
 
 ```typescript
@@ -110,10 +125,16 @@ Sentry.init({
 });
 ```
 
+
+[](#reporting-nativescript-errors)
+
 ## Reporting NativeScript errors
 
 The `onerror` method ensures all unhandled NativeScript errors will be caught by Sentry in production, using a [custom error handler](https://docs.nativescript.org/core-concepts/error-handling).
 
+
+
+[](#reporting-handled-errors)
 
 ## Reporting handled errors
 
@@ -126,6 +147,9 @@ try {
   Sentry.captureException(error);
 }
 ```
+
+
+[](#reporting-promise-rejections)
 
 ## Reporting promise rejections
 
@@ -142,6 +166,9 @@ new Promise(function(resolve, reject) {
 });
 ```
 
+
+[](#sending-diagnostic-data)
+
 ## Sending diagnostic data
 
 ### Automatically captured diagnostics
@@ -157,6 +184,9 @@ Bugsnag will automatically capture and attach the following diagnostic data:
 * A device- and vendor-specific identifier
 
 
+
+[](#identifying-users)
+
 ## Identifying users
 
 In order to correlate errors with customer reports, or to see a list of users who experienced each error, it is helpful to capture and display user information. Information set on the Bugsnag client is sent with each error report:
@@ -164,6 +194,9 @@ In order to correlate errors with customer reports, or to see a list of users wh
 ```typescript
 Sentry.setUser({"email": "john.doe@example.com"});
 ```
+
+
+[](#logging-breadcrumbs)
 
 ## Logging breadcrumbs
 
@@ -194,3 +227,101 @@ Sentry.addBreadcrumb({
     level: 'info'
   });
 ```
+
+
+[](#demos-and-development)
+
+## Demos and Development
+
+
+### Repo Setup
+
+The repo uses submodules. If you did not clone with ` --recursive` then you need to call
+```
+git submodule update --init
+```
+
+The package manager used to install and link dependencies must be `pnpm` or `yarn`. `npm` wont work.
+
+To develop and test:
+if you use `yarn` then run `yarn`
+if you use `pnpm` then run `pnpm i`
+
+**Interactive Menu:**
+
+To start the interactive menu, run `npm start` (or `yarn start` or `pnpm start`). This will list all of the commonly used scripts.
+
+### Build
+
+```bash
+npm run build.all
+```
+WARNING: it seems `yarn build.all` wont always work (not finding binaries in `node_modules/.bin`) which is why the doc explicitly uses `npm run`
+
+### Demos
+
+```bash
+npm run demo.[ng|react|svelte|vue].[ios|android]
+
+npm run demo.svelte.ios # Example
+```
+
+Demo setup is a bit special in the sense that if you want to modify/add demos you dont work directly in `demo-[ng|react|svelte|vue]`
+Instead you work in `demo-snippets/[ng|react|svelte|vue]`
+You can start from the `install.ts` of each flavor to see how to register new demos 
+
+
+[](#contributing)
+
+## Contributing
+
+### Update repo 
+
+You can update the repo files quite easily
+
+First update the submodules
+
+```bash
+npm run update
+```
+
+Then commit the changes
+Then update common files
+
+```bash
+npm run sync
+```
+Then you can run `yarn|pnpm`, commit changed files if any
+
+### Update readme 
+```bash
+npm run readme
+```
+
+### Update doc 
+```bash
+npm run doc
+```
+
+### Publish
+
+The publishing is completely handled by `lerna` (you can add `-- --bump major` to force a major release)
+Simply run 
+```shell
+npm run publish
+```
+
+### modifying submodules
+
+The repo uses https:// for submodules which means you won't be able to push directly into the submodules.
+One easy solution is t modify `~/.gitconfig` and add
+```
+[url "ssh://git@github.com/"]
+	pushInsteadOf = https://github.com/
+```
+
+[](#questions)
+
+## Questions
+
+If you have any questions/issues/comments please feel free to create an issue or start a conversation in the [NativeScript Community Discord](https://nativescript.org/discord).
