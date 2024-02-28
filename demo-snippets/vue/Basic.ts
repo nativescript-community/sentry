@@ -11,7 +11,7 @@ export default {
     name: 'Home',
     template: `
     <Page>
-      <ActionBa title="Sentry Demo">
+      <ActionBar title="Sentry Demo">
       </ActionBar>
       <StackLayout>
         <Button text="leaveBreadcrumb" @tap="leaveBreadcrumb"/>
