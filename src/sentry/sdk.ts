@@ -22,7 +22,6 @@ import { parseErrorStack } from './integrations/debugsymbolicator';
 import { Screenshot } from './integrations/screenshot';
 import { getDefaultEnvironment } from './utils/environment';
 
-
 // const STACKTRACE_LIMIT = 50;
 // function stripSentryFramesAndReverse(stack) {
 //     if (!stack.length) {
@@ -76,7 +75,7 @@ const DEFAULT_OPTIONS: NativescriptOptions & NativescriptErrorHandlersOptions = 
     enableOutOfMemoryTracking: true,
     patchGlobalPromise: true,
     transportOptions: {
-        textEncoder: makeUtf8TextEncoder(),
+        textEncoder: makeUtf8TextEncoder()
     },
     sendClientReports: true,
     maxQueueSize: DEFAULT_BUFFER_SIZE,
@@ -87,14 +86,11 @@ const DEFAULT_OPTIONS: NativescriptOptions & NativescriptErrorHandlersOptions = 
  * Inits the SDK
  */
 export function init(passedOptions: NativescriptOptions): void {
-
     const NativescriptHub = new Hub(undefined, new Scope());
     // const NativescriptHub = new Hub(undefined, new NativescriptScope());
     makeMain(NativescriptHub);
 
-    const maxQueueSize = passedOptions.maxQueueSize
-    ?? passedOptions.transportOptions?.bufferSize
-    ?? DEFAULT_OPTIONS.maxQueueSize;
+    const maxQueueSize = passedOptions.maxQueueSize ?? passedOptions.transportOptions?.bufferSize ?? DEFAULT_OPTIONS.maxQueueSize;
     const options: NativescriptClientOptions & NativescriptOptions = {
         ...DEFAULT_OPTIONS,
         ...passedOptions,
@@ -103,14 +99,14 @@ export function init(passedOptions: NativescriptOptions): void {
         transportOptions: {
             ...DEFAULT_OPTIONS.transportOptions,
             ...(passedOptions.transportOptions ?? {}),
-            bufferSize: maxQueueSize,
+            bufferSize: maxQueueSize
         },
-        maxQueueSize    ,
+        maxQueueSize,
         integrations: [],
         // integrations: getIntegrationsToSetup(passedOptions),
         stackParser: stackParserFromStackParserOptions(passedOptions.stackParser || defaultStackParser),
         beforeBreadcrumb: safeFactory(passedOptions.beforeBreadcrumb, { loggerMessage: 'The beforeBreadcrumb threw an error' }),
-        initialScope: safeFactory(passedOptions.initialScope, { loggerMessage: 'The initialScope threw an error' }),
+        initialScope: safeFactory(passedOptions.initialScope, { loggerMessage: 'The initialScope threw an error' })
     };
     if ('tracesSampler' in options) {
         options.tracesSampler = safeTracesSampler(options.tracesSampler);
@@ -120,14 +116,10 @@ export function init(passedOptions: NativescriptOptions): void {
         options.environment = getDefaultEnvironment();
     }
     // As long as tracing is opt in with either one of these options, then this is how we determine tracing is enabled.
-    const tracingEnabled =
-      typeof options.tracesSampler !== 'undefined' ||
-      typeof options.tracesSampleRate !== 'undefined';
+    const tracingEnabled = typeof options.tracesSampler !== 'undefined' || typeof options.tracesSampleRate !== 'undefined';
 
     const DEFAULT_INTEGRATIONS = getDefaultIntegrations(options);
-    const defaultIntegrations: false | Integration[] = passedOptions.defaultIntegrations === undefined
-        ? DEFAULT_INTEGRATIONS
-        : passedOptions.defaultIntegrations;
+    const defaultIntegrations: false | Integration[] = passedOptions.defaultIntegrations === undefined ? DEFAULT_INTEGRATIONS : passedOptions.defaultIntegrations;
     // if (passedOptions.defaultIntegrations === undefined) {
     //     rewriteFrameIntegration = new RewriteFrames({
     //         iteratee: (frame: StackFrame) => {
@@ -184,7 +176,7 @@ export function init(passedOptions: NativescriptOptions): void {
     // }
     options.integrations = getIntegrationsToSetup({
         integrations: safeFactory(passedOptions.integrations, { loggerMessage: 'The integrations threw an error' }),
-        defaultIntegrations,
+        defaultIntegrations
     });
     initAndBind(NativescriptClient, options);
 }
@@ -257,7 +249,6 @@ export function captureUserFeedback(feedback: UserFeedback): void {
     getCurrentHub().getClient<NativescriptClient>()?.captureUserFeedback(feedback);
 }
 
-
 /**
  * Creates a new scope with and executes the given operation within.
  * The scope is automatically removed once the operation
@@ -274,7 +265,7 @@ export function captureUserFeedback(feedback: UserFeedback): void {
 export function withScope(callback: (scope: Scope) => void): ReturnType<Hub['withScope']> {
     const safeCallback = (scope: Scope): void => {
         try {
-            NATIVE.withScope(nscope=>{
+            NATIVE.withScope((nscope) => {
                 callback(scope);
             });
         } catch (e) {
@@ -285,9 +276,9 @@ export function withScope(callback: (scope: Scope) => void): ReturnType<Hub['wit
 }
 
 /**
-   * Callback to set context information onto the scope.
-   * @param callback Callback function that receives Scope.
-   */
+ * Callback to set context information onto the scope.
+ * @param callback Callback function that receives Scope.
+ */
 export function configureScope(callback: (scope: Scope) => void): ReturnType<Hub['configureScope']> {
     const safeCallback = (scope: Scope): void => {
         try {

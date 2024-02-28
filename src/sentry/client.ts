@@ -1,4 +1,5 @@
-import { eventFromException, eventFromMessage,makeFetchTransport } from '@sentry/browser';import { BrowserTransportOptions } from '@sentry/browser/types/transports/types';
+import { eventFromException, eventFromMessage, makeFetchTransport } from '@sentry/browser';
+import { BrowserTransportOptions } from '@sentry/browser/types/transports/types';
 import { FetchImpl } from '@sentry/browser/types/transports/utils';
 import { BaseClient } from '@sentry/core';
 
@@ -17,7 +18,6 @@ import { Screenshot } from './integrations/screenshot';
 import { NativescriptTracing } from './tracing';
 import { rewriteFrameIntegration } from './integrations/default';
 import { parseErrorStack } from './integrations/debugsymbolicator';
-
 
 /**
  * The Sentry React Native SDK Client.
@@ -51,8 +51,8 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
     }
 
     /**
-   * @inheritDoc
-   */
+     * @inheritDoc
+     */
     public async eventFromException(exception: unknown, hint?: EventHint): Promise<Event> {
         // N put stackTrace in "stackTrace" instead of "stacktrace"
         if (exception['nativeException']) {
@@ -63,45 +63,32 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
         } else if (exception['stackTrace']) {
             exception['stacktrace'] = exception['stackTrace'];
         }
-        const hintWithScreenshot =  Screenshot.attachScreenshotToEventHint(hint, this._options);
-        const event=  await eventFromException(
-            this._options.stackParser,
-            exception,
-            hintWithScreenshot,
-            this._options.attachStacktrace,
-        );
-        if(exception['nativeException'])  {
+        const hintWithScreenshot = Screenshot.attachScreenshotToEventHint(hint, this._options);
+        const event = await eventFromException(this._options.stackParser, exception, hintWithScreenshot, this._options.attachStacktrace);
+        if (exception['nativeException']) {
             try {
-                const stack = parseErrorStack({ stack: 'at ' + exception['stackTrace'] } as any).filter(f=>f.platform !== 'javascript');
+                const stack = parseErrorStack({ stack: 'at ' + exception['stackTrace'] } as any).filter((f) => f.platform !== 'javascript');
                 stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
                 event.exception.values.unshift({
-                    type:'NativeException',
-                    value:exception.toString(),
-                    stacktrace:{
-                        frames:stack
+                    type: 'NativeException',
+                    value: exception.toString(),
+                    stacktrace: {
+                        frames: stack
                     }
                 });
             } catch (error) {
                 console.error(error, error.stack);
             }
-
         }
         return event;
         // return this._browserClient.eventFromException(exception, hint);
     }
 
     /**
-   * @inheritDoc
-   */
+     * @inheritDoc
+     */
     public eventFromMessage(message: string, level?: SeverityLevel, hint?: EventHint): PromiseLike<Event> {
-        return eventFromMessage(
-            this._options.stackParser,
-            message,
-            level,
-            hint,
-            this._options.attachStacktrace,
-        ).then((event: Event) => {
-            console.log('eventFromMessage');
+        return eventFromMessage(this._options.stackParser, message, level, hint, this._options.attachStacktrace).then((event: Event) => {
             // TMP! Remove this function once JS SDK uses threads for messages
             if (!event.exception?.values || event.exception.values.length <= 0) {
                 return event;
@@ -111,7 +98,7 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
                     exception.stacktrace.frames.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
                 }
                 return {
-                    stacktrace: exception.stacktrace,
+                    stacktrace: exception.stacktrace
                 };
             });
             (event as { threads?: { values: Thread[] } }).threads = { values };
@@ -121,18 +108,18 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
     }
 
     /**
-   * If native client is available it will trigger a native crash.
-   * Use this only for testing purposes.
-   */
+     * If native client is available it will trigger a native crash.
+     * Use this only for testing purposes.
+     */
     public nativeCrash(): void {
         NATIVE.nativeCrash();
     }
 
     /**
-   * @inheritDoc
-   */
+     * @inheritDoc
+     */
     public close(): PromiseLike<boolean> {
-    // As super.close() flushes queued events, we wait for that to finish before closing the native SDK.
+        // As super.close() flushes queued events, we wait for that to finish before closing the native SDK.
         return super.close().then((result: boolean) => NATIVE.closeNativeSdk().then(() => result) as PromiseLike<boolean>);
     }
 
@@ -142,23 +129,20 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
         return result;
     }
     /**
-   * Sends user feedback to Sentry.
-   */
+     * Sends user feedback to Sentry.
+     */
     public captureUserFeedback(feedback: UserFeedback): void {
-        const envelope = createUserFeedbackEnvelope(
-            feedback,
-            {
-                metadata: this._options._metadata,
-                dsn: this.getDsn(),
-                tunnel: this._options.tunnel,
-            },
-        );
+        const envelope = createUserFeedbackEnvelope(feedback, {
+            metadata: this._options._metadata,
+            dsn: this.getDsn(),
+            tunnel: this._options.tunnel
+        });
         this._sendEnvelope(envelope);
     }
 
     /**
-   * @inheritDoc
-   */
+     * @inheritDoc
+     */
     // sendEvent(event: Event, hint = {}) {
     //     if (this._dsn) {
     //         if (NATIVE.sendEvent) {
@@ -170,8 +154,8 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
     // }
 
     /**
-   * Sets up the integrations
-   */
+     * Sets up the integrations
+     */
     public setupIntegrations(): void {
         super.setupIntegrations();
         const tracing = this.getIntegration(NativescriptTracing);
@@ -186,8 +170,8 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
     }
 
     /**
-   * @inheritdoc
-   */
+     * @inheritdoc
+     */
     protected _sendEnvelope(envelope: Envelope): void {
         const outcomes = this._clearOutcomes();
         this._outcomesBuffer = mergeOutcomes(this._outcomesBuffer, outcomes);
@@ -199,16 +183,16 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
         let shouldClearOutcomesBuffer = true;
         if (this._isEnabled() && this._transport && this._dsn) {
             this.emit('beforeEnvelope', envelope);
-            this._transport.send(envelope)
-                .then(null, reason => {
-                    if (reason instanceof SentryError) { // SentryError is thrown by SyncPromise
-                        shouldClearOutcomesBuffer = false;
-                        // If this is called asynchronously we want the _outcomesBuffer to be cleared
-                        logger.error('SentryError while sending event, keeping outcomes buffer:', reason);
-                    } else {
-                        logger.error('Error while sending event:', reason);
-                    }
-                });
+            this._transport.send(envelope).then(null, (reason) => {
+                if (reason instanceof SentryError) {
+                    // SentryError is thrown by SyncPromise
+                    shouldClearOutcomesBuffer = false;
+                    // If this is called asynchronously we want the _outcomesBuffer to be cleared
+                    logger.error('SentryError while sending event, keeping outcomes buffer:', reason);
+                } else {
+                    logger.error('Error while sending event:', reason);
+                }
+            });
         } else {
             logger.error('Transport disabled');
         }
@@ -219,8 +203,8 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
     }
 
     /**
- * Starts native client with dsn and options
- */
+     * Starts native client with dsn and options
+     */
     private async _initNativeSdk(): Promise<void> {
         let didCallNativeInit = false;
 
@@ -237,28 +221,29 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
     }
 
     /**
-   * If the user is in development mode, and the native nagger is enabled then it will show an alert.
-   */
+     * If the user is in development mode, and the native nagger is enabled then it will show an alert.
+     */
     private _showCannotConnectDialog(): void {
         if (__DEV__ && this._options.enableNativeNagger) {
             alert({
-                title:'Sentry',
-                message:'Warning, could not connect to Sentry native SDK.\nIf you do not want to use the native component please pass `enableNative: false` in the options.\nVisit: https://docs.sentry.io/platforms/react-native/#linking for more details.'}
-            );
+                title: 'Sentry',
+                message:
+                    'Warning, could not connect to Sentry native SDK.\nIf you do not want to use the native component please pass `enableNative: false` in the options.\nVisit: https://docs.sentry.io/platforms/react-native/#linking for more details.'
+            });
         }
     }
 
     /**
-   * Attaches a client report from outcomes to the envelope.
-   */
+     * Attaches a client report from outcomes to the envelope.
+     */
     private _attachClientReportTo(outcomes: Outcome[], envelope: ClientReportEnvelope): void {
         if (outcomes.length > 0) {
             const clientReportItem: ClientReportItem = [
                 { type: 'client_report' },
                 {
                     timestamp: dateTimestampInSeconds(),
-                    discarded_events: outcomes,
-                },
+                    discarded_events: outcomes
+                }
             ];
 
             envelope[items].push(clientReportItem);

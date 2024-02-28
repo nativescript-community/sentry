@@ -13,7 +13,7 @@ const numberHasDecimals = function (value: number): boolean {
 const numberIs64Bit = function (value: number): boolean {
     return value < -Math.pow(2, 31) + 1 || value > Math.pow(2, 31) - 1;
 };
-function dataSerialize (data?: any, wrapPrimitives?: boolean) {
+function dataSerialize(data?: any, wrapPrimitives?: boolean) {
     switch (typeof data) {
         case 'string':
         case 'boolean': {
@@ -60,7 +60,7 @@ function dataSerialize (data?: any, wrapPrimitives?: boolean) {
         default:
             return null;
     }
-};
+}
 
 const FATAL_ERROR_REGEXP = /NativeScript encountered a fatal error: (.*?)\n at \n(\t*)?(.*)$/m;
 
@@ -100,23 +100,23 @@ export namespace NATIVE {
             stackFrame.lineNumber = lineNumber;
             stackFrame.columnNumber = column;
             stackFrame.platform = 'javascript';
-            stackFrame.inApp = NSNumber.numberWithBool(frame.in_app || false) ;
+            stackFrame.inApp = NSNumber.numberWithBool(frame.in_app || false);
             frames.addObject(stackFrame);
         }
-        nStackTrace.frames = (frames) as any;
+        nStackTrace.frames = frames as any;
         return nStackTrace;
     }
     function addJavascriptExceptionInterface(nEvent: SentryEvent, type: string, value: string, stack) {
         const exceptions = nEvent.exceptions;
 
         const actualExceptions = NSMutableArray.alloc().initWithArray(exceptions);
-        const nException =  SentryException.new();
+        const nException = SentryException.new();
         nException.type = type;
         nException.value = value;
         // nException.threadId = NSThread.currentThread.;
         nException.stacktrace = convertToNativeJavascriptStacktrace(stack);
         actualExceptions.insertObjectAtIndex(nException, 0);
-        nEvent.exceptions = (actualExceptions) as any;
+        nEvent.exceptions = actualExceptions as any;
     }
 
     export function isNativeTransportAvailable() {
@@ -133,13 +133,13 @@ export namespace NATIVE {
         // return {};
     }
     let nativeRelease;
-    export function fetchNativeRelease () {
+    export function fetchNativeRelease() {
         if (!enableNative) {
             throw _DisabledNativeError;
         }
         if (!nativeRelease) {
             const infoDict = NSBundle.mainBundle.infoDictionary;
-            nativeRelease =  {
+            nativeRelease = {
                 id: infoDict.objectForKey('CFBundleIdentifier'),
                 version: infoDict.objectForKey('CFBundleShortVersionString'),
                 build: infoDict.objectForKey('CFBundleVersion')
@@ -152,15 +152,15 @@ export namespace NATIVE {
     }
 
     /**
-   * Get breadcrumbs (removes breadcrumbs from handled exceptions on Android)
-   *
-   * We do this to avoid duplicate breadcrumbs on Android as sentry-android applies the breadcrumbs
-   * from the native scope onto every envelope sent through it. This scope will contain the breadcrumbs
-   * sent through the scope sync feature. This causes duplicate breadcrumbs.
-   * We then remove the breadcrumbs in all cases but if it is handled == false,
-   * this is a signal that the app would crash and android would lose the breadcrumbs by the time the app is restarted to read
-   * the envelope.
-   */
+     * Get breadcrumbs (removes breadcrumbs from handled exceptions on Android)
+     *
+     * We do this to avoid duplicate breadcrumbs on Android as sentry-android applies the breadcrumbs
+     * from the native scope onto every envelope sent through it. This scope will contain the breadcrumbs
+     * sent through the scope sync feature. This causes duplicate breadcrumbs.
+     * We then remove the breadcrumbs in all cases but if it is handled == false,
+     * this is a signal that the app would crash and android would lose the breadcrumbs by the time the app is restarted to read
+     * the envelope.
+     */
     function _getBreadcrumbs(event: Event): Breadcrumb[] | undefined {
         const breadcrumbs: Breadcrumb[] | undefined = event.breadcrumbs;
 
@@ -168,10 +168,10 @@ export namespace NATIVE {
     }
 
     /**
-   * Convert js severity level in event.level and event.breadcrumbs to more widely supported levels.
-   * @param event
-   * @returns Event with more widely supported Severity level strings
-   */
+     * Convert js severity level in event.level and event.breadcrumbs to more widely supported levels.
+     * @param event
+     * @returns Event with more widely supported Severity level strings
+     */
 
     function _processLevels(event: Event): Event {
         const processed: Event = {
@@ -179,36 +179,32 @@ export namespace NATIVE {
             level: event.level ? _processLevel(event.level) : undefined,
             breadcrumbs: event.breadcrumbs?.map((breadcrumb) => ({
                 ...breadcrumb,
-                level: breadcrumb.level
-                    ? _processLevel(breadcrumb.level)
-                    : undefined,
-            })),
+                level: breadcrumb.level ? _processLevel(breadcrumb.level) : undefined
+            }))
         };
 
         return processed;
     }
     /**
-   * Convert js severity level which has critical and log to more widely supported levels.
-   * @param level
-   * @returns More widely supported Severity level strings
-   */
+     * Convert js severity level which has critical and log to more widely supported levels.
+     * @param level
+     * @returns More widely supported Severity level strings
+     */
 
     function _processLevel(level: SeverityLevel): SeverityLevel {
-        if (level === 'log' as SeverityLevel) {
+        if (level === ('log' as SeverityLevel)) {
             return 'debug' as SeverityLevel;
-        }
-        else if (level === 'critical' as SeverityLevel) {
+        } else if (level === ('critical' as SeverityLevel)) {
             return 'fatal' as SeverityLevel;
         }
-
 
         return level;
     }
     /**
-   * Gets the event from envelopeItem and applies the level filter to the selected event.
-   * @param data An envelope item containing the event.
-   * @returns The event from envelopeItem or undefined.
-   */
+     * Gets the event from envelopeItem and applies the level filter to the selected event.
+     * @param data An envelope item containing the event.
+     * @returns The event from envelopeItem or undefined.
+     */
     function _processItem(item: EnvelopeItem): EnvelopeItem {
         const [itemHeader, itemPayload] = item;
 
@@ -221,7 +217,7 @@ export namespace NATIVE {
 
         return item;
     }
-    function setEventEnvironmentTag(event: SentryEvent,  environment: string) {
+    function setEventEnvironmentTag(event: SentryEvent, environment: string) {
         event.tags = NSDictionary.dictionaryWithDictionary({
             'event.origin': 'ios',
             'event.environment': environment
@@ -239,9 +235,9 @@ export namespace NATIVE {
         }
     }
     /**
-   * Sending the envelope over the bridge to native
-   * @param envelope Envelope
-   */
+     * Sending the envelope over the bridge to native
+     * @param envelope Envelope
+     */
     export async function sendEnvelope(envelope: Envelope) {
         if (!enableNative) {
             logger.warn('Event was skipped as native SDK is not enabled.');
@@ -302,10 +298,9 @@ export namespace NATIVE {
     let nSentryOptions: SentryOptions;
     export async function initNativeSdk(originalOptions: NativescriptOptions = {}): Promise<boolean> {
         try {
-
             const options = {
                 enableNative: true,
-                ...originalOptions,
+                ...originalOptions
             } as NativescriptOptions;
             if (!options.enableNative) {
                 if (options.enableNativeNagger) {
@@ -325,18 +320,16 @@ export namespace NATIVE {
             }
 
             if (!options.dsn) {
-                console.warn(
-                    'Warning: No DSN was provided. The Sentry SDK will be disabled. Native SDK will also not be initalized.'
-                );
+                console.warn('Warning: No DSN was provided. The Sentry SDK will be disabled. Native SDK will also not be initalized.');
                 return false;
             }
             sentryOptions = options;
-            const {tracesSampleRate, tracesSampler, beforeSend, beforeBreadcrumb, ...toPassOptions} = options;
+            const { tracesSampleRate, tracesSampler, beforeSend, beforeBreadcrumb, ...toPassOptions } = options;
 
             Object.keys(toPassOptions).forEach((k) => {
                 const value = toPassOptions[k];
-                const valuetype =  typeof value;
-                if (valuetype === 'undefined' || valuetype === 'object' || valuetype === 'function' || Array.isArray(value) )  {
+                const valuetype = typeof value;
+                if (valuetype === 'undefined' || valuetype === 'object' || valuetype === 'function' || Array.isArray(value)) {
                     delete toPassOptions[k];
                 }
             });
@@ -348,8 +341,8 @@ export namespace NATIVE {
             nSentryOptions.beforeSend = (event: SentryEvent) => {
                 const exception = event.exceptions?.objectAtIndex(0);
                 const exceptionvalue = exception?.value;
-                if(exceptionvalue ) {
-                    const matches =exceptionvalue.match(FATAL_ERROR_REGEXP);
+                if (exceptionvalue) {
+                    const matches = exceptionvalue.match(FATAL_ERROR_REGEXP);
                     if (matches) {
                         const errorMessage = matches[1];
                         const jsStackTrace = exceptionvalue.substring(exceptionvalue.indexOf(matches[2]));
@@ -376,8 +369,7 @@ export namespace NATIVE {
 
                     if (processed) {
                         breadcrumb.level = Math.max(levels.indexOf(processed['level']), 0);
-                        ['category', 'data', 'message', 'type']
-                            .forEach(key => breadcrumb[key] = serialized.objectForKey(key));
+                        ['category', 'data', 'message', 'type'].forEach((key) => (breadcrumb[key] = serialized.objectForKey(key)));
                     } else {
                         return null;
                     }
@@ -398,7 +390,7 @@ export namespace NATIVE {
             }
             NSSentrySDK.startWithOptions(nSentryOptions);
 
-            return (true);
+            return true;
         } catch (error) {
             enableNative = false;
             console.error('initNativeSdk', error, error.stack);
@@ -423,9 +415,9 @@ export namespace NATIVE {
         let serializedScope: any = {};
         NSSentrySDK.configureScope((scope) => {
             try {
-                const result = dictToJSON( scope.serialize());
+                const result = dictToJSON(scope.serialize());
                 result['user'] = result['user'] || { id: NSSentrySDK.installationID };
-                serializedScope =  result;
+                serializedScope = result;
             } catch (error) {
                 console.error('fetchNativeDeviceContexts', error, error.stack);
             }
@@ -600,12 +592,11 @@ export namespace NATIVE {
     //     });
     // }
 
-    export function enableNativeFramesTracking()
-    {
-    // Do nothing on iOS, this bridge method only has an effect on android.
-    // If you're starting the Cocoa SDK manually,
-    // you can set the 'enableAutoPerformanceTracing: true' option and
-    // the 'tracesSampleRate' or 'tracesSampler' option.
+    export function enableNativeFramesTracking() {
+        // Do nothing on iOS, this bridge method only has an effect on android.
+        // If you're starting the Cocoa SDK manually,
+        // you can set the 'enableAutoPerformanceTracing: true' option and
+        // the 'tracesSampleRate' or 'tracesSampler' option.
     }
 
     export function disableNativeFramesTracking() {
@@ -614,7 +605,7 @@ export namespace NATIVE {
     let didFetchAppStart = false;
     export async function fetchNativeAppStart() {
         const appStartMeasurement = NSSentrySDK.appStartMeasurement;
-        const wasFetched  =didFetchAppStart;
+        const wasFetched = didFetchAppStart;
         didFetchAppStart = true;
         if (!appStartMeasurement) {
             return null;
@@ -623,8 +614,8 @@ export namespace NATIVE {
 
             return {
                 isColdStart,
-                'appStartTime': (appStartMeasurement.appStartTimestamp.getTime() * 1000),
-                didFetchAppStart: wasFetched,
+                appStartTime: appStartMeasurement.appStartTimestamp.getTime() * 1000,
+                didFetchAppStart: wasFetched
             };
         }
     }
@@ -647,19 +638,18 @@ export namespace NATIVE {
                     frozenFrames
                 };
             }
-
         }
         return null;
     }
 
-    export  function captureScreenshot(fileName = 'screenshot') {
+    export function captureScreenshot(fileName = 'screenshot') {
         const rawScreenshots = PrivateSentrySDKOnly.captureScreenshots();
         const res = [];
         for (let index = 0; index < rawScreenshots.count; index++) {
             res.push({
-                'contentType': 'image/png',
-                data:new Uint8Array(interop.bufferFromData( rawScreenshots.objectAtIndex(index))),
-                filename:fileName + (index>0?`-${index}`:'')+ '.png'
+                contentType: 'image/png',
+                data: new Uint8Array(interop.bufferFromData(rawScreenshots.objectAtIndex(index))),
+                filename: fileName + (index > 0 ? `-${index}` : '') + '.png'
             });
         }
         return res;
