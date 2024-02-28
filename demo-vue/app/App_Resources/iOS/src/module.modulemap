@@ -1,4 +1,0 @@
-module AFClass {
-    header "TestClass.h"
-    export *
-}
