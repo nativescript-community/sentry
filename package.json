@@ -2,7 +2,10 @@
     "version": "1.0.0",
     "scripts": {
         "build": "lerna run build",
-        "build.all": "npm run build",
+        "build.watch": "lerna run build.watch",
+        "build.all": "lerna run build.all",
+        "build.all.win": "lerna run build.all.win",
+        "build.angular": "lerna run build.angular",
         "clean": "rimraf 'packages/**/*.d.ts' 'packages/**/*.js' 'packages/**/*.js.map' 'packages/**/*.metada' 'packages/**/angular/ng-package.json'",
         "commit_readme_doc_changes": "git add docs/** *.md ; git commit -m \"readme/doc\" ; echo \"commit readme doc done\"",
         "commitmsg": "commitlint -e $GIT_PARAMS",
@@ -40,7 +43,7 @@
         "@sentry/integrations": "^7.102.1",
         "@sentry/tracing": "^7.102.1",
         "@sentry/types": "^7.102.1",
-        "@sentry/utils": "^7.102.1"
+        "@sentry/utils": "^7.103.0"
     },
     "repository": {
         "type": "git",
