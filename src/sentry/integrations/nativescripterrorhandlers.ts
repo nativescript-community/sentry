@@ -6,7 +6,7 @@ import { addExceptionMechanism, getGlobalObject, logger } from '@sentry/utils';
 
 import { NativescriptClient } from '../client';
 
-import {Application, Trace} from '@nativescript/core';
+import { Application, Trace } from '@nativescript/core';
 import { Screenshot } from './screenshot';
 
 /** NativescriptErrorHandlers Options */
@@ -17,14 +17,14 @@ export interface NativescriptErrorHandlersOptions {
     onunhandledrejection?: boolean;
 
     /**
-   * When enabled, Sentry will overwrite the global Promise instance to ensure that unhandled rejections are correctly tracked.
-   * If you run into issues with Promise polyfills such as `core-js`, make sure you polyfill after Sentry is initialized.
-   * Read more at https://docs.sentry.io/platforms/react-native/troubleshooting/#unhandled-promise-rejections
-   *
-   * When disabled, this option will not disable unhandled rejection tracking. Set `onunhandledrejection: false` on the `ReactNativeErrorHandlers` integration instead.
-   *
-   * @default true
-   */
+     * When enabled, Sentry will overwrite the global Promise instance to ensure that unhandled rejections are correctly tracked.
+     * If you run into issues with Promise polyfills such as `core-js`, make sure you polyfill after Sentry is initialized.
+     * Read more at https://docs.sentry.io/platforms/react-native/troubleshooting/#unhandled-promise-rejections
+     *
+     * When disabled, this option will not disable unhandled rejection tracking. Set `onunhandledrejection: false` on the `ReactNativeErrorHandlers` integration instead.
+     *
+     * @default true
+     */
     patchGlobalPromise?: boolean;
 }
 
@@ -38,7 +38,6 @@ declare const global: any;
 
 /** NativescriptErrorHandlers Integration */
 export class NativescriptErrorHandlers implements Integration {
-
     /**
      * @inheritDoc
      */
@@ -48,7 +47,6 @@ export class NativescriptErrorHandlers implements Integration {
      * @inheritDoc
      */
     public name: string = NativescriptErrorHandlers.id;
-
 
     /** NativescriptOptions */
     private readonly _options: NativescriptErrorHandlersOptions;
@@ -60,7 +58,7 @@ export class NativescriptErrorHandlers implements Integration {
             onerror: false,
             onunhandledrejection: false,
             patchGlobalPromise: true,
-            ...options,
+            ...options
         };
     }
 
@@ -100,10 +98,7 @@ export class NativescriptErrorHandlers implements Integration {
             const shouldHandleFatal = isFatal && !__DEV__;
             if (shouldHandleFatal) {
                 if (this.handlingFatal) {
-                    logger.log(
-                        'Encountered multiple fatals in a row. The latest:',
-                        error
-                    );
+                    logger.log('Encountered multiple fatals in a row. The latest:', error);
                     return;
                 }
                 this.handlingFatal = true;
@@ -113,17 +108,13 @@ export class NativescriptErrorHandlers implements Integration {
             const client = currentHub.getClient<NativescriptClient>();
 
             if (!client) {
-                logger.error(
-                    'Sentry client is missing, the error event might be lost.',
-                    error
-                );
+                logger.error('Sentry client is missing, the error event might be lost.', error);
 
                 // If there is no client something is fishy, anyway we call the default handler
                 //   defaultHandler(error, isFatal);
 
                 return;
             }
-
 
             // We override client.eventFromException because it is async function
             // while not needed and we want to be sync
@@ -146,7 +137,7 @@ export class NativescriptErrorHandlers implements Integration {
                 event.level = 'fatal' as SeverityLevel;
                 addExceptionMechanism(event, {
                     handled: false,
-                    type: 'onerror',
+                    type: 'onerror'
                 });
             }
 
@@ -154,7 +145,6 @@ export class NativescriptErrorHandlers implements Integration {
         } catch (error) {
             console.error(error);
         }
-
 
         // if (!__DEV__) {
         //     void client.flush(options.shutdownTimeout || 2000).then(() => {

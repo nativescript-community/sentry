@@ -24,6 +24,11 @@ export interface BaseNativescriptOptions {
     enableNativeCrashHandling?: boolean;
 
     /**
+     * native integrations to disable.
+     */
+    disabledNativeIntegrations?: string[];
+
+    /**
      * Initializes the native SDK on init.
      * Set this to `false` if you have an existing native SDK and don't want to re-initialize.
      *

@@ -17,7 +17,7 @@ export class NativescriptErrorHandlers {
             onerror: false,
             onunhandledrejection: false,
             patchGlobalPromise: true,
-            ...options,
+            ...options
         };
     }
     /**
@@ -84,7 +84,7 @@ export class NativescriptErrorHandlers {
                 event.level = 'fatal';
                 addExceptionMechanism(event, {
                     handled: false,
-                    type: 'onerror',
+                    type: 'onerror'
                 });
             }
             client.captureEvent(event);

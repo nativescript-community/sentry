@@ -4,17 +4,17 @@ export declare const defaultSdkInfo: DefaultSdkInfo;
 /** Default SdkInfo instrumentation */
 export declare class SdkInfo implements Integration {
     /**
-   * @inheritDoc
-   */
+     * @inheritDoc
+     */
     static id: string;
     /**
-   * @inheritDoc
-   */
+     * @inheritDoc
+     */
     name: string;
     private _nativeSdkInfo;
     /**
-   * @inheritDoc
-   */
+     * @inheritDoc
+     */
     setupOnce(addGlobalEventProcessor: (e: EventProcessor) => void): void;
 }
 export {};

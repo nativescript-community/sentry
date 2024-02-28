@@ -3,34 +3,31 @@ import { NATIVE } from '../wrapper';
 export class Screenshot {
     constructor() {
         /**
-       * @inheritDoc
-       */
+         * @inheritDoc
+         */
         this.name = Screenshot.id;
     }
     /**
-   * If enabled attaches a screenshot to the event hint.
-   */
+     * If enabled attaches a screenshot to the event hint.
+     */
     static attachScreenshotToEventHint(hint, { attachScreenshot }) {
         if (!attachScreenshot) {
-            return (hint);
+            return hint;
         }
         const screenshots = NATIVE.captureScreenshot();
         if (screenshots !== null && screenshots.length > 0) {
-            hint.attachments = [
-                ...screenshots,
-                ...(hint?.attachments || []),
-            ];
+            hint.attachments = [...screenshots, ...(hint?.attachments || [])];
         }
         return hint;
     }
     /**
-   * @inheritDoc
-   */
+     * @inheritDoc
+     */
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     setupOnce() { }
 }
 /**
-* @inheritDoc
-*/
+ * @inheritDoc
+ */
 Screenshot.id = 'Screenshot';
 //# sourceMappingURL=screenshot.js.map

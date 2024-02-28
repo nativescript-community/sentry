@@ -39,7 +39,7 @@ export class DeviceContext {
             nativeContexts = nativeContexts || {};
             nativeContexts.app = {
                 ...nativeContexts.app,
-                in_foreground: !Application.inBackground,
+                in_foreground: !Application.inBackground
             };
             // }
             if (nativeContexts) {
@@ -58,7 +58,7 @@ export class DeviceContext {
             }
             const nativeFingerprint = native.fingerprint;
             if (nativeFingerprint) {
-                event.fingerprint = (event.fingerprint ?? []).concat(nativeFingerprint.filter(item => (event.fingerprint ?? []).indexOf(item) < 0));
+                event.fingerprint = (event.fingerprint ?? []).concat(nativeFingerprint.filter((item) => (event.fingerprint ?? []).indexOf(item) < 0));
             }
             const nativeLevel = typeof native['level'] === 'string' ? severityLevelFromString(native['level']) : undefined;
             if (!event.level && nativeLevel) {
@@ -68,11 +68,9 @@ export class DeviceContext {
             if (!event.environment && nativeEnvironment) {
                 event.environment = nativeEnvironment;
             }
-            const nativeBreadcrumbs = Array.isArray(native['breadcrumbs'])
-                ? native['breadcrumbs'].map(breadcrumbFromObject)
-                : undefined;
+            const nativeBreadcrumbs = Array.isArray(native['breadcrumbs']) ? native['breadcrumbs'].map(breadcrumbFromObject) : undefined;
             if (nativeBreadcrumbs) {
-                event.breadcrumbs = nativeBreadcrumbs;
+                event.breadcrumbs = nativeBreadcrumbs.concat(event.breadcrumbs || []);
             }
             return event;
         });

@@ -16,7 +16,7 @@ function createFrame(frame) {
     return frame;
 }
 const nativescriptRegex = /^\s*at (?:(.*\).*?|.*?) ?\()?((?:file|native|webpack|<anonymous>|[-a-z]+:|.*bundle|\/)?.*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
-const nativescriptFunc = line => {
+const nativescriptFunc = (line) => {
     const parts = nativescriptRegex.exec(line);
     if (parts) {
         return createFrame({
@@ -31,7 +31,7 @@ const nativescriptFunc = line => {
 };
 const nativescriptLineParser = [30, nativescriptFunc];
 const androidRegex = /^\s*(?:(.*\).*?|.*?) ?\()?((?:Native Method|[-a-z]+:)?.*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
-const androidFunc = line => {
+const androidFunc = (line) => {
     const parts = androidRegex.exec(line);
     if (parts) {
         let func = UNKNOWN_FUNCTION, mod;
@@ -47,7 +47,7 @@ const androidFunc = line => {
             filename: parts[2],
             function: func,
             module: mod,
-            native: func && (func.indexOf('Native Method') !== -1),
+            native: func && func.indexOf('Native Method') !== -1,
             lineno: parts[3] ? +parts[3] : undefined,
             colno: parts[4] ? +parts[4] : undefined
         });
@@ -84,7 +84,6 @@ export class DebugSymbolicator {
             const error = hint.originalException;
             // const parseErrorStack = require('react-native/Libraries/Core/Devtools/parseErrorStack');
             const stack = parseErrorStack(error);
-            // console.log('stack', stack);
             // Ideally this should go into contexts but android sdk doesn't support it
             event.extra = {
                 ...event.extra,
@@ -97,9 +96,9 @@ export class DebugSymbolicator {
         });
     }
     /**
-   * Symbolicates the stack on the device talking to local dev server.
-   * Mutates the passed event.
-   */
+     * Symbolicates the stack on the device talking to local dev server.
+     * Mutates the passed event.
+     */
     async _symbolicate(event, stack) {
         try {
             // eslint-disable-next-line @typescript-eslint/no-var-requires

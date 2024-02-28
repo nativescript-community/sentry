@@ -52,7 +52,7 @@ export class Release implements Integration {
                     event.release = `${nativeRelease.id}@${nativeRelease.version}+${nativeRelease.build}`;
                 }
                 if (!event.dist) {
-                    event.dist = `${nativeRelease.build}.${__IOS__?'ios':'android'}`;
+                    event.dist = `${nativeRelease.build}.${__IOS__ ? 'ios' : 'android'}`;
                 }
             } catch (_Oo) {
                 // Something went wrong, we just continue

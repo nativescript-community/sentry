@@ -48,7 +48,7 @@ export class DeviceContext implements Integration {
             nativeContexts = nativeContexts || {};
             nativeContexts.app = {
                 ...nativeContexts.app,
-                in_foreground: !Application.inBackground,
+                in_foreground: !Application.inBackground
             };
             // }
             if (nativeContexts) {
@@ -70,9 +70,7 @@ export class DeviceContext implements Integration {
 
             const nativeFingerprint = native.fingerprint;
             if (nativeFingerprint) {
-                event.fingerprint = (event.fingerprint ?? []).concat(
-                    nativeFingerprint.filter(item => (event.fingerprint ?? []).indexOf(item) < 0),
-                );
+                event.fingerprint = (event.fingerprint ?? []).concat(nativeFingerprint.filter((item) => (event.fingerprint ?? []).indexOf(item) < 0));
             }
 
             const nativeLevel = typeof native['level'] === 'string' ? severityLevelFromString(native['level']) : undefined;
@@ -85,11 +83,9 @@ export class DeviceContext implements Integration {
                 event.environment = nativeEnvironment;
             }
 
-            const nativeBreadcrumbs = Array.isArray(native['breadcrumbs'])
-                ? native['breadcrumbs'].map(breadcrumbFromObject)
-                : undefined;
+            const nativeBreadcrumbs = Array.isArray(native['breadcrumbs']) ? native['breadcrumbs'].map(breadcrumbFromObject) : undefined;
             if (nativeBreadcrumbs) {
-                event.breadcrumbs = nativeBreadcrumbs;
+                event.breadcrumbs = nativeBreadcrumbs.concat(event.breadcrumbs || []);
             }
 
             return event;

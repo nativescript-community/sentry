@@ -12,11 +12,14 @@ export declare namespace NATIVE {
     function initNativeSdk(originalOptions?: NativescriptOptions): Promise<boolean>;
     function disableNativeFramesTracking(): void;
     function enableNativeFramesTracking(): void;
-    function fetchNativeSdkInfo(): any;
+    function fetchNativeSdkInfo(): {
+        name: string;
+        version: string;
+    };
     function fetchNativeRelease(): any;
     function closeNativeSdk(): void;
     function nativeCrash(): void;
-    function fetchNativeDeviceContexts(): Promise<{}>;
+    function fetchNativeDeviceContexts(): Promise<any>;
     function captureScreenshot(fileName?: string): {
         contentType: string;
         data: Uint8Array;
