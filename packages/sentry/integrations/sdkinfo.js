@@ -6,28 +6,28 @@ export const defaultSdkInfo = {
     packages: [
         {
             name: SDK_PACKAGE_NAME,
-            version: SDK_VERSION,
-        },
+            version: SDK_VERSION
+        }
     ],
-    version: SDK_VERSION,
+    version: SDK_VERSION
 };
 /** Default SdkInfo instrumentation */
 export class SdkInfo {
     constructor() {
         /**
-       * @inheritDoc
-       */
+         * @inheritDoc
+         */
         this.name = SdkInfo.id;
         this._nativeSdkInfo = null;
     }
     /**
-   * @inheritDoc
-   */
+     * @inheritDoc
+     */
     setupOnce(addGlobalEventProcessor) {
         addGlobalEventProcessor(async (event) => {
             // The native SDK info package here is only used on iOS as `beforeSend` is not called on `captureEnvelope`.
             // this._nativeSdkInfo should be defined a following time so this call won't always be awaited.
-            if (__IOS__ && this._nativeSdkInfo === null) {
+            if (this._nativeSdkInfo === null) {
                 try {
                     this._nativeSdkInfo = await NATIVE.fetchNativeSdkInfo();
                 }
@@ -41,18 +41,14 @@ export class SdkInfo {
             event.sdk = {
                 ...(event.sdk ?? {}),
                 ...defaultSdkInfo,
-                packages: [
-                    ...((event.sdk && event.sdk.packages) || []),
-                    ...((this._nativeSdkInfo && [this._nativeSdkInfo]) || []),
-                    ...defaultSdkInfo.packages,
-                ],
+                packages: [...((event.sdk && event.sdk.packages) || []), ...((this._nativeSdkInfo && [this._nativeSdkInfo]) || []), ...defaultSdkInfo.packages]
             };
             return event;
         });
     }
 }
 /**
-* @inheritDoc
-*/
+ * @inheritDoc
+ */
 SdkInfo.id = 'SdkInfo';
 //# sourceMappingURL=sdkinfo.js.map

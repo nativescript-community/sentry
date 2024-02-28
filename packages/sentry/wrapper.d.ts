@@ -11,7 +11,7 @@ import {
     SessionItem,
     SeverityLevel,
     User,
-    UserFeedbackItem,
+    UserFeedbackItem
 } from '@sentry/types';
 import { NativescriptOptions } from './options';
 import { SentryError, logger } from '@sentry/utils';
@@ -78,7 +78,6 @@ export interface NativeScreenshot {
     filename: string;
 }
 
-
 export namespace NATIVE {
     const nativeClientAvailable: boolean;
     const nativeTransport: boolean;
@@ -107,7 +106,6 @@ export namespace NATIVE {
         appStartTime;
         didFetchAppStart;
     }>;
-    function closeNativeSdk();
 
     function setUser(user: User | null);
     function setTag(key: string, value: string);
@@ -125,5 +123,5 @@ export namespace NATIVE {
 
     function utf8ToBytes(str: string): Uint8Array;
 
-    function captureScreenshot( fileName?: string): NativeScreenshot[];
+    function captureScreenshot(fileName?: string): NativeScreenshot[];
 }

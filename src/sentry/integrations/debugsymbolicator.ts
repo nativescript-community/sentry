@@ -43,24 +43,22 @@ export interface NativescriptStackFrame extends StackFrame {
 
 function createFrame(frame: Partial<NativescriptStackFrame>) {
     frame.in_app = (frame.filename && !frame.filename.includes('node_modules')) || (!!frame.colno && !!frame.lineno);
-    frame.platform = frame.filename.endsWith('.js') ? 'javascript'  : 'android';
-
+    frame.platform = frame.filename.endsWith('.js') ? 'javascript' : 'android';
 
     return frame;
 }
 
-const nativescriptRegex =
-  /^\s*at (?:(.*\).*?|.*?) ?\()?((?:file|native|webpack|<anonymous>|[-a-z]+:|.*bundle|\/)?.*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
+const nativescriptRegex = /^\s*at (?:(.*\).*?|.*?) ?\()?((?:file|native|webpack|<anonymous>|[-a-z]+:|.*bundle|\/)?.*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
 
-const nativescriptFunc = line => {
+const nativescriptFunc = (line) => {
     const parts = nativescriptRegex.exec(line);
     if (parts) {
         return createFrame({
-            filename:parts[2],
-            platform:'javascript',
-            function:parts[1] || UNKNOWN_FUNCTION,
-            lineno:parts[3] ? +parts[3] : undefined,
-            colno:parts[4] ? +parts[4] : undefined
+            filename: parts[2],
+            platform: 'javascript',
+            function: parts[1] || UNKNOWN_FUNCTION,
+            lineno: parts[3] ? +parts[3] : undefined,
+            colno: parts[4] ? +parts[4] : undefined
         });
     }
     return null;
@@ -68,28 +66,28 @@ const nativescriptFunc = line => {
 
 const nativescriptLineParser: StackLineParser = [30, nativescriptFunc];
 
-const androidRegex =
-  /^\s*(?:(.*\).*?|.*?) ?\()?((?:Native Method|[-a-z]+:)?.*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
+const androidRegex = /^\s*(?:(.*\).*?|.*?) ?\()?((?:Native Method|[-a-z]+:)?.*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
 
-const androidFunc = line => {
+const androidFunc = (line) => {
     const parts = androidRegex.exec(line);
     if (parts) {
-        let func = UNKNOWN_FUNCTION, mod;
+        let func = UNKNOWN_FUNCTION,
+            mod;
         if (parts[1]) {
             const splitted = parts[1].split('.');
-            func = splitted[splitted.length-1];
+            func = splitted[splitted.length - 1];
             mod = splitted.slice(0, -1).join('.');
         }
         if (!parts[2].endsWith('.java')) {
             return null;
         }
         return createFrame({
-            filename:parts[2],
-            function:func,
-            module:mod,
-            native: func && (func.indexOf('Native Method') !== -1),
-            lineno:parts[3] ? +parts[3] : undefined,
-            colno:parts[4] ? +parts[4] : undefined
+            filename: parts[2],
+            function: func,
+            module: mod,
+            native: func && func.indexOf('Native Method') !== -1,
+            lineno: parts[3] ? +parts[3] : undefined,
+            colno: parts[4] ? +parts[4] : undefined
         });
     }
     return null;
@@ -131,8 +129,6 @@ export class DebugSymbolicator implements Integration {
             const error: NativescriptError = hint.originalException;
             // const parseErrorStack = require('react-native/Libraries/Core/Devtools/parseErrorStack');
             const stack = parseErrorStack(error);
-            // console.log('stack', stack);
-
 
             // Ideally this should go into contexts but android sdk doesn't support it
             event.extra = {
@@ -150,13 +146,10 @@ export class DebugSymbolicator implements Integration {
     }
 
     /**
-   * Symbolicates the stack on the device talking to local dev server.
-   * Mutates the passed event.
-   */
-    private async _symbolicate(
-        event: Event,
-        stack: StackFrame[]
-    ): Promise<void> {
+     * Symbolicates the stack on the device talking to local dev server.
+     * Mutates the passed event.
+     */
+    private async _symbolicate(event: Event, stack: StackFrame[]): Promise<void> {
         try {
             // eslint-disable-next-line @typescript-eslint/no-var-requires
             this._replaceFramesInEvent(event, stack);

@@ -28,9 +28,9 @@ export declare class DebugSymbolicator implements Integration {
      */
     setupOnce(): void;
     /**
-   * Symbolicates the stack on the device talking to local dev server.
-   * Mutates the passed event.
-   */
+     * Symbolicates the stack on the device talking to local dev server.
+     * Mutates the passed event.
+     */
     private _symbolicate;
     /**
      * Replaces the frames in the exception of a error.

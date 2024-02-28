@@ -367,7 +367,7 @@ export namespace NATIVE {
                     configure(config: io.sentry.android.core.SentryAndroidOptions) {
                         // config.setLogger(new io.sentry.SystemOutLogger());
                         try {
-                            const { dsn, debug, enableNativeCrashHandling, beforeSend, beforeBreadcrumb, headers, ...otherOptions } = options;
+                            const { dsn, debug, disabledNativeIntegrations, enableNativeCrashHandling, beforeSend, beforeBreadcrumb, headers, ...otherOptions } = options;
 
                             config.setDsn(dsn || '');
                             if (!!debug) {
@@ -488,6 +488,16 @@ export namespace NATIVE {
                                     }
                                 }
                             }
+                            if (disabledNativeIntegrations) {
+                                const integrations = config.getIntegrations();
+                                const size = integrations.size();
+                                for (let index = size - 1; index >= 0; index--) {
+                                    const inte = integrations.get(index);
+                                    if (disabledNativeIntegrations.indexOf(inte.constructor.name) !== -1) {
+                                        integrations.remove(index);
+                                    }
+                                }
+                            }
 
                             const currentActivityHolder = io.sentry.android.core.CurrentActivityHolder.getInstance();
                             const activity = Application.android.startActivity;
@@ -520,7 +530,6 @@ export namespace NATIVE {
                                         try {
                                             const exceptions = event.getExceptions();
                                             if (exceptions) {
-                                                console.log('exceptions', event, exceptions);
                                                 const count = exceptions.size();
                                                 for (let index = 0; index < count; index++) {
                                                     const ex: io.sentry.protocol.SentryException = exceptions.get(index);
@@ -637,6 +646,13 @@ export namespace NATIVE {
     }
 
     export function fetchNativeSdkInfo() {
+        const sdkVersion = io.sentry.HubAdapter.getInstance().getOptions().getSdkVersion();
+        if (sdkVersion) {
+            return {
+                name: sdkVersion.getName(),
+                version: sdkVersion.getVersion()
+            };
+        }
         return null;
     }
 
@@ -646,7 +662,7 @@ export namespace NATIVE {
             throw _DisabledNativeError;
         }
         if (!nativeRelease) {
-            const context = Utils.ad.getApplicationContext();
+            const context = Utils.android.getApplicationContext();
             const packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
             nativeRelease = {
                 id: packageInfo.packageName,
@@ -665,7 +681,20 @@ export namespace NATIVE {
         throw new java.lang.RuntimeException('TEST - Sentry Client Crash');
     }
     export async function fetchNativeDeviceContexts() {
-        return {};
+        const options = io.sentry.HubAdapter.getInstance().getOptions();
+        if (!(options instanceof io.sentry.android.core.SentryAndroidOptions)) {
+            return null;
+        }
+
+        const context = Utils.android.getApplicationContext();
+        if (context == null) {
+            return null;
+        }
+
+        const currentScope = io.sentry.android.core.InternalSentrySdk.getCurrentScope();
+        const serialized = io.sentry.android.core.InternalSentrySdk.serializeScope(context, options, currentScope);
+        const json = new org.json.JSONObject(serialized);
+        return JSON.parse(json.toString());
     }
 
     export function captureScreenshot(fileName = 'screenshot') {

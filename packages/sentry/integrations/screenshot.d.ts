@@ -2,21 +2,21 @@ import { EventHint, Integration } from '@sentry/types';
 /** Adds screenshots to error events */
 export declare class Screenshot implements Integration {
     /**
-   * @inheritDoc
-   */
+     * @inheritDoc
+     */
     static id: string;
     /**
-   * @inheritDoc
-   */
+     * @inheritDoc
+     */
     name: string;
     /**
-   * If enabled attaches a screenshot to the event hint.
-   */
+     * If enabled attaches a screenshot to the event hint.
+     */
     static attachScreenshotToEventHint(hint: EventHint, { attachScreenshot }: {
         attachScreenshot?: boolean;
     }): EventHint;
     /**
-   * @inheritDoc
-   */
+     * @inheritDoc
+     */
     setupOnce(): void;
 }
