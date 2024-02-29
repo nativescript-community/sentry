@@ -62,7 +62,7 @@ function dataSerialize(data?: any, wrapPrimitives?: boolean) {
     }
 }
 
-const FATAL_ERROR_REGEXP = /NativeScript encountered a fatal error: (.*?)\n at \n(\t*)?(.*)$/m;
+const FATAL_ERROR_REGEXP = /NativeScript encountered a fatal error:([^]*?) at([\t\n\s]*)?([^]*)$/m;
 
 export namespace NATIVE {
     let enableNative = true;
@@ -324,7 +324,17 @@ export namespace NATIVE {
                 return false;
             }
             sentryOptions = options;
-            const { tracesSampleRate, tracesSampler, beforeSend, beforeBreadcrumb, ...toPassOptions } = options;
+            const {
+                enableCrashHandler,
+                enableNativeCrashHandling,
+                enableAutoPerformanceTracking,
+                tracesSampleRate,
+                tracesSampler,
+                beforeSend,
+                beforeBreadcrumb,
+                disabledNativeIntegrations,
+                ...toPassOptions
+            } = options;
 
             Object.keys(toPassOptions).forEach((k) => {
                 const value = toPassOptions[k];
@@ -339,18 +349,29 @@ export namespace NATIVE {
 
             // before send right now is never called when we send the envelope. Only on native crash
             nSentryOptions.beforeSend = (event: SentryEvent) => {
-                const exception = event.exceptions?.objectAtIndex(0);
-                const exceptionvalue = exception?.value;
-                if (exceptionvalue) {
-                    const matches = exceptionvalue.match(FATAL_ERROR_REGEXP);
-                    if (matches) {
-                        const errorMessage = matches[1];
-                        const jsStackTrace = exceptionvalue.substring(exceptionvalue.indexOf(matches[2]));
-                        const stack = parseErrorStack({ stack: 'at ' + jsStackTrace } as any).reverse();
-                        stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
-                        addJavascriptExceptionInterface(event, 'Error', errorMessage, stack.reverse());
-                        exception.type = 'NativeScriptException';
-                        exception.value = errorMessage;
+                const exceptions = event.exceptions;
+                const count = exceptions?.count;
+                // if enableCrashHandler is disabled we actually dont disable it but prevent event Sending
+                // the reason is that without SentryCrashIntegration the scope does not get augmented and we loose info
+                if (enableCrashHandler === false) {
+                    return null;
+                }
+                if (count) {
+                    for (let index = 0; index < exceptions.count; index++) {
+                        const exception = exceptions.objectAtIndex(index);
+                        const exceptionvalue = exception.value;
+                        if (exceptionvalue) {
+                            const matches = exceptionvalue.match(FATAL_ERROR_REGEXP);
+                            if (matches) {
+                                const errorMessage = matches[1];
+                                const jsStackTrace = exceptionvalue.substring(exceptionvalue.indexOf(matches[2]));
+                                const stack = parseErrorStack({ stack: 'at ' + jsStackTrace } as any).reverse();
+                                stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
+                                addJavascriptExceptionInterface(event, 'Error', errorMessage, stack.reverse());
+                                exception.type = 'NativeScriptException';
+                                exception.value = errorMessage;
+                            }
+                        }
                     }
                 }
                 if (beforeSend) {
@@ -376,18 +397,29 @@ export namespace NATIVE {
                 }
                 return breadcrumb;
             };
-            if (toPassOptions.hasOwnProperty('enableNativeCrashHandling')) {
-                if (!toPassOptions.enableNativeCrashHandling) {
-                    const integrations = nSentryOptions.integrations.mutableCopy();
-                    integrations.removeObject('SentryCrashIntegration');
-                    nSentryOptions.integrations = integrations;
+            if (enableNativeCrashHandling === false) {
+                const integrations = nSentryOptions.integrations.mutableCopy();
+                integrations.removeObject('SentryCrashIntegration');
+                nSentryOptions.integrations = integrations;
+            }
+            if (disabledNativeIntegrations) {
+                const integrations = nSentryOptions.integrations.mutableCopy() as NSMutableArray<any>;
+                const size = integrations.count;
+                for (let index = size - 1; index >= 0; index--) {
+                    const inte = integrations.objectAtIndex(index);
+                    if (disabledNativeIntegrations.indexOf(inte) !== -1) {
+                        integrations.removeObject(inte);
+                    }
                 }
+                nSentryOptions.integrations = integrations;
             }
 
-            if (toPassOptions.hasOwnProperty('enableAutoPerformanceTracking')) {
-                NSSentrySDK.appStartMeasurementHybridSDKMode = toPassOptions.enableAutoPerformanceTracking;
-                NSSentrySDK.framesTrackingMeasurementHybridSDKMode = toPassOptions.enableAutoPerformanceTracking;
+            if (enableAutoPerformanceTracking !== undefined) {
+                NSSentrySDK.appStartMeasurementHybridSDKMode = enableAutoPerformanceTracking;
+                NSSentrySDK.framesTrackingMeasurementHybridSDKMode = enableAutoPerformanceTracking;
             }
+            const sdkVersion = PrivateSentrySDKOnly.getSdkVersionString();
+            PrivateSentrySDKOnly.setSdkNameAndVersionString('sentry.cocoa.nativescript', sdkVersion);
             NSSentrySDK.startWithOptions(nSentryOptions);
 
             return true;
@@ -422,7 +454,7 @@ export namespace NATIVE {
                 console.error('fetchNativeDeviceContexts', error, error.stack);
             }
         });
-        const contexts = serializedScope.context;
+        const contexts = serializedScope.context || {};
         const extraContextDict = PrivateSentrySDKOnly.getExtraContext();
         if (extraContextDict) {
             const extraContext = dictToJSON(extraContextDict);

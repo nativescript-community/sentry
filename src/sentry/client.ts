@@ -79,6 +79,21 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
             } catch (error) {
                 console.error(error, error.stack);
             }
+        } else if (__IOS__ && exception['stackTrace']) {
+            try {
+                const stack = parseErrorStack({ stack: 'at ' + exception['stackTrace'] } as any).filter((f) => f.platform !== 'javascript');
+                // stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
+                event.exception.values[0].stacktrace.frames.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
+                // event.exception.values.unshift({
+                //     type: 'NativeException',
+                //     value: exception.toString(),
+                //     stacktrace: {
+                //         frames: stack
+                //     }
+                // });
+            } catch (error) {
+                console.error(error, error.stack);
+            }
         }
         return event;
         // return this._browserClient.eventFromException(exception, hint);
