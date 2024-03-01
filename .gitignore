@@ -58,4 +58,5 @@ packages/typings
 packages/**/*.ngsummary.json
 packages/**/*.metadata.json
 
+.vscode/settings.json
 /blueprint.md
