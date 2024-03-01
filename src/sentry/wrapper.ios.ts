@@ -210,6 +210,7 @@ export namespace NATIVE {
 
         if (itemHeader.type === 'event' || itemHeader.type === 'transaction') {
             const event = _processLevels(itemPayload as Event);
+            // console.log('_processItem', JSON.stringify(event.exception.values[0].stacktrace.frames.reverse()))
 
             event.breadcrumbs = _getBreadcrumbs(event);
             return [itemHeader, event];

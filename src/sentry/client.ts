@@ -19,6 +19,18 @@ import { NativescriptTracing } from './tracing';
 import { rewriteFrameIntegration } from './integrations/default';
 import { parseErrorStack } from './integrations/debugsymbolicator';
 
+function wrapNativeException(ex, errorType = typeof ex) {
+    if (__ANDROID__ && !(ex instanceof Error) && errorType === 'object') {
+        const err = new Error(ex.toString());
+        err['nativeException'] = ex;
+        //@ts-ignore
+        err['stackTrace'] = com.tns.NativeScriptException.getStackTraceAsString(ex);
+        return err;
+    }
+    return ex;
+}
+const FATAL_ERROR_REGEXP = /NativeScript encountered a fatal error:([^]*?) at([\t\n\s]*)?([^]*)$/m;
+
 /**
  * The Sentry React Native SDK Client.
  *
@@ -54,14 +66,31 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
      * @inheritDoc
      */
     public async eventFromException(exception: unknown, hint?: EventHint): Promise<Event> {
+        exception = wrapNativeException(exception);
         // N put stackTrace in "stackTrace" instead of "stacktrace"
-        if (exception['nativeException']) {
+        if (__ANDROID__ && exception['nativeException']) {
             // in case of nativeException we have:
             // - stack with only the JS error stack
             // stackTrace with a mix of JS/Java error
             exception['stacktrace'] = exception.toString() + '\n at ' + exception['stack'];
         } else if (exception['stackTrace']) {
-            exception['stacktrace'] = exception['stackTrace'];
+            if (__IOS__) {
+                exception['stacktrace'] = exception['stack'];
+
+                // const stackTrace = exception['stackTrace'];
+                // const matches = stackTrace.match(FATAL_ERROR_REGEXP);
+                // console.log('matches', stackTrace, matches);
+                // if (matches) {
+                //     const errorMessage = matches[1];
+                //     const jsStackTrace = stackTrace.substring(stackTrace.indexOf(matches[2]));
+                //     // const stack = parseErrorStack({ stack: 'at ' + jsStackTrace } as any).reverse();
+                //     exception['stacktrace'] = errorMessage + '\n at ' + jsStackTrace;
+                // } else {
+                //     exception['stacktrace'] = stackTrace;
+                // }
+            } else {
+                exception['stacktrace'] = exception['stackTrace'];
+            }
         }
         const hintWithScreenshot = Screenshot.attachScreenshotToEventHint(hint, this._options);
         const event = await eventFromException(this._options.stackParser, exception, hintWithScreenshot, this._options.attachStacktrace);
@@ -81,9 +110,10 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
             }
         } else if (__IOS__ && exception['stackTrace']) {
             try {
-                const stack = parseErrorStack({ stack: 'at ' + exception['stackTrace'] } as any).filter((f) => f.platform !== 'javascript');
+                // const stack = parseErrorStack({ stack: 'at ' + exception['stackTrace'] } as any).filter((f) => f.platform !== 'javascript');
                 // stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
-                event.exception.values[0].stacktrace.frames.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
+                // event.exception.values[0].stacktrace.frames.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
+                // event.exception.values[0].stacktrace.frames = event.exception.values[0].stacktrace.frames.reverse();
                 // event.exception.values.unshift({
                 //     type: 'NativeException',
                 //     value: exception.toString(),
