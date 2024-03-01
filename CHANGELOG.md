@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.26](https://github.com/nativescript-community/sentry/compare/v4.6.25...v4.6.26) (2024-03-01)
+
+### Bug Fixes
+
+* **ios:** try to get callstack/sourcemaps to work all the time ([0e55045](https://github.com/nativescript-community/sentry/commit/0e55045b636791783937edb386ddd0865b780479))
+
 ## [4.6.25](https://github.com/nativescript-community/sentry/compare/v4.6.24...v4.6.25) (2024-02-29)
 
 ### Bug Fixes
