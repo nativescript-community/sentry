@@ -57,6 +57,7 @@ module.exports.onWebpackConfig = function (config, env, params) {
                 cleanArtifacts: true
             },
             sourcemaps: {
+                rewriteSources: (source, map) => source.replace('webpack:///', '~/'),
                 ignore: ['tns-java-classes', 'hot-update'],
                 assets: [dist + '/**/*.js', join(dist, process.env.SOURCEMAP_REL_DIR) + '/*.map']
             }

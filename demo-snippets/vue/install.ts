@@ -1,7 +1,7 @@
 import Vue from 'nativescript-vue';
 import * as Sentry from '@nativescript-community/sentry';
 import * as Tracing from '@nativescript-community/sentry/tracing';
-import { Application, NavigatedData, Page, Trace, Utils, View } from '@nativescript/core';
+import { Application, NavigatedData, Page, Trace, TraceErrorHandler, Utils, View } from '@nativescript/core';
 import { on as applicationOn, launchEvent } from '@nativescript/core/application';
 import Basic from './Basic';
 
@@ -19,23 +19,25 @@ async function startSentry() {
             dsn: SENTRY_DSN,
             debug: true,
             enablePerformanceV2: true,
+            appPrefix: '~/',
             release: `${__APP_ID__}@${__APP_VERSION__}+${__APP_BUILD_NUMBER__}`,
             dist: `${__APP_BUILD_NUMBER__}.${__ANDROID__ ? 'android' : 'ios'}`,
             flushSendEvent: true,
             enableNativeCrashHandling: true,
             attachScreenshot: true,
-            tracesSampleRate: 1.0,
-            sampleRate: 1.0,
-            enableAutoPerformanceTracking: true,
-            enableAutoSessionTracking: true,
-            integrations: [
-                new Tracing.NativescriptTracing({
-                    enableAppStartTracking: true,
-                    enableNativeFramesTracking: true,
-                    // routingInstrumentation: HttpService.sentryTracing,
-                    enableStallTracking: true
-                })
-            ],
+            // tracesSampleRate: 1.0,
+            // sampleRate: 1.0,
+            enableCrashHandler: false, // iOS
+            // enableAutoPerformanceTracking: true,
+            // enableAutoSessionTracking: true,
+            // integrations: [
+            //     new Tracing.NativescriptTracing({
+            //         enableAppStartTracking: true,
+            //         enableNativeFramesTracking: true,
+            //         // routingInstrumentation: HttpService.sentryTracing,
+            //         enableStallTracking: true
+            //     })
+            // ],
             enableUIViewControllerTracing: false,
             enableUserInteractionTracing: false,
             enableAutoBreadcrumbTracking: false
@@ -76,6 +78,18 @@ async function startSentry() {
                 }
             });
         });
+        const errorHandler: TraceErrorHandler = {
+            handlerError(err) {
+                Sentry.captureException(err);
+            }
+        };
+        Application.on(Application.uncaughtErrorEvent, (event) => {
+            Sentry.captureException(event.error);
+        });
+        Application.on(Application.discardedErrorEvent, (event) => {
+            Sentry.captureException(event.error);
+        });
+        Trace.setErrorHandler(errorHandler);
         setTimeout(() => {
             Sentry.withScope((scope) => {
                 try {
