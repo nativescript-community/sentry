@@ -14,16 +14,6 @@ module.exports.onWebpackConfig = function (config, env, params) {
     console.log('test', env, params, dist);
     const projectRoot = nsWebpack.Utils.project.getProjectRootPath();
     const appResourcesPath = env.appResourcesPath;
-
-    const coreModulesPackageName = env.fork ? '@akylas/nativescript' : '@nativescript/core';
-    if (env.fork) {
-        config.resolve.modules = [resolve(projectRoot, `node_modules/${coreModulesPackageName}`), resolve(projectRoot, 'node_modules'), `node_modules/${coreModulesPackageName}`, 'node_modules'];
-        Object.assign(config.resolve.alias, {
-            '@nativescript/core': `${coreModulesPackageName}`,
-            'tns-core-modules': `${coreModulesPackageName}`
-        });
-    }
-
     let appVersion;
     let buildNumber;
     if (platform === 'android') {
@@ -65,7 +55,7 @@ module.exports.onWebpackConfig = function (config, env, params) {
                 cleanArtifacts: true
             },
             sourcemaps: {
-                rewriteSources: (source, map) => source.replace('webpack:///', 'webpack://'),
+                rewriteSources: (source, map) => source.replace('webpack:///', '~/'),
                 ignore: ['tns-java-classes', 'hot-update'],
                 assets: [dist + '/**/*.js', join(dist, process.env.SOURCEMAP_REL_DIR) + '/*.map']
             }

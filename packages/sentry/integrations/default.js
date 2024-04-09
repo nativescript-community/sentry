@@ -89,9 +89,13 @@ export function getDefaultIntegrations(options) {
     // hasTracingEnabled from `@sentry/core` only check if tracesSampler or tracesSampleRate keys are present
     // that's different from prev imp here and might lead misconfiguration
     // `tracesSampleRate: undefined` should not enable tracing
+<<<<<<< HEAD
     const hasTracingEnabled = options.enableTracing ||
         typeof options.tracesSampleRate === 'number' ||
         typeof options.tracesSampler === 'function';
+=======
+    const hasTracingEnabled = options.enableTracing || typeof options.tracesSampleRate === 'number' || typeof options.tracesSampler === 'function';
+>>>>>>> origin/master
     if (hasTracingEnabled && options.enableAutoPerformanceTracing) {
         integrations.push(new NativescriptTracing());
     }
