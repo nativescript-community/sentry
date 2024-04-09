@@ -12,9 +12,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@akylas/nativescript@npm:~8.6.4":
-  version: 8.6.4
-  resolution: "@akylas/nativescript@npm:8.6.4"
+"@akylas/nativescript@portal:../NativeScript/dist/packages/core::locator=root-workspace-0b6124%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@akylas/nativescript@portal:../NativeScript/dist/packages/core::locator=root-workspace-0b6124%40workspace%3A."
   dependencies:
     "@nativescript/hook": "npm:~2.0.0"
     acorn: "npm:^8.7.0"
@@ -22,9 +22,8 @@ __metadata:
     emoji-regex: "npm:^10.2.1"
     reduce-css-calc: "npm:^2.1.7"
     tslib: "npm:^2.0.0"
-  checksum: f8828f295f81a3d8eb64122a06da80373f12fc616bdfc8c2d786dbdd8043c1675403f7a5b7286d784790621716f5b6f35bd06219116d80e9affded7404cd32e2
   languageName: node
-  linkType: hard
+  linkType: soft
 
 "@ampproject/remapping@npm:^2.1.0":
   version: 2.2.0
