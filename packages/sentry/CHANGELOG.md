@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.27](https://github.com/nativescript-community/sentry/compare/v4.6.26...v4.6.27) (2024-04-09)
+
+## [4.6.24](https://github.com/nativescript-community/sentry/compare/v4.6.23...v4.6.24) (2024-02-28)
+
+## [4.6.23](https://github.com/nativescript-community/sentry/compare/v4.6.22...v4.6.23) (2024-02-28)
+
+### Bug Fixes
+
+* **android:** events contains more data ([8b1c801](https://github.com/nativescript-community/sentry/commit/8b1c8016697b9b80b3f4cb528e525c0b10cec275))
+
 ## [4.6.26](https://github.com/nativescript-community/sentry/compare/v4.6.25...v4.6.26) (2024-03-01)
 
 **Note:** Version bump only for package @nativescript-community/sentry

@@ -3,6 +3,138 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.27](https://github.com/nativescript-community/sentry/compare/v4.6.26...v4.6.27) (2024-04-09)
+
+### Bug Fixes
+
+* expose captureFeedback ([ce2893f](https://github.com/nativescript-community/sentry/commit/ce2893feb91758a05694a40aa7a44798e5bb682d))
+
+## [4.6.24](https://github.com/nativescript-community/sentry/compare/v4.6.23...v4.6.24) (2024-02-28)
+
+## [4.6.23](https://github.com/nativescript-community/sentry/compare/v4.6.22...v4.6.23) (2024-02-28)
+
+### Bug Fixes
+
+* **android:** events contains more data ([8b1c801](https://github.com/nativescript-community/sentry/commit/8b1c8016697b9b80b3f4cb528e525c0b10cec275))
+
+## [4.6.22](https://github.com/nativescript-community/sentry/compare/v4.6.21...v4.6.22) (2024-02-26)
+
+### Bug Fixes
+
+* **android:** some options fix ([b1e7ac1](https://github.com/nativescript-community/sentry/commit/b1e7ac1f9eec2013f97d8eba7455bcbd8e8a6fc4))
+* some stackTrace handling fix ([a09f317](https://github.com/nativescript-community/sentry/commit/a09f31764ba33b786a5288d2159ac3860be31977))
+
+## [4.6.21](https://github.com/nativescript-community/sentry/compare/v4.6.20...v4.6.21) (2024-02-26)
+
+### Bug Fixes
+
+* better handle of stack trace for native thrown exceptions ([2b77cbf](https://github.com/nativescript-community/sentry/commit/2b77cbfae85481e41d4efcc94757277d905ff855))
+* update to latest sdk ([5f4e3eb](https://github.com/nativescript-community/sentry/commit/5f4e3eb4707924b45d607d430001290fc7eda88b))
+
+## [4.6.20](https://github.com/nativescript-community/sentry/compare/v4.6.19...v4.6.20) (2024-02-25)
+
+### Bug Fixes
+
+* **ios:** environment tags fix ([a5c3fd8](https://github.com/nativescript-community/sentry/commit/a5c3fd825e4edad71ac0ef7b6b7a2329cb301ec6))
+
+## [4.6.19](https://github.com/nativescript-community/sentry/compare/v4.6.18...v4.6.19) (2024-02-06)
+
+### Bug Fixes
+
+* missing dependency ([b5c4d53](https://github.com/nativescript-community/sentry/commit/b5c4d5312e1fcab3cba7550ef273ff2f9409ce94))
+
+## [4.6.18](https://github.com/nativescript-community/sentry/compare/v4.6.17...v4.6.18) (2024-01-07)
+
+### Bug Fixes
+
+* **android:** another fix for options init which would prevent issue sending to server ([9a3e727](https://github.com/nativescript-community/sentry/commit/9a3e727704ab73a9e8c1ba4dc02ee275b477cf76))
+
+## [4.6.17](https://github.com/nativescript-community/sentry/compare/v4.6.16...v4.6.17) (2024-01-02)
+
+### Bug Fixes
+
+* **android:** error on init sentry ([dc50aea](https://github.com/nativescript-community/sentry/commit/dc50aeae550c451e06c29bb11522a0b7dcad11ef))
+
+## [4.6.16](https://github.com/nativescript-community/sentry/compare/v4.6.15...v4.6.16) (2023-12-29)
+
+### Bug Fixes
+
+* `colnoOffset` option ([9ee635c](https://github.com/nativescript-community/sentry/commit/9ee635c6419591b328213869d4c3612f94c231d6))
+* **android:** virtually allow any option to be passed to native sentry ([fe2eb67](https://github.com/nativescript-community/sentry/commit/fe2eb67c3955e56a248aa6dcbc6ece393f54cc0a))
+
+## [4.6.15](https://github.com/nativescript-community/sentry/compare/v4.6.14...v4.6.15) (2023-12-19)
+
+### Bug Fixes
+
+* update plugin for latest sentry ([e2e3b07](https://github.com/nativescript-community/sentry/commit/e2e3b07277f74740bee6fcfa9ac94f3a3dbd6645))
+
+## [4.6.14](https://github.com/nativescript-community/sentry/compare/v4.6.13...v4.6.14) (2023-12-16)
+
+### Bug Fixes
+
+* rewrite frame fix for latest sdk ([1b3dfd0](https://github.com/nativescript-community/sentry/commit/1b3dfd079883a701c6894786c7f7fffa7f910d3b))
+
+## [4.6.13](https://github.com/nativescript-community/sentry/compare/v4.6.12...v4.6.13) (2023-12-15)
+
+### Features
+
+* update sentry/webpack-plugin to v2.2.2 ([10ae22a](https://github.com/nativescript-community/sentry/commit/10ae22a4ff9097a0558b313fb1bea2aa17fe14b0))
+
+## [4.6.12](https://github.com/nativescript-community/sentry/compare/v4.6.11...v4.6.12) (2023-02-23)
+
+### Bug Fixes
+
+* removed debug logging ([e16a498](https://github.com/nativescript-community/sentry/commit/e16a498b01d31c9f2674900063337064542f7fd2))
+
+## [4.6.11](https://github.com/nativescript-community/sentry/compare/v4.6.10...v4.6.11) (2023-02-22)
+
+### Bug Fixes
+
+* typings fix for flush method ([6b7f94c](https://github.com/nativescript-community/sentry/commit/6b7f94c47c05e25ad40996430fe3878d0ec2f903))
+
+## [4.6.10](https://github.com/nativescript-community/sentry/compare/v4.6.9...v4.6.10) (2023-02-22)
+
+### Bug Fixes
+
+* **android:** missing native-api-usage ([57800b3](https://github.com/nativescript-community/sentry/commit/57800b36f0966dc541608e9bab54ccf9828f6908))
+
+## [4.6.9](https://github.com/nativescript-community/sentry/compare/v4.6.8...v4.6.9) (2023-01-24)
+
+### Bug Fixes
+
+* **android:** native-api-usage fix ([6433cd5](https://github.com/nativescript-community/sentry/commit/6433cd5281b255c4eb859cce8c5302e02b6a7434))
+
+## [4.6.8](https://github.com/nativescript-community/sentry/compare/v4.6.7...v4.6.8) (2023-01-23)
+
+### Bug Fixes
+
+* **android:** improved native-api-usage ([5886e27](https://github.com/nativescript-community/sentry/commit/5886e2710b32f312111e74e2b79566486ed4a05e))
+
+## [4.6.7](https://github.com/nativescript-community/sentry/compare/v4.6.6...v4.6.7) (2022-12-15)
+
+## [4.6.6](https://github.com/nativescript-community/sentry/compare/v4.6.5...v4.6.6) (2022-12-09)
+
+### Bug Fixes
+
+* **ios:** correctly translate JS stack from fatal error ([30304d3](https://github.com/nativescript-community/sentry/commit/30304d3c5c34d32c7370c48bd3392b49be12db50))
+
+## [4.6.5](https://github.com/nativescript-community/sentry/compare/v4.6.4...v4.6.5) (2022-12-09)
+
+### Features
+
+* captureScreenshot support ([e9e565f](https://github.com/nativescript-community/sentry/commit/e9e565f2301ef3964772297a639242b422483b7c))
+
+## [4.6.4](https://github.com/nativescript-community/sentry/compare/v4.6.3...v4.6.4) (2022-12-09)
+
+### Bug Fixes
+
+* **android:** native sdk update ([633dd3a](https://github.com/nativescript-community/sentry/commit/633dd3aebed875bb7fb2e6c08eeca53c208756ea))
+* if there is a crash we dont have time to get the event ([3d3b914](https://github.com/nativescript-community/sentry/commit/3d3b9142335d481f01e6c52560be569048d495ae))
+* **ios:** native sdk update with build fix ([b73b021](https://github.com/nativescript-community/sentry/commit/b73b021af47a59b40156503d1776928953d505ed))
+* re enable option and removed logs ([190da44](https://github.com/nativescript-community/sentry/commit/190da44752e8a11a4af5eebb5f1eb7856e58b96b))
+
+## [4.6.3](https://github.com/nativescript-community/sentry/compare/v4.6.2...v4.6.3) (2022-12-08)
+
 ## [4.6.26](https://github.com/nativescript-community/sentry/compare/v4.6.25...v4.6.26) (2024-03-01)
 
 ### Bug Fixes
