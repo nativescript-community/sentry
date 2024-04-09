@@ -40,7 +40,7 @@ import { Trace } from '@nativescript/core';
 export { NativescriptOptions } from './options';
 export { NativescriptClient } from './client';
 
-export { init, setDist, setRelease, nativeCrash, flush, close } from './sdk';
+export { init, setDist, setRelease, nativeCrash, flush, close, captureUserFeedback } from './sdk';
 // export { TouchEventBoundary, withTouchEventBoundary } from './touchevents';
 
 export {
