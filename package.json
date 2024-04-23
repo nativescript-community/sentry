@@ -3,9 +3,8 @@
     "scripts": {
         "build": "lerna run build",
         "build.watch": "lerna run build.watch",
-        "build.all": "lerna run build.all",
+        "build.all": "npm run build",
         "build.all.win": "lerna run build.all.win",
-        "build.angular": "lerna run build.angular",
         "clean": "rimraf 'packages/**/*.d.ts' 'packages/**/*.js' 'packages/**/*.js.map' 'packages/**/*.metada' 'packages/**/angular/ng-package.json'",
         "commit_readme_doc_changes": "git add docs/** *.md ; git commit -m \"readme/doc\" ; echo \"commit readme doc done\"",
         "commitmsg": "commitlint -e $GIT_PARAMS",
