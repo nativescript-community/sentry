@@ -17,7 +17,7 @@ export declare namespace NATIVE {
         version: string;
     };
     function fetchNativeRelease(): any;
-    function closeNativeSdk(): void;
+    function closeNativeSdk(): Promise<void>;
     function nativeCrash(): void;
     function fetchNativeDeviceContexts(): Promise<any>;
     function captureScreenshot(fileName?: string): {

@@ -163,9 +163,11 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
     /**
      * @inheritDoc
      */
-    public close(): PromiseLike<boolean> {
+    public async close() {
         // As super.close() flushes queued events, we wait for that to finish before closing the native SDK.
-        return super.close().then((result: boolean) => NATIVE.closeNativeSdk().then(() => result) as PromiseLike<boolean>);
+        const result = await super.close();
+        await NATIVE.closeNativeSdk();
+        return result;
     }
 
     public async flush(timeout?: number): Promise<boolean> {

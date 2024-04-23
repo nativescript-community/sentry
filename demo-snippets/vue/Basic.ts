@@ -13,18 +13,21 @@ export default {
     <Page>
       <ActionBar title="Sentry Demo">
       </ActionBar>
-      <StackLayout>
-        <Button text="leaveBreadcrumb" @tap="leaveBreadcrumb"/>
-        <Button text="message" @tap="message"/>
-        <Button text="attachment" @tap="attachment"/>
-        <Button text="attachmentFile" @tap="attachmentFile"/>
-        <Button text="throwError" @tap="throwError"/>
-        <Button text="crashTest" @tap="crashTest"/>
-        <Button text="nativeCrashTest" @tap="nativeCrashTest"/>
-        <Button text="androidNativeCrashTest" @tap="androidNativeCrashTest"/>
-        <Button text="androidNativeCrashCatchedTest" @tap="androidNativeCrashCatchedTest"/>
-        <Button text="flush" @tap="flush"/>
-      </StackLayout>
+      <ScrollView>
+        <StackLayout>
+            <Button text="leaveBreadcrumb" @tap="leaveBreadcrumb"/>
+            <Button text="message" @tap="message"/>
+            <Button text="attachment" @tap="attachment"/>
+            <Button text="attachmentFile" @tap="attachmentFile"/>
+            <Button text="throwError" @tap="throwError"/>
+            <Button text="crashTest" @tap="crashTest"/>
+            <Button text="nativeCrashTest" @tap="nativeCrashTest"/>
+            <Button text="androidNativeCrashTest" @tap="androidNativeCrashTest"/>
+            <Button text="androidNativeCrashCatchedTest" @tap="androidNativeCrashCatchedTest"/>
+            <Button text="flush" @tap="flush"/>
+            <Button text="close" @tap="close"/>
+        </StackLayout>
+      </ScrollView>
     </Page>
     `,
     // data() {
@@ -126,6 +129,14 @@ export default {
         },
         flush() {
             Sentry.flush();
+        },
+        async close() {
+            try {
+            await Sentry.close();
+                
+            } catch (error) {
+                console.error(error, error.stack)
+            }
         }
     }
 };

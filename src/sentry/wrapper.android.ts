@@ -673,7 +673,7 @@ export namespace NATIVE {
         return nativeRelease;
     }
 
-    export function closeNativeSdk() {
+    export async function closeNativeSdk() {
         io.sentry.Sentry.close();
     }
 
