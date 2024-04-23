@@ -1661,7 +1661,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nativescript-community/template-snippet@npm:0.0.1, @nativescript-community/template-snippet@workspace:demo-snippets":
+"@nativescript-community/template-snippet@npm:*, @nativescript-community/template-snippet@workspace:demo-snippets":
   version: 0.0.0-use.local
   resolution: "@nativescript-community/template-snippet@workspace:demo-snippets"
   dependencies:
@@ -1737,7 +1737,7 @@ __metadata:
   resolution: "@nativescript/template-blank-vue-ts@workspace:demo-vue"
   dependencies:
     "@akylas/nativescript": "npm:~8.6.4"
-    "@nativescript-community/template-snippet": "npm:0.0.1"
+    "@nativescript-community/template-snippet": "npm:*"
     "@nativescript/android": "npm:~8.6.2"
     "@nativescript/core": "npm:~8.6.2"
     "@nativescript/ios": "npm:8.6.3"
