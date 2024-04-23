@@ -41,13 +41,13 @@
     },
     "dependencies": {
         "@nativescript-community/arraybuffers": "^1.1.5",
-        "@sentry/browser": "^7.102.1",
-        "@sentry/core": "^7.102.1",
-        "@sentry/hub": "^7.102.1",
-        "@sentry/integrations": "^7.102.1",
-        "@sentry/tracing": "^7.102.1",
-        "@sentry/types": "^7.102.1",
-        "@sentry/utils": "^7.102.1",
+        "@sentry/browser": "^7.112.1",
+        "@sentry/core": "^7.112.1",
+        "@sentry/hub": "^7.112.0",
+        "@sentry/integrations": "^7.112.1",
+        "@sentry/tracing": "^7.112.0",
+        "@sentry/types": "^7.112.1",
+        "@sentry/utils": "^7.112.1",
         "stacktrace-parser": "^0.1.10"
     },
     "gitHead": "1e799d9f3a3eeb19c0fc4188be82a6cded4ea727"
