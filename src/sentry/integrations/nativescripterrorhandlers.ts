@@ -2,7 +2,7 @@ import { getCurrentHub } from '@sentry/core';
 import { eventFromUnknownInput } from '@sentry/browser/esm/eventbuilder';
 import { EventHint, Integration, SeverityLevel } from '@sentry/types';
 import { NATIVE } from '../wrapper';
-import { addExceptionMechanism, getGlobalObject, logger } from '@sentry/utils';
+import { addExceptionMechanism, logger } from '@sentry/utils';
 
 import { NativescriptClient } from '../client';
 
