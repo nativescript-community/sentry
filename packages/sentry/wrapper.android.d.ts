@@ -1,4 +1,4 @@
-import { Envelope } from '@sentry/types';
+import { Breadcrumb, Envelope, User } from '@sentry/types';
 import { NativescriptOptions } from './options';
 export declare namespace NATIVE {
     function isNativeTransportAvailable(): boolean;
@@ -35,4 +35,12 @@ export declare namespace NATIVE {
         isColdStart: java.lang.Boolean;
         didFetchAppStart: boolean;
     }>;
+    function setUser(user: User | null, otherUserKeys: any): void;
+    function setTag(key: string, value: string): void;
+    function setExtra(key: string, extra: any): void;
+    function addBreadcrumb(breadcrumb: Breadcrumb, maxBreadcrumbs?: number): void;
+    function clearBreadcrumbs(): void;
+    function setContext(key: string, context: {
+        [key: string]: any;
+    } | null): void;
 }

@@ -1,6 +1,7 @@
 import { createArrayBuffer, pointsFromBuffer } from '@nativescript-community/arraybuffers';
 import { Application, Trace, Utils } from '@nativescript/core';
-import { BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel } from '@sentry/types';
+import { dataSerialize } from '@nativescript/core/utils/native-helper';
+import { BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel, User } from '@sentry/types';
 import { SentryError } from '@sentry/utils';
 import { parseErrorStack } from './integrations/debugsymbolicator';
 import { isHardCrash } from './misc';
@@ -790,5 +791,137 @@ export namespace NATIVE {
                 didFetchAppStart: wasFetched
             };
         }
+    }
+
+    function eventLevel(level) {
+        switch (level) {
+            case 'fatal':
+                return io.sentry.SentryLevel.FATAL;
+            case 'warning':
+                return io.sentry.SentryLevel.WARNING;
+            case 'info':
+            case 'log':
+                return io.sentry.SentryLevel.INFO;
+            case 'debug':
+                return io.sentry.SentryLevel.DEBUG;
+            default:
+                return io.sentry.SentryLevel.ERROR;
+        }
+    }
+    function runOnScope(callback: (scope: io.sentry.IScope) => void) {
+        io.sentry.Sentry.configureScope(
+            new io.sentry.ScopeCallback({
+                run: callback
+            })
+        );
+    }
+    export function setUser(user: User | null, otherUserKeys) {
+        if (!enableNative) {
+            return;
+        }
+        runOnScope((scope) => {
+            if (!user && !otherUserKeys) {
+                scope.setUser(null);
+            } else {
+                const userInstance = new io.sentry.protocol.User();
+
+                if (user) {
+                    userInstance.setId(user.id + '');
+                    userInstance.setEmail(user.email);
+                    userInstance.setUsername(user.username);
+                }
+
+                if (otherUserKeys) {
+                    userInstance.setData(dataSerialize(otherUserKeys));
+                }
+
+                scope.setUser(userInstance);
+            }
+        });
+    }
+    export function setTag(key: string, value: string) {
+        if (!enableNative) {
+            return;
+        }
+        runOnScope((scope) => {
+            scope.setTag(key, value);
+        });
+    }
+
+    export function setExtra(key: string, extra: any) {
+        if (!enableNative) {
+            return;
+        }
+        runOnScope((scope) => {
+            scope.setExtra(key, extra);
+        });
+    }
+
+    export function addBreadcrumb(breadcrumb: Breadcrumb, maxBreadcrumbs?: number) {
+        if (!enableNative) {
+            return;
+        }
+        runOnScope((scope) => {
+            const breadcrumbInstance = new io.sentry.Breadcrumb();
+
+            if (breadcrumb.level) {
+                breadcrumbInstance.setLevel(eventLevel(breadcrumb.level));
+            }
+            breadcrumbInstance.setCategory(breadcrumb.category);
+            breadcrumbInstance.setType(breadcrumb.type);
+            breadcrumbInstance.setMessage(breadcrumb.message);
+
+            if (breadcrumb.data) {
+                Object.keys(breadcrumb.data).forEach((key) => breadcrumbInstance.setData(key, dataSerialize(breadcrumb.data[key])));
+            }
+
+            scope.addBreadcrumb(breadcrumbInstance);
+        });
+    }
+    // let scopeScope = null;
+    // export function withScope(callback: (scope: Scope) => void) {
+    //     scopeScope = SentryScope.alloc().init();
+    //     // NSSentrySDK.withScope(new io.sentry.ScopeCallback({
+    //     // run(nscope) {
+    //     // nscope is ignored
+    //     // console.log('native withScope', nscope);
+    //     callback(null);
+    //     scopeScope = null;
+    //     // }
+    //     // }));
+    // }
+    // export function  addAttachment(attachment: Attachment) {
+    //     if (!enableNative) {
+    //         return;
+    //     }
+    //     runOnScope((scope) => {
+
+    //         if (attachment.data) {
+    //             if (typeof attachment.data === 'string') {
+    //                 attachment.data = new TextEncoder().encode(attachment.data);
+    //             }
+    //             scope.addAttachment(SentryAttachment.alloc().initWithDataFilenameContentType(attachment.data.buffer as any,  attachment.filename, attachment.contentType));
+    //         } else {
+    //             scope.addAttachment(SentryAttachment.alloc().initWithPath(attachment.filename));
+    //         }
+    //     });
+    // }
+    export function clearBreadcrumbs() {
+        if (!enableNative) {
+            return;
+        }
+        runOnScope((scope) => scope.clearBreadcrumbs());
+    }
+    export function setContext(key: string, context: { [key: string]: any } | null) {
+        if (!enableNative) {
+            return;
+        }
+        runOnScope((scope) => {
+            if (!context || !key) {
+                return;
+            } else {
+                scope.setContexts(key, dataSerialize(context));
+            }
+        });
     }
 }

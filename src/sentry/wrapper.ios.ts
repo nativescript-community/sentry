@@ -1,4 +1,4 @@
-import { BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel } from '@sentry/types';
+import { BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel, User } from '@sentry/types';
 import { SentryError, logger } from '@sentry/utils';
 import { parseErrorStack } from './integrations/debugsymbolicator';
 import { isHardCrash } from './misc';
@@ -489,91 +489,89 @@ export namespace NATIVE {
     //     }
     //     NSSentrySDK.captureUserFeedback(userFeedback);
     // }
-    // function eventLevel(level) {
-    //     switch (level) {
-    //         case 'fatal':
-    //             return SentryLevel.kSentryLevelFatal;
-    //         case 'warning':
-    //             return SentryLevel.kSentryLevelWarning;
-    //         case 'info':
-    //         case 'log':
-    //             return SentryLevel.kSentryLevelInfo;
-    //         case 'debug':
-    //             return SentryLevel.kSentryLevelDebug;
-    //         default:
-    //             return SentryLevel.kSentryLevelError;
-    //     }
-    // }
+    function eventLevel(level) {
+        switch (level) {
+            case 'fatal':
+                return SentryLevel.kSentryLevelFatal;
+            case 'warning':
+                return SentryLevel.kSentryLevelWarning;
+            case 'info':
+            case 'log':
+                return SentryLevel.kSentryLevelInfo;
+            case 'debug':
+                return SentryLevel.kSentryLevelDebug;
+            default:
+                return SentryLevel.kSentryLevelError;
+        }
+    }
 
-    // export function setUser(user: User | null, otherUserKeys) {
-    //     if (!enableNative) {
-    //         return;
-    //     }
-    //     NSSentrySDK.configureScope((scope: SentryScope) => {
-    //         if (!user && !otherUserKeys) {
-    //             scope.setUser(null);
-    //         } else {
-    //             const userInstance = SentryUser.alloc().init();
+    export function setUser(user: User | null, otherUserKeys) {
+        if (!enableNative) {
+            return;
+        }
+        NSSentrySDK.configureScope((scope: SentryScope) => {
+            if (!user && !otherUserKeys) {
+                scope.setUser(null);
+            } else {
+                const userInstance = SentryUser.alloc().init();
 
-    //             if (user) {
-    //                 userInstance.userId = user.id;
-    //                 userInstance.email = user.email;
-    //                 userInstance.username = user.username;
-    //             }
+                if (user) {
+                    userInstance.userId = user.id + '';
+                    userInstance.email = user.email;
+                    userInstance.username = user.username;
+                }
 
-    //             if (otherUserKeys) {
-    //                 const nStr = NSString.stringWithString(JSON.stringify(otherUserKeys));
-    //                 const nData = nStr.dataUsingEncoding(NSUTF8StringEncoding);
-    //                 userInstance.data = NSJSONSerialization.JSONObjectWithDataOptionsError(nData, 0);
-    //             }
+                if (otherUserKeys) {
+                    const nStr = NSString.stringWithString(JSON.stringify(otherUserKeys));
+                    const nData = nStr.dataUsingEncoding(NSUTF8StringEncoding);
+                    userInstance.data = NSJSONSerialization.JSONObjectWithDataOptionsError(nData, 0 as any);
+                }
 
-    //             scope.setUser(userInstance);
-    //         }
-    //     });
-    // }
-    // export function setTag(key: string, value: string) {
-    //     if (!enableNative) {
-    //         return;
-    //     }
-    //     NSSentrySDK.configureScope((scope: SentryScope) => {
-    //         scope.setTagValueForKey(value, key);
-    //     });
-    // }
+                scope.setUser(userInstance);
+            }
+        });
+    }
+    export function setTag(key: string, value: string) {
+        if (!enableNative) {
+            return;
+        }
+        NSSentrySDK.configureScope((scope: SentryScope) => {
+            scope.setTagValueForKey(value, key);
+        });
+    }
 
-    // export function setExtra(key: string, extra: any) {
-    //     if (!enableNative) {
-    //         return;
-    //     }
-    //     NSSentrySDK.configureScope((scope: SentryScope) => {
-    //         scope.setExtraValueForKey(extra, key);
-    //     });
-    // }
+    export function setExtra(key: string, extra: any) {
+        if (!enableNative) {
+            return;
+        }
+        NSSentrySDK.configureScope((scope: SentryScope) => {
+            scope.setExtraValueForKey(extra, key);
+        });
+    }
 
-    // export function addBreadcrumb(breadcrumb: Breadcrumb, maxBreadcrumbs?: number) {
-    //     if (!enableNative) {
-    //         return;
-    //     }
-    //     NSSentrySDK.configureScope((scope: SentryScope) => {
-    //         const breadcrumbInstance = SentryBreadcrumb.alloc().init();
+    export function addBreadcrumb(breadcrumb: Breadcrumb, maxBreadcrumbs?: number) {
+        if (!enableNative) {
+            return;
+        }
+        NSSentrySDK.configureScope((scope: SentryScope) => {
+            const breadcrumbInstance = SentryBreadcrumb.alloc().init();
 
-    //         if (breadcrumb.level) {
-    //             breadcrumbInstance.level = eventLevel(breadcrumb.level);
+            if (breadcrumb.level) {
+                breadcrumbInstance.level = eventLevel(breadcrumb.level);
+            }
+            breadcrumbInstance.category = breadcrumb.category;
+            breadcrumbInstance.type = breadcrumb.type;
+            breadcrumbInstance.message = breadcrumb.message;
 
-    //         }
-    //         breadcrumbInstance.category = breadcrumb.category;
+            if (breadcrumb.data) {
+                const nStr = NSString.stringWithString(JSON.stringify(breadcrumb.data));
+                const nData = nStr.dataUsingEncoding(NSUTF8StringEncoding);
+                breadcrumbInstance.data = NSJSONSerialization.JSONObjectWithDataOptionsError(nData, 0 as any);
+            }
 
-    //         breadcrumbInstance.type = breadcrumb.type;
-
-    //         breadcrumbInstance.message = breadcrumb.message;
-    //         if (breadcrumb.data) {
-    //             const nStr = NSString.stringWithString(JSON.stringify(breadcrumb.data));
-    //             const nData = nStr.dataUsingEncoding(NSUTF8StringEncoding);
-    //             breadcrumbInstance.data = NSJSONSerialization.JSONObjectWithDataOptionsError(nData, 0);
-    //         }
-
-    //         scope.addBreadcrumb(breadcrumbInstance);
-    //     });
-    // }
+            scope.addBreadcrumb(breadcrumbInstance);
+        });
+    }
     // let scopeScope = null;
     // export function withScope(callback: (scope: Scope) => void) {
     //     scopeScope = SentryScope.alloc().init();
@@ -602,28 +600,26 @@ export namespace NATIVE {
     //         }
     //     });
     // }
-    // export function clearBreadcrumbs() {
-    //     if (!enableNative) {
-    //         return;
-    //     }
-    //     NSSentrySDK.configureScope((scope: SentryScope) => {
-    //         scope.clearBreadcrumbs();
-    //     });
-    // }
-    // export function setContext(key: string, context: { [key: string]: any } | null) {
-    //     if (!enableNative) {
-    //         return;
-    //     }
-    //     NSSentrySDK.configureScope((scope: SentryScope) => {
-    //         if (!context) {
-    //             scope.setContextValueForKey(null, key);
-    //         } else {
-    //             const nStr = NSString.stringWithString(JSON.stringify(context));
-    //             const nData = nStr.dataUsingEncoding(NSUTF8StringEncoding);
-    //             scope.setContextValueForKey(NSJSONSerialization.JSONObjectWithDataOptionsError(nData, 0), key);
-    //         }
-    //     });
-    // }
+    export function clearBreadcrumbs() {
+        if (!enableNative) {
+            return;
+        }
+        NSSentrySDK.configureScope((scope: SentryScope) => scope.clearBreadcrumbs());
+    }
+    export function setContext(key: string, context: { [key: string]: any } | null) {
+        if (!enableNative) {
+            return;
+        }
+        NSSentrySDK.configureScope((scope: SentryScope) => {
+            if (!context) {
+                scope.setContextValueForKey(null, key);
+            } else {
+                const nStr = NSString.stringWithString(JSON.stringify(context));
+                const nData = nStr.dataUsingEncoding(NSUTF8StringEncoding);
+                scope.setContextValueForKey(NSJSONSerialization.JSONObjectWithDataOptionsError(nData, 0 as any), key);
+            }
+        });
+    }
 
     export function enableNativeFramesTracking() {
         // Do nothing on iOS, this bridge method only has an effect on android.

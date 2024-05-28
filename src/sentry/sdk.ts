@@ -21,6 +21,7 @@ import { NATIVE } from './wrapper';
 import { parseErrorStack } from './integrations/debugsymbolicator';
 import { Screenshot } from './integrations/screenshot';
 import { getDefaultEnvironment } from './utils/environment';
+import { NativescriptScope } from './scope';
 
 // const STACKTRACE_LIMIT = 50;
 // function stripSentryFramesAndReverse(stack) {
@@ -86,7 +87,7 @@ const DEFAULT_OPTIONS: NativescriptOptions & NativescriptErrorHandlersOptions = 
  * Inits the SDK
  */
 export function init(passedOptions: NativescriptOptions): void {
-    const NativescriptHub = new Hub(undefined, new Scope());
+    const NativescriptHub = new Hub(undefined, new NativescriptScope());
     // const NativescriptHub = new Hub(undefined, new NativescriptScope());
     makeMain(NativescriptHub);
 
