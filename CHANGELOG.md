@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.30](https://github.com/nativescript-community/sentry/compare/v4.6.29...v4.6.30) (2024-05-28)
+
+### Bug Fixes
+
+* missing breadcrumbs and data on native crashes ([c555889](https://github.com/nativescript-community/sentry/commit/c555889f33c5c844a43168db3624c6a0982b9067))
+
 ## [4.6.29](https://github.com/nativescript-community/sentry/compare/v4.6.28...v4.6.29) (2024-04-23)
 
 ### Bug Fixes
