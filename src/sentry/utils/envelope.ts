@@ -33,7 +33,7 @@ export function createUserFeedbackEnvelope(
     };
     const item = createUserFeedbackEnvelopeItem(feedback);
 
-    return createEnvelope(headers, [item]) as any;
+    return createEnvelope<any>(headers, [item]);
 }
 
 function createUserFeedbackEnvelopeItem(feedback: UserFeedback): UserFeedbackItem {

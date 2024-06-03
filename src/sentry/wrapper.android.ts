@@ -177,12 +177,12 @@ export namespace NATIVE {
             const event = _processLevels(itemPayload as Event);
 
             // fix for native SDK
-            event.timestamp = new Date(event.timestamp * 1000).toISOString() as any;
+            // event.timestamp = new Date(event.timestamp * 1000).toISOString() as any;
             if ('message' in event) {
                 // @ts-ignore Android still uses the old message object, without this the serialization of events will break.
                 event.message = { message: event.message };
             }
-            event.breadcrumbs = _getBreadcrumbs(event);
+            // event.breadcrumbs = _getBreadcrumbs(event);
 
             return [itemHeader, event];
         }
