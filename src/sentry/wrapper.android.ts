@@ -381,6 +381,8 @@ export namespace NATIVE {
                                 if (value && typeof config[methodName] === 'function') {
                                     if (typeof value === 'number') {
                                         config[methodName](java.lang.Double.valueOf(value));
+                                    } else if (typeof value === 'boolean') {
+                                        config[methodName](java.lang.Boolean.valueOf(value));
                                     } else {
                                         config[methodName](value);
                                     }
