@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.33](https://github.com/nativescript-community/sentry/compare/v4.6.32...v4.6.33) (2024-06-20)
+
+### Bug Fixes
+
+* **android:** another fix for Sentry options init ([807f995](https://github.com/nativescript-community/sentry/commit/807f995af640fde3ca1b0421d6274e1f4d0a5569))
+
 ## [4.6.32](https://github.com/nativescript-community/sentry/compare/v4.6.31...v4.6.32) (2024-06-20)
 
 ### Bug Fixes
