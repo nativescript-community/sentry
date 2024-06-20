@@ -11,6 +11,18 @@ import { SDK_NAME } from './version';
 import { CLog, CLogTypes } from '.';
 import { rewriteFrameIntegration } from './integrations/default';
 
+enum JavaType {
+    Long,
+    Boolean,
+    Double
+}
+
+const OPTIONS_SPECIAL_TYPES = {
+    sampleRate: JavaType.Double,
+    tracesSampleRate: JavaType.Double,
+    enableTracing: JavaType.Boolean,
+};
+
 function capitalize(value) {
     return value.charAt(0).toUpperCase() + value.substr(1);
 }
@@ -80,10 +92,10 @@ export namespace NATIVE {
             const stackFrame = new io.sentry.protocol.SentryStackFrame();
             stackFrame.setFunction(methodName);
             stackFrame.setFilename(fileName);
-            stackFrame.setLineno(new java.lang.Integer(lineNumber));
-            stackFrame.setColno(new java.lang.Integer(column));
+            stackFrame.setLineno(java.lang.Integer.valueOf(lineNumber));
+            stackFrame.setColno(java.lang.Integer.valueOf(column));
             stackFrame.setPlatform('javascript');
-            stackFrame.setInApp(new java.lang.Boolean(frame.in_app || false));
+            stackFrame.setInApp(java.lang.Boolean.valueOf(frame.in_app || false));
             frames.add(stackFrame);
         }
         nStackTrace.setFrames(frames);
@@ -96,7 +108,7 @@ export namespace NATIVE {
         const nException = new io.sentry.protocol.SentryException();
         nException.setType(type);
         nException.setValue(value);
-        nException.setThreadId(new java.lang.Long(java.lang.Thread.currentThread().getId()));
+        nException.setThreadId(java.lang.Long.valueOf(java.lang.Thread.currentThread().getId()));
 
         nException.setStacktrace(convertToNativeJavascriptStacktrace(stack));
         actualExceptions.add(nException);
@@ -379,10 +391,21 @@ export namespace NATIVE {
                                 const methodName = `set${capitalize(k)}`;
                                 const value = otherOptions[k];
                                 if (value && typeof config[methodName] === 'function') {
-                                    if (typeof value === 'number') {
-                                        config[methodName](java.lang.Double.valueOf(value));
-                                    } else if (typeof value === 'boolean') {
-                                        config[methodName](java.lang.Boolean.valueOf(value));
+                                    if (OPTIONS_SPECIAL_TYPES[k]) {
+                                        switch (OPTIONS_SPECIAL_TYPES[k]) {
+                                            case JavaType.Double:
+                                                config[methodName](java.lang.Double.valueOf(value));
+                                                break;
+                                            case JavaType.Boolean:
+                                                config[methodName](java.lang.Boolean.valueOf(value));
+                                                break;
+                                            case JavaType.Long:
+                                                config[methodName](java.lang.Long.valueOf(value));
+                                                break;
+                                            default:
+                                                config[methodName](value);
+                                                break;
+                                        }
                                     } else {
                                         config[methodName](value);
                                     }
