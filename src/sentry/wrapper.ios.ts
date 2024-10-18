@@ -46,14 +46,14 @@ function dataSerialize(data?: any, wrapPrimitives?: boolean) {
             }
 
             if (Array.isArray(data)) {
-                return NSArray.arrayWithArray((data as any).map(dataSerialize));
+                return NSArray.arrayWithArray(data.map((el) => dataSerialize(el, wrapPrimitives)).filter((el) => el !== null));
             }
 
-            const node = {} as any;
-            Object.keys(data).forEach(function (key) {
-                const value = data[key];
-                node[key] = dataSerialize(value, wrapPrimitives);
-            });
+            const node = Object.fromEntries(
+                Object.entries(data)
+                    .map(([key, value]) => [key, dataSerialize(value, wrapPrimitives)])
+                    .filter(([, value]) => value !== null)
+            );
             return NSDictionary.dictionaryWithDictionary(node);
         }
 
@@ -344,7 +344,7 @@ export namespace NATIVE {
                     delete toPassOptions[k];
                 }
             });
-            const mutDict = NSMutableDictionary.alloc().initWithDictionary(dataSerialize(toPassOptions) as any);
+            const mutDict = NSMutableDictionary.alloc().initWithDictionary(dataSerialize(toPassOptions, true));
 
             nSentryOptions = SentryOptions.alloc().initWithDictDidFailWithError(mutDict as any);
 
@@ -386,7 +386,7 @@ export namespace NATIVE {
                 if (beforeBreadcrumb) {
                     const deserialized = dictToJSON(breadcrumb.serialize());
                     const processed = beforeBreadcrumb(deserialized, null);
-                    const serialized = dataSerialize(processed) as NSDictionary<string, any>;
+                    const serialized = dataSerialize(processed, true) as NSDictionary<string, any>;
                     const levels = ['log', 'debug', 'info', 'warning', 'error', 'fatal'];
 
                     if (processed) {

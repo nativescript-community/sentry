@@ -857,7 +857,7 @@ export namespace NATIVE {
                 }
 
                 if (otherUserKeys) {
-                    userInstance.setData(dataSerialize(otherUserKeys));
+                    userInstance.setData(dataSerialize(otherUserKeys, true));
                 }
 
                 scope.setUser(userInstance);
@@ -897,7 +897,7 @@ export namespace NATIVE {
             breadcrumbInstance.setMessage(breadcrumb.message);
 
             if (breadcrumb.data) {
-                Object.keys(breadcrumb.data).forEach((key) => breadcrumbInstance.setData(key, dataSerialize(breadcrumb.data[key])));
+                Object.keys(breadcrumb.data).forEach((key) => breadcrumbInstance.setData(key, dataSerialize(breadcrumb.data[key], true)));
             }
 
             scope.addBreadcrumb(breadcrumbInstance);
@@ -945,7 +945,7 @@ export namespace NATIVE {
             if (!context || !key) {
                 return;
             } else {
-                scope.setContexts(key, dataSerialize(context));
+                scope.setContexts(key, dataSerialize(context, true));
             }
         });
     }
