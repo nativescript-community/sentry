@@ -536,7 +536,11 @@ export namespace NATIVE {
             return;
         }
         NSSentrySDK.configureScope((scope: SentryScope) => {
-            scope.setTagValueForKey(value, key);
+            if (value){
+                scope.setTagValueForKey(key, value);
+            } else {
+                scope.removeTagForKey(key);
+            }
         });
     }
 
@@ -545,7 +549,11 @@ export namespace NATIVE {
             return;
         }
         NSSentrySDK.configureScope((scope: SentryScope) => {
-            scope.setExtraValueForKey(extra, key);
+            if (extra) {
+                scope.setExtraValueForKey(key, extra);
+            } else {
+                scope.removeContextForKey(key);
+            }
         });
     }
 

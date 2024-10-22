@@ -869,7 +869,11 @@ export namespace NATIVE {
             return;
         }
         runOnScope((scope) => {
-            scope.setTag(key, value);
+            if (value){
+                scope.setTag(key, value);
+            } else {
+                scope.removeTag(key);
+            }
         });
     }
 
@@ -878,7 +882,11 @@ export namespace NATIVE {
             return;
         }
         runOnScope((scope) => {
-            scope.setExtra(key, extra);
+            if (extra) {
+                scope.setExtra(key, extra);
+            } else {
+                scope.removeExtra(key);
+            }
         });
     }
 
