@@ -536,7 +536,7 @@ export namespace NATIVE {
             return;
         }
         NSSentrySDK.configureScope((scope: SentryScope) => {
-            if (value){
+            if (value) {
                 scope.setTagValueForKey(key, value);
             } else {
                 scope.removeTagForKey(key);
@@ -690,5 +690,8 @@ export namespace NATIVE {
             });
         }
         return res;
+    }
+    export async function crashedLastRun() {
+        return SentrySDK.crashedLastRun;
     }
 }

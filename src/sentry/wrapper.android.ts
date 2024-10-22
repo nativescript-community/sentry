@@ -20,7 +20,7 @@ enum JavaType {
 const OPTIONS_SPECIAL_TYPES = {
     sampleRate: JavaType.Double,
     tracesSampleRate: JavaType.Double,
-    enableTracing: JavaType.Boolean,
+    enableTracing: JavaType.Boolean
 };
 
 function capitalize(value) {
@@ -869,7 +869,7 @@ export namespace NATIVE {
             return;
         }
         runOnScope((scope) => {
-            if (value){
+            if (value) {
                 scope.setTag(key, value);
             } else {
                 scope.removeTag(key);
@@ -956,5 +956,9 @@ export namespace NATIVE {
                 scope.setContexts(key, dataSerialize(context, true));
             }
         });
+    }
+
+    export async function crashedLastRun() {
+        return io.sentry.Sentry.isCrashedLastRun();
     }
 }

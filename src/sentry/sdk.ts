@@ -1,27 +1,21 @@
-import { Integrations, getCurrentHub, defaultIntegrations as sentryDefaultIntegrations } from '@sentry/browser';
-import { Hub, Scope, getIntegrationsToSetup, initAndBind, makeMain, setExtra } from '@sentry/core';
-import { RewriteFrames } from '@sentry/integrations';
-import { Integration, StackFrame, UserFeedback } from '@sentry/types';
+import { getCurrentHub } from '@sentry/browser';
+import { Hub, Scope, withScope as coreWithScope, getClient, getIntegrationsToSetup, initAndBind, makeMain, setExtra } from '@sentry/core';
+import { Integration, UserFeedback } from '@sentry/types';
 import { logger, stackParserFromStackParserOptions } from '@sentry/utils';
 
 import { NativescriptClientOptions, NativescriptOptions } from './options';
 
 import { NativescriptClient } from './client';
-import { DeviceContext, NativescriptErrorHandlers, Release } from './integrations';
-import { EventOrigin } from './integrations/eventorigin';
-import { NativescriptErrorHandlersOptions } from './integrations/nativescripterrorhandlers';
-import { SdkInfo } from './integrations/sdkinfo';
 import { getDefaultIntegrations } from './integrations/default';
+import { NativescriptErrorHandlersOptions } from './integrations/nativescripterrorhandlers';
 // import { NativescriptScope } from './scope';
-import { NativescriptTracing } from './tracing';
+import { parseErrorStack } from './integrations/debugsymbolicator';
+import { NativescriptScope } from './scope';
 import { DEFAULT_BUFFER_SIZE, makeNativescriptTransport } from './transports/native';
 import { makeUtf8TextEncoder } from './transports/TextEncoder';
-import { safeFactory, safeTracesSampler } from './utils/safe';
-import { NATIVE } from './wrapper';
-import { parseErrorStack } from './integrations/debugsymbolicator';
-import { Screenshot } from './integrations/screenshot';
 import { getDefaultEnvironment } from './utils/environment';
-import { NativescriptScope } from './scope';
+import { safeFactory, safeTracesSampler } from './utils/safe';
+import { NATIVE } from './wrapper.ios';
 
 // const STACKTRACE_LIMIT = 50;
 // function stripSentryFramesAndReverse(stack) {
@@ -201,10 +195,7 @@ export function setDist(dist: string): void {
  * Use this only for testing purposes.
  */
 export function nativeCrash(): void {
-    const client = getCurrentHub().getClient<NativescriptClient>();
-    if (client) {
-        client.nativeCrash();
-    }
+    NATIVE.nativeCrash();
 }
 
 /**
@@ -214,7 +205,7 @@ export function nativeCrash(): void {
  */
 export async function flush(timeout: number = 0): Promise<boolean> {
     try {
-        const client = getCurrentHub().getClient<NativescriptClient>();
+        const client = getClient<NativescriptClient>();
 
         if (client) {
             const result = await client.flush(timeout);
@@ -234,7 +225,7 @@ export async function flush(timeout: number = 0): Promise<boolean> {
  */
 export async function close(): Promise<void> {
     try {
-        const client = getCurrentHub().getClient<NativescriptClient>();
+        const client = getClient<NativescriptClient>();
 
         if (client) {
             await client.close();
@@ -247,7 +238,7 @@ export async function close(): Promise<void> {
  * Captures user feedback and sends it to Sentry.
  */
 export function captureUserFeedback(feedback: UserFeedback): void {
-    getCurrentHub().getClient<NativescriptClient>()?.captureUserFeedback(feedback);
+    getClient<NativescriptClient>()?.captureUserFeedback(feedback);
 }
 
 /**
@@ -263,30 +254,21 @@ export function captureUserFeedback(feedback: UserFeedback): void {
  *
  * @param callback that will be enclosed into push/popScope.
  */
-export function withScope(callback: (scope: Scope) => void): ReturnType<Hub['withScope']> {
-    const safeCallback = (scope: Scope): void => {
+export function withScope<T>(callback: (scope: Scope) => T): T | undefined {
+    const safeCallback = (scope: Scope): T | undefined => {
         try {
-            NATIVE.withScope((nscope) => {
-                callback(scope);
-            });
+            return callback(scope);
         } catch (e) {
             logger.error('Error while running withScope callback', e);
+            return undefined;
         }
     };
-    return getCurrentHub().withScope(safeCallback);
+    return coreWithScope(safeCallback);
 }
 
 /**
- * Callback to set context information onto the scope.
- * @param callback Callback function that receives Scope.
+ * Returns if the app crashed in the last run.
  */
-export function configureScope(callback: (scope: Scope) => void): ReturnType<Hub['configureScope']> {
-    const safeCallback = (scope: Scope): void => {
-        try {
-            callback(scope);
-        } catch (e) {
-            logger.error('Error while running configureScope callback', e);
-        }
-    };
-    getCurrentHub().configureScope(safeCallback);
+export async function crashedLastRun(): Promise<boolean | null> {
+    return NATIVE.crashedLastRun();
 }
