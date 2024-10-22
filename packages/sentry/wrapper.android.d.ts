@@ -43,4 +43,5 @@ export declare namespace NATIVE {
     function setContext(key: string, context: {
         [key: string]: any;
     } | null): void;
+    function crashedLastRun(): Promise<java.lang.Boolean>;
 }
