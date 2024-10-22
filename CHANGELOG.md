@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.36](https://github.com/nativescript-community/sentry/compare/v4.6.35...v4.6.36) (2024-10-22)
+
+### Bug Fixes
+
+* prevent crash when using setExtra/setTag with a null value ([d01e345](https://github.com/nativescript-community/sentry/commit/d01e3451ccc6f297d02946137dd54649b26f9a68))
+
 ## [4.6.35](https://github.com/nativescript-community/sentry/compare/v4.6.34...v4.6.35) (2024-10-18)
 
 ### Bug Fixes
