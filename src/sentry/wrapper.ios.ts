@@ -54,7 +54,7 @@ function dataSerialize(data?: any, wrapPrimitives?: boolean) {
                     .map(([key, value]) => [key, dataSerialize(value, wrapPrimitives)])
                     .filter(([, value]) => value !== null)
             );
-            return NSDictionary.dictionaryWithDictionary(node) as any;
+            return NSDictionary.dictionaryWithDictionary(node as any);
         }
 
         default:
