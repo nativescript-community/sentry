@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.41](https://github.com/nativescript-community/sentry/compare/v4.6.40...v4.6.41) (2025-09-11)
+
+### Bug Fixes
+
+* **android:** upgrade native libs to support 16kb ([2f30a4a](https://github.com/nativescript-community/sentry/commit/2f30a4a93f4a652d54eb76d76c1128757435e226))
+
 ## [4.6.40](https://github.com/nativescript-community/sentry/compare/v4.6.39...v4.6.40) (2025-06-06)
 
 **Note:** Version bump only for package sentry
