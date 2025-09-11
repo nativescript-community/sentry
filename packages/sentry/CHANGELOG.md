@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.40](https://github.com/nativescript-community/sentry/compare/v4.6.39...v4.6.40) (2025-06-06)
+
+**Note:** Version bump only for package @nativescript-community/sentry
+
+## [4.6.39](https://github.com/nativescript-community/sentry/compare/v4.6.38...v4.6.39) (2025-04-03)
+
+### Bug Fixes
+
+* **ios:** bump native Sentry to 8.48.0 to resolve iOS 18.4 build issue ([577ff9a](https://github.com/nativescript-community/sentry/commit/577ff9a3dc7e7f5a4dcd042a970f9efd383a7001))
+
 ## [4.6.38](https://github.com/nativescript-community/sentry/compare/v4.6.37...v4.6.38) (2024-10-22)
 
 **Note:** Version bump only for package @nativescript-community/sentry

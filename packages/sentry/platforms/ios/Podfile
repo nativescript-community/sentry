@@ -1,1 +1,1 @@
-pod 'Sentry/HybridSDK', :git => 'https://github.com/getsentry/sentry-cocoa.git', :tag => '8.36.0'
+pod 'Sentry/HybridSDK', :git => 'https://github.com/getsentry/sentry-cocoa.git', :tag => '8.52.1'
