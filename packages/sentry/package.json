@@ -1,6 +1,6 @@
 {
     "name": "@nativescript-community/sentry",
-    "version": "4.6.41",
+    "version": "4.6.42",
     "description": "A cross-platform application monitoring tool, with a focus on error reporting.",
     "main": "./index",
     "typings": "./index.d.ts",
