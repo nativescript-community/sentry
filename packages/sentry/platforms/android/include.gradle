@@ -2,12 +2,12 @@
 apply plugin: 'io.sentry.android.gradle'
 android {
     compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
     }
 }
 dependencies {
-    def sentryVersion =  project.hasProperty("sentryVersion") ? project.sentryVersion : "7.4.0"
+    def sentryVersion =  project.hasProperty("sentryVersion") ? project.sentryVersion : "7.22.6"
     println("sentryVersion $sentryVersion")
     implementation "io.sentry:sentry-android:$sentryVersion"
 }

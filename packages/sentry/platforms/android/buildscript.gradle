@@ -4,7 +4,7 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    def sentryGradleVersion =  hasProperty("sentryGradleVersion") ? sentryGradleVersion : "4.3.0"
+    def sentryGradleVersion =  hasProperty("sentryGradleVersion") ? sentryGradleVersion : " 4.14.1"
     println "sentryGradleVersion $sentryGradleVersion"
     classpath "io.sentry:sentry-android-gradle-plugin:$sentryGradleVersion"
 }
