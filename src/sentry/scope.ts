@@ -66,10 +66,10 @@ export class NativescriptScope extends Scope {
             data: breadcrumb.data ? convertToNormalizedObject(breadcrumb.data) : undefined
         };
 
-        super.addBreadcrumb(mergedBreadcrumb, maxBreadcrumbs);
+        // super.addBreadcrumb(mergedBreadcrumb, maxBreadcrumbs);
 
         // const finalBreadcrumb = this._breadcrumbs[this._breadcrumbs.length - 1];
-        // NATIVE.addBreadcrumb(finalBreadcrumb);
+        NATIVE.addBreadcrumb(finalBreadcrumb);
         return this;
     }
 
