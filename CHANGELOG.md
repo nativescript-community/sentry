@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.44](https://github.com/nativescript-community/sentry/compare/v4.6.42...v4.6.44) (2025-10-02)
+
+### Bug Fixes
+
+* correct fix for native crashes to get breadcrumbs ([020a628](https://github.com/nativescript-community/sentry/commit/020a628fb81bc4bc8617d10b86bd91583e7acd57))
+* fixed duplicated breadcrumbs ([61adf08](https://github.com/nativescript-community/sentry/commit/61adf08439722cdd07bcc12af0039788693d230a))
+
 ## [4.6.43](https://github.com/nativescript-community/sentry/compare/v4.6.42...v4.6.43) (2025-10-02)
 
 ### Bug Fixes
