@@ -68,8 +68,8 @@ export class NativescriptScope extends Scope {
 
         super.addBreadcrumb(mergedBreadcrumb, maxBreadcrumbs);
 
-        const finalBreadcrumb = this._breadcrumbs[this._breadcrumbs.length - 1];
-        NATIVE.addBreadcrumb(finalBreadcrumb);
+        // const finalBreadcrumb = this._breadcrumbs[this._breadcrumbs.length - 1];
+        // NATIVE.addBreadcrumb(finalBreadcrumb);
         return this;
     }
 
