@@ -35,7 +35,7 @@
     },
     "dependencies": {
         "@nativescript-community/arraybuffers": "^1.1.5",
-        "@nativescript-community/plugin-seed-tools": "file:tools",
+        "@nativescript-community/plugin-seed-tools": "portal:tools",
         "@sentry/browser": "7.111.0",
         "@sentry/core": "7.111.0",
         "@sentry/hub": "7.111.0",
@@ -81,5 +81,6 @@
         "yarn": ">=1.19.1",
         "pnpm": ">=7.0.0",
         "node": "^14.20.0 || ^16.13.0 || >=18.10.0"
-    }
+    },
+    "packageManager": "yarn@4.10.2"
 }
