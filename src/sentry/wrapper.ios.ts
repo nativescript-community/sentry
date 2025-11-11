@@ -5,6 +5,7 @@ import { isHardCrash } from './misc';
 import { NativescriptOptions } from './options';
 import { utf8ToBytes } from './vendor';
 import { rewriteFrameIntegration } from './integrations/default';
+import { splitObject } from './utils/object';
 
 const numberHasDecimals = function (value: number): boolean {
     return !(value % 1 === 0);
@@ -505,20 +506,28 @@ export namespace NATIVE {
         }
     }
 
-    export function setUser(user: User | null, otherUserKeys) {
+    export function setUser(user: User | null) {
         if (!enableNative) {
             return;
         }
         NSSentrySDK.configureScope((scope: SentryScope) => {
-            if (!user && !otherUserKeys) {
+            const [filteredUser, otherUserKeys] = splitObject(user, ['id', 'email', 'username', 'ip_address']);
+
+            if (!filteredUser && !otherUserKeys) {
                 scope.setUser(null);
             } else {
                 const userInstance = SentryUser.alloc().init();
-
-                if (user) {
-                    userInstance.userId = user.id + '';
-                    userInstance.email = user.email;
-                    userInstance.username = user.username;
+                if (typeof filteredUser?.id === 'number' || typeof filteredUser?.id === 'string') {
+                    userInstance.userId = `${filteredUser.id}`;
+                }
+                if (typeof filteredUser?.email === 'string') {
+                    userInstance.email = filteredUser.email;
+                }
+                if (typeof filteredUser?.username === 'string') {
+                    userInstance.username = filteredUser.username;
+                }
+                if (typeof filteredUser.ip_address === 'string') {
+                    userInstance.ipAddress = filteredUser.ip_address;
                 }
 
                 if (otherUserKeys) {
