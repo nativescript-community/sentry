@@ -10,6 +10,7 @@ import { utf8ToBytes } from './vendor';
 import { SDK_NAME } from './version';
 import { CLog, CLogTypes } from '.';
 import { rewriteFrameIntegration } from './integrations/default';
+import { splitObject } from './utils/object';
 
 enum JavaType {
     Long,
@@ -840,20 +841,28 @@ export namespace NATIVE {
             })
         );
     }
-    export function setUser(user: User | null, otherUserKeys) {
+    export function setUser(user: User | null) {
         if (!enableNative) {
             return;
         }
         runOnScope((scope) => {
-            if (!user && !otherUserKeys) {
+            const [filteredUser, otherUserKeys] = splitObject(user, ['id', 'email', 'username', 'ip_address']);
+            if (!filteredUser && !otherUserKeys) {
                 scope.setUser(null);
             } else {
                 const userInstance = new io.sentry.protocol.User();
 
-                if (user) {
-                    userInstance.setId(user.id + '');
-                    userInstance.setEmail(user.email);
-                    userInstance.setUsername(user.username);
+                if (typeof filteredUser?.id === 'number' || typeof filteredUser?.id === 'string') {
+                    userInstance.setId(`${filteredUser.id}`);
+                }
+                if (typeof filteredUser?.email === 'string') {
+                    userInstance.setEmail(filteredUser.email);
+                }
+                if (typeof filteredUser?.username === 'string') {
+                    userInstance.setUsername(filteredUser.username);
+                }
+                if (typeof filteredUser?.ip_address === 'string') {
+                    userInstance.setIpAddress(filteredUser.ip_address);
                 }
 
                 if (otherUserKeys) {
