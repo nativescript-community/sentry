@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.45](https://github.com/nativescript-community/sentry/compare/v4.6.44...v4.6.45) (2025-12-05)
+
+### Bug Fixes
+
+* ensure setUser also includes custom fields ([aca4850](https://github.com/nativescript-community/sentry/commit/aca48509fd7a690146290e3472b89e72eac73ed7))
+
 ## [4.6.44](https://github.com/nativescript-community/sentry/compare/v4.6.42...v4.6.44) (2025-10-02)
 
 ### Bug Fixes
