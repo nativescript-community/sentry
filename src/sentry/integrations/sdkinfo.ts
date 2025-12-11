@@ -1,5 +1,5 @@
-import { EventProcessor, Integration, Package, SdkInfo as SdkInfoType } from '@sentry/types';
-import { logger } from '@sentry/utils';
+import type { Event, Integration, Package, SdkInfo as SdkInfoType } from '@sentry/core';
+import { debug } from '@sentry/core';
 
 import { SDK_NAME, SDK_PACKAGE_NAME, SDK_VERSION } from '../version';
 
@@ -18,34 +18,24 @@ export const defaultSdkInfo: DefaultSdkInfo = {
     version: SDK_VERSION
 };
 
+const INTEGRATION_NAME = 'SdkInfo';
+
 /** Default SdkInfo instrumentation */
-export class SdkInfo implements Integration {
-    /**
-     * @inheritDoc
-     */
-    public static id: string = 'SdkInfo';
+export const sdkInfoIntegration = (): Integration => {
+    let nativeSdkInfo: Package | null = null;
 
-    /**
-     * @inheritDoc
-     */
-    public name: string = SdkInfo.id;
-
-    private _nativeSdkInfo: Package | null = null;
-
-    /**
-     * @inheritDoc
-     */
-    public setupOnce(addGlobalEventProcessor: (e: EventProcessor) => void): void {
-        addGlobalEventProcessor(async (event) => {
+    return {
+        name: INTEGRATION_NAME,
+        processEvent: async (event: Event): Promise<Event> => {
             // The native SDK info package here is only used on iOS as `beforeSend` is not called on `captureEnvelope`.
-            // this._nativeSdkInfo should be defined a following time so this call won't always be awaited.
-            if (this._nativeSdkInfo === null) {
+            // nativeSdkInfo should be defined a following time so this call won't always be awaited.
+            if (nativeSdkInfo === null) {
                 try {
-                    this._nativeSdkInfo = await NATIVE.fetchNativeSdkInfo();
+                    nativeSdkInfo = await NATIVE.fetchNativeSdkInfo();
                 } catch (e) {
                     // If this fails, go ahead as usual as we would rather have the event be sent with a package missing.
-                    logger.warn('[SdkInfo] Native SDK Info retrieval failed...something could be wrong with your Sentry installation:');
-                    logger.warn(e);
+                    debug.warn('[SdkInfo] Native SDK Info retrieval failed...something could be wrong with your Sentry installation:');
+                    debug.warn(e);
                 }
             }
 
@@ -53,9 +43,9 @@ export class SdkInfo implements Integration {
             event.sdk = {
                 ...(event.sdk ?? {}),
                 ...defaultSdkInfo,
-                packages: [...((event.sdk && event.sdk.packages) || []), ...((this._nativeSdkInfo && [this._nativeSdkInfo]) || []), ...defaultSdkInfo.packages]
+                packages: [...((event.sdk && event.sdk.packages) || []), ...((nativeSdkInfo && [nativeSdkInfo]) || []), ...defaultSdkInfo.packages]
             };
             return event;
-        });
-    }
-}
+        }
+    };
+};

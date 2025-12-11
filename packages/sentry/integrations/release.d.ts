@@ -1,16 +1,3 @@
-import { Integration } from '@sentry/types';
+import type { Integration } from '@sentry/core';
 /** Release integration responsible to load release from file. */
-export declare class Release implements Integration {
-    /**
-     * @inheritDoc
-     */
-    name: string;
-    /**
-     * @inheritDoc
-     */
-    static id: string;
-    /**
-     * @inheritDoc
-     */
-    setupOnce(): void;
-}
+export declare const releaseIntegration: () => Integration;

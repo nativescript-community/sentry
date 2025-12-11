@@ -1,8 +1,8 @@
 import { createArrayBuffer, pointsFromBuffer } from '@nativescript-community/arraybuffers';
 import { Application, Trace, Utils } from '@nativescript/core';
 import { dataSerialize } from '@nativescript/core/utils/native-helper';
-import { BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel, User } from '@sentry/types';
-import { SentryError } from '@sentry/utils';
+import type { BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel, User } from '@sentry/core';
+import { SentryError } from '@sentry/core';
 import { parseErrorStack } from './integrations/debugsymbolicator';
 import { isHardCrash } from './misc';
 import { NativescriptOptions } from './options';

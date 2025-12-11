@@ -1,164 +1,69 @@
-import { Hub } from '@sentry/hub';
-import { RequestInstrumentationOptions, Transaction } from '@sentry/tracing';
-import { EventProcessor, Integration, Transaction as TransactionType } from '@sentry/types';
-import { RoutingInstrumentationInstance } from './routingInstrumentation';
-import { NativeFramesInstrumentation } from './nativeframes';
-import { StallTrackingInstrumentation } from './stalltracking';
-import { BeforeNavigate } from './types';
-export interface NativescriptTracingOptions extends RequestInstrumentationOptions {
+import type { Client, Integration, StartSpanOptions } from '@sentry/core';
+export declare const INTEGRATION_NAME = "NativescriptTracing";
+export interface NativescriptTracingOptions {
     /**
-     * The time to wait in ms until the transaction will be finished. The transaction will use the end timestamp of
-     * the last finished span as the endtime for the transaction.
-     * Time is in ms.
+     * The time that has to pass without any span being created.
+     * If this time is exceeded, the idle span will finish.
      *
-     * Default: 1000
+     * @default 1_000 (ms)
      */
-    idleTimeout: number;
+    idleTimeoutMs?: number;
     /**
-     * The maximum duration of a transaction before it will be marked as "deadline_exceeded".
-     * If you never want to mark a transaction set it to 0.
-     * Time is in seconds.
+     * The max. time an idle span may run.
+     * If this time is exceeded, the idle span will finish no matter what.
      *
-     * Default: 600
+     * @default 60_0000 (ms)
      */
-    maxTransactionDuration: number;
+    finalTimeoutMs?: number;
     /**
-     * The time to wait in ms until the transaction will be finished. The transaction will use the end timestamp of
-     * the last finished span as the endtime for the transaction.
-     * Time is in ms.
+     * Flag to disable patching all together for fetch requests.
      *
-     * Default: 1000
-     */
-    idleTimeoutMs: number;
-    /**
-     * The maximum duration (transaction duration + idle timeout) of a transaction
-     * before it will be marked as "deadline_exceeded".
-     * If you never want to mark a transaction set it to 0.
-     * Time is in ms.
+     * Fetch in React Native is a `whatwg-fetch` polyfill which uses XHR under the hood.
+     * This causes duplicates when both `traceFetch` and `traceXHR` are enabled at the same time.
      *
-     * Default: 600000
+     * @default false
      */
-    finalTimeoutMs: number;
+    traceFetch: boolean;
     /**
-     * The routing instrumentation to be used with the tracing integration.
-     * There is no routing instrumentation if nothing is passed.
-     */
-    routingInstrumentation?: RoutingInstrumentationInstance;
-    /**
-     * Does not sample transactions that are from routes that have been seen any more and don't have any spans.
-     * This removes a lot of the clutter as most back navigation transactions are now ignored.
+     * Flag to disable patching all together for xhr requests.
      *
-     * Default: true
+     * @default true
      */
-    ignoreEmptyBackNavigationTransactions: boolean;
+    traceXHR: boolean;
     /**
-     * beforeNavigate is called before a navigation transaction is created and allows users to modify transaction
-     * context data, or drop the transaction entirely (by setting `sampled = false` in the context).
+     * If true, Sentry will capture http timings and add them to the corresponding http spans.
      *
-     * @param context: The context data which will be passed to `startTransaction` by default
+     * @default true
+     */
+    enableHTTPTimings: boolean;
+    /**
+     * A callback which is called before a span for a navigation is started.
+     * It receives the options passed to `startSpan`, and expects to return an updated options object.
+     */
+    beforeStartSpan?: (options: StartSpanOptions) => StartSpanOptions;
+    /**
+     * This function will be called before creating a span for a request with the given url.
+     * Return false if you don't want a span for the given url.
      *
-     * @returns A (potentially) modified context object, with `sampled = false` if the transaction should be dropped.
+     * @default (url: string) => true
      */
-    beforeNavigate: BeforeNavigate;
-    /**
-     * Track the app start time by adding measurements to the first route transaction. If there is no routing instrumentation
-     * an app start transaction will be started.
-     *
-     * Default: true
-     */
-    enableAppStartTracking: boolean;
-    /**
-     * Track slow/frozen frames from the native layer and adds them as measurements to all transactions.
-     */
-    enableNativeFramesTracking: boolean;
-    /**
-     * Track when and how long the JS event loop stalls for. Adds stalls as measurements to all transactions.
-     */
-    enableStallTracking: boolean;
-    /**
-     * Trace User Interaction events like touch and gestures.
-     */
-    enableUserInteractionTracing: boolean;
+    shouldCreateSpanForRequest?(this: void, url: string): boolean;
 }
-/**
- * Tracing integration for React Native.
- */
-export declare class NativescriptTracing implements Integration {
-    /**
-     * @inheritDoc
-     */
-    static id: string;
-    /**
-     * @inheritDoc
-     */
-    name: string;
-    /** NativescriptTracing options */
+export declare const defaultNativescriptTracingOptions: NativescriptTracingOptions;
+export interface NativescriptTracingState {
+    currentRoute: string | undefined;
+}
+export declare const nativescriptTracingIntegration: (options?: Partial<NativescriptTracingOptions>) => Integration & {
     options: NativescriptTracingOptions;
-    nativeFramesInstrumentation?: NativeFramesInstrumentation;
-    stallTrackingInstrumentation?: StallTrackingInstrumentation;
-    useAppStartWithProfiler: boolean;
-    private _inflightInteractionTransaction?;
-    private _getCurrentHub?;
-    private _awaitingAppStartData?;
-    private _appStartFinishTimestamp?;
-    private _currentRoute?;
-    private _hasSetTracePropagationTargets;
-    private _hasSetTracingOrigins;
-    private _currentViewName;
-    constructor(options?: Partial<NativescriptTracingOptions>);
-    /**
-     *  Registers routing and request instrumentation.
-     */
-    setupOnce(addGlobalEventProcessor: (callback: EventProcessor) => void, getCurrentHub: () => Hub): void;
-    /**
-     * To be called on a transaction start. Can have async methods
-     */
-    onTransactionStart(transaction: Transaction): void;
-    /**
-     * To be called on a transaction finish. Cannot have async methods.
-     */
-    onTransactionFinish(transaction: Transaction, endTimestamp?: number): void;
-    /**
-     * Called by the NativescriptProfiler component on first component mount.
-     */
-    onAppStartFinish(endTimestamp: number): void;
-    /**
-     * Starts a new transaction for a user interaction.
-     * @param userInteractionId Consists of `op` representation UI Event and `elementId` unique element identifier on current screen.
-     */
-    startUserInteractionTransaction(userInteractionId: {
-        elementId: string | undefined;
-        op: string;
-    }): TransactionType | undefined;
-    /**
-     *  Sets the current view name into the app context.
-     *  @param event Le event.
-     */
-    private _getCurrentViewEventProcessor;
-    /**
-     * Returns the App Start Duration in Milliseconds. Also returns undefined if not able do
-     * define the duration.
-     */
-    private _getAppStartDurationMilliseconds;
-    /**
-     * Instruments the app start measurements on the first route transaction.
-     * Starts a route transaction if there isn't routing instrumentation.
-     */
-    private _instrumentAppStart;
-    /**
-     * Adds app start measurements and starts a child span on a transaction.
-     */
-    private _addAppStartData;
-    /** To be called when the route changes, but BEFORE the components of the new route mount. */
-    private _onRouteWillChange;
-    /**
-     * Creates a breadcrumb and sets the current route as a tag.
-     */
-    private _onConfirmRoute;
-    /** Create routing idle transaction. */
-    private _createRouteTransaction;
-    /**
-     * Start app state aware idle transaction on the scope.
-     */
-    private _startIdleTransaction;
-}
+    state: NativescriptTracingState;
+    setCurrentRoute: (route: string) => void;
+};
+export type NativescriptTracingIntegration = ReturnType<typeof nativescriptTracingIntegration>;
+/**
+ * Returns the current Nativescript Tracing integration.
+ */
+export declare function getCurrentNativescriptTracingIntegration(): NativescriptTracingIntegration | undefined;
+/**
+ * Returns Nativescript Tracing integration of given client.
+ */
+export declare function getNativescriptTracingIntegration(client: Client): NativescriptTracingIntegration | undefined;

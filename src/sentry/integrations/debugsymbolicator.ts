@@ -1,6 +1,9 @@
-import { addEventProcessor, addGlobalEventProcessor, getCurrentHub } from '@sentry/core';
-import { Event, EventHint, Integration, StackFrame, StackLineParser } from '@sentry/types';
-import { logger, stackParserFromStackParserOptions } from '@sentry/utils';
+import type { Event, EventHint, Integration, StackFrame } from '@sentry/core';
+import { debug, stackParserFromStackParserOptions } from '@sentry/core';
+
+type StackLineParser = [number, (line: string) => StackFrame | null];
+
+const INTEGRATION_NAME = 'DebugSymbolicator';
 
 // const INTERNAL_CALLSITES_REGEX = new RegExp(['/Libraries/Renderer/oss/NativescriptRenderer-dev\\.js$', '/Libraries/BatchedBridge/MessageQueue\\.js$'].join('|'));
 
@@ -106,68 +109,47 @@ export function parseErrorStack(e: NativescriptError): StackFrame[] {
 }
 
 /** Tries to symbolicate the JS stack trace on the device. */
-export class DebugSymbolicator implements Integration {
-    /**
-     * @inheritDoc
-     */
-    public name: string = DebugSymbolicator.id;
-    /**
-     * @inheritDoc
-     */
-    public static id: string = 'DebugSymbolicator';
-
-    /**
-     * @inheritDoc
-     */
-    public setupOnce(): void {
-        addGlobalEventProcessor(async (event: Event, hint?: EventHint) => {
-            const self = getCurrentHub().getIntegration(DebugSymbolicator);
-            if (!self || hint === undefined || hint.originalException === undefined) {
-                return event;
-            }
-            // @ts-ignore
-            const error: NativescriptError = hint.originalException;
-            // const parseErrorStack = require('react-native/Libraries/Core/Devtools/parseErrorStack');
-            const stack = parseErrorStack(error);
-
-            // Ideally this should go into contexts but android sdk doesn't support it
-            event.extra = {
-                ...event.extra,
-                componentStack: error.componentStack,
-                jsEngine: error.jsEngine
-            };
-
-            await self._symbolicate(event, stack);
-
-            event.platform = 'node'; // Setting platform node makes sure we do not show source maps errors
-
+export const debugSymbolicatorIntegration = (): Integration => ({
+    name: INTEGRATION_NAME,
+    // eslint-disable-next-line @typescript-eslint/require-await
+    processEvent: async (event: Event, hint?: EventHint): Promise<Event> => {
+        if (!event.exception?.values?.length) {
             return event;
-        });
-    }
-
-    /**
-     * Symbolicates the stack on the device talking to local dev server.
-     * Mutates the passed event.
-     */
-    private async _symbolicate(event: Event, stack: StackFrame[]): Promise<void> {
-        try {
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            this._replaceFramesInEvent(event, stack);
-        } catch (error) {
-            if (error instanceof Error) {
-                logger.warn(`Unable to symbolicate stack trace: ${error.message}`);
-            }
         }
-    }
 
-    /**
-     * Replaces the frames in the exception of a error.
-     * @param event Event
-     * @param frames StackFrame[]
-     */
-    private _replaceFramesInEvent(event: Event, frames: StackFrame[]): void {
-        if (event.exception?.values?.[0].stacktrace) {
-            event.exception.values[0].stacktrace.frames = frames.reverse();
+        const error = (hint?.originalException || hint?.syntheticException) as NativescriptError | undefined;
+
+        if (!error || typeof error !== 'object' || error.preventSymbolication) {
+            return event;
         }
+
+        const stack = parseErrorStack(error);
+        if (!stack.length) {
+            return event;
+        }
+
+        // Ideally this should go into contexts but android sdk doesn't support it
+        event.extra = {
+            ...event.extra,
+            componentStack: error.componentStack,
+            jsEngine: error.jsEngine
+        };
+
+        replaceFramesInEvent(event, stack);
+
+        event.platform = 'node'; // Setting platform node makes sure we do not show source maps errors
+
+        return event;
+    }
+});
+
+/**
+ * Replaces the frames in the exception of a error.
+ * @param event Event
+ * @param frames StackFrame[]
+ */
+function replaceFramesInEvent(event: Event, frames: StackFrame[]): void {
+    if (event.exception?.values?.[0].stacktrace) {
+        event.exception.values[0].stacktrace.frames = frames.reverse();
     }
 }

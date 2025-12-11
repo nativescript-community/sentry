@@ -1,5 +1,5 @@
-import { addGlobalEventProcessor, getCurrentHub } from '@sentry/core';
-import { logger, stackParserFromStackParserOptions } from '@sentry/utils';
+import { stackParserFromStackParserOptions } from '@sentry/core';
+const INTEGRATION_NAME = 'DebugSymbolicator';
 // xport type ExtendedError = Error & {
 //   jsEngine?: string,
 //   preventSymbolication?: boolean,
@@ -64,65 +64,40 @@ export function parseErrorStack(e) {
     return stackParser(stack);
 }
 /** Tries to symbolicate the JS stack trace on the device. */
-export class DebugSymbolicator {
-    constructor() {
-        /**
-         * @inheritDoc
-         */
-        this.name = DebugSymbolicator.id;
-    }
-    /**
-     * @inheritDoc
-     */
-    setupOnce() {
-        addGlobalEventProcessor(async (event, hint) => {
-            const self = getCurrentHub().getIntegration(DebugSymbolicator);
-            if (!self || hint === undefined || hint.originalException === undefined) {
-                return event;
-            }
-            // @ts-ignore
-            const error = hint.originalException;
-            // const parseErrorStack = require('react-native/Libraries/Core/Devtools/parseErrorStack');
-            const stack = parseErrorStack(error);
-            // Ideally this should go into contexts but android sdk doesn't support it
-            event.extra = {
-                ...event.extra,
-                componentStack: error.componentStack,
-                jsEngine: error.jsEngine
-            };
-            await self._symbolicate(event, stack);
-            event.platform = 'node'; // Setting platform node makes sure we do not show source maps errors
+export const debugSymbolicatorIntegration = () => ({
+    name: INTEGRATION_NAME,
+    // eslint-disable-next-line @typescript-eslint/require-await
+    processEvent: async (event, hint) => {
+        if (!event.exception?.values?.length) {
             return event;
-        });
+        }
+        const error = (hint?.originalException || hint?.syntheticException);
+        if (!error || typeof error !== 'object' || error.preventSymbolication) {
+            return event;
+        }
+        const stack = parseErrorStack(error);
+        if (!stack.length) {
+            return event;
+        }
+        // Ideally this should go into contexts but android sdk doesn't support it
+        event.extra = {
+            ...event.extra,
+            componentStack: error.componentStack,
+            jsEngine: error.jsEngine
+        };
+        replaceFramesInEvent(event, stack);
+        event.platform = 'node'; // Setting platform node makes sure we do not show source maps errors
+        return event;
     }
-    /**
-     * Symbolicates the stack on the device talking to local dev server.
-     * Mutates the passed event.
-     */
-    async _symbolicate(event, stack) {
-        try {
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            this._replaceFramesInEvent(event, stack);
-        }
-        catch (error) {
-            if (error instanceof Error) {
-                logger.warn(`Unable to symbolicate stack trace: ${error.message}`);
-            }
-        }
-    }
-    /**
-     * Replaces the frames in the exception of a error.
-     * @param event Event
-     * @param frames StackFrame[]
-     */
-    _replaceFramesInEvent(event, frames) {
-        if (event.exception?.values?.[0].stacktrace) {
-            event.exception.values[0].stacktrace.frames = frames.reverse();
-        }
+});
+/**
+ * Replaces the frames in the exception of a error.
+ * @param event Event
+ * @param frames StackFrame[]
+ */
+function replaceFramesInEvent(event, frames) {
+    if (event.exception?.values?.[0].stacktrace) {
+        event.exception.values[0].stacktrace.frames = frames.reverse();
     }
 }
-/**
- * @inheritDoc
- */
-DebugSymbolicator.id = 'DebugSymbolicator';
 //# sourceMappingURL=debugsymbolicator.js.map

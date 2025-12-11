@@ -1,28 +1,19 @@
-import { EventProcessor, Integration } from '@sentry/types';
+import type { Event, Integration } from '@sentry/core';
+import { addEventProcessor } from '@sentry/core';
+
+const INTEGRATION_NAME = 'EventOrigin';
 
 /** Default EventOrigin instrumentation */
-export class EventOrigin implements Integration {
-    /**
-   * @inheritDoc
-   */
-    public static id: string = 'EventOrigin';
-
-    /**
-   * @inheritDoc
-   */
-    public name: string = EventOrigin.id;
-
-    /**
-   * @inheritDoc
-   */
-    public setupOnce(addGlobalEventProcessor: (e: EventProcessor) => void): void {
-        addGlobalEventProcessor((event) => {
+export const eventOriginIntegration = (): Integration => ({
+    name: INTEGRATION_NAME,
+    setup: () => {
+        addEventProcessor((event: Event) => {
             event.tags = event.tags ?? {};
 
-            event.tags['event.origin'] = __ANDROID__?'android' : __IOS__ ? 'ios' : 'javascript';
+            event.tags['event.origin'] = __ANDROID__ ? 'android' : __IOS__ ? 'ios' : 'javascript';
             event.tags['event.environment'] = 'nativescript';
 
             return event;
         });
     }
-}
+});

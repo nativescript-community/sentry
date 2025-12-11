@@ -1,4 +1,4 @@
-import { severityLevelFromString } from '@sentry/utils';
+import { severityLevelFromString } from '@sentry/core';
 export const DEFAULT_BREADCRUMB_LEVEL = 'info';
 /**
  * Convert plain object to a valid Breadcrumb

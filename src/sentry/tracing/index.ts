@@ -1,22 +1,8 @@
-export { NativescriptTracing } from './nstracing';
+export { nativescriptTracingIntegration, INTEGRATION_NAME as NATIVESCRIPT_TRACING_INTEGRATION_NAME, getCurrentNativescriptTracingIntegration, getNativescriptTracingIntegration } from './nstracing';
+export type { NativescriptTracingIntegration } from './nstracing';
 
-export {
-    RoutingInstrumentation,
-    RoutingInstrumentationInstance,
-} from './routingInstrumentation';
+export { startIdleNavigationSpan, startIdleSpan, getDefaultIdleNavigationSpanOptions } from './span';
 
-// export {
-//     ReactNavigationInstrumentation,
-//     // eslint-disable-next-line deprecation/deprecation
-//     ReactNavigationV5Instrumentation,
-// } from './reactnavigation';
-// export { ReactNavigationV4Instrumentation } from './reactnavigationv4';
-// export { NativescriptNavigationInstrumentation } from './reactnativenavigation';
+export type { NativescriptNavigationCurrentRoute, NativescriptNavigationRoute } from './types';
 
-// export {
-//     ReactNavigationCurrentRoute,
-//     ReactNavigationRoute,
-//     ReactNavigationTransactionContext,
-// } from './types';
-
-// export { NativescriptProfiler } from './reactnativeprofiler';
+export * from './ops';

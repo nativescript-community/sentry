@@ -1,4 +1,5 @@
-import { Integration } from '@sentry/types';
+import type { Client, Integration } from '@sentry/core';
+export declare const INTEGRATION_NAME = "NativescriptErrorHandlers";
 /** NativescriptErrorHandlers Options */
 export interface NativescriptErrorHandlersOptions {
     onerror?: boolean;
@@ -14,33 +15,20 @@ export interface NativescriptErrorHandlersOptions {
      */
     patchGlobalPromise?: boolean;
 }
-/** NativescriptErrorHandlers Integration */
-export declare class NativescriptErrorHandlers implements Integration {
-    /**
-     * @inheritDoc
-     */
-    static id: string;
-    /**
-     * @inheritDoc
-     */
-    name: string;
-    /** NativescriptOptions */
-    private readonly _options;
-    /** Constructor */
-    constructor(options?: NativescriptErrorHandlersOptions);
-    /**
-     * @inheritDoc
-     */
-    setupOnce(): void;
-    /**
-     * Handle Promises
-     */
-    private _handleUnhandledRejections;
-    private globalHanderEvent;
+export declare const defaultNativescriptErrorHandlersOptions: NativescriptErrorHandlersOptions;
+export interface NativescriptErrorHandlersState {
     handlingFatal: boolean;
-    private globalHander;
-    /**
-     * Handle erros
-     */
-    private _handleOnError;
 }
+export declare const nativescriptErrorHandlersIntegration: (options?: Partial<NativescriptErrorHandlersOptions>) => Integration & {
+    options: NativescriptErrorHandlersOptions;
+    state: NativescriptErrorHandlersState;
+};
+export type NativescriptErrorHandlersIntegration = ReturnType<typeof nativescriptErrorHandlersIntegration>;
+/**
+ * Returns the current NativescriptErrorHandlers integration.
+ */
+export declare function getCurrentNativescriptErrorHandlersIntegration(): NativescriptErrorHandlersIntegration | undefined;
+/**
+ * Returns NativescriptErrorHandlers integration of given client.
+ */
+export declare function getNativescriptErrorHandlersIntegration(client: Client): NativescriptErrorHandlersIntegration | undefined;

@@ -1,5 +1,5 @@
-import { BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel, User } from '@sentry/types';
-import { SentryError, logger } from '@sentry/utils';
+import type { BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel, User } from '@sentry/core';
+import { SentryError, debug } from '@sentry/core';
 import { parseErrorStack } from './integrations/debugsymbolicator';
 import { isHardCrash } from './misc';
 import { NativescriptOptions } from './options';
@@ -242,7 +242,7 @@ export namespace NATIVE {
      */
     export async function sendEnvelope(envelope: Envelope) {
         if (!enableNative) {
-            logger.warn('Event was skipped as native SDK is not enabled.');
+            debug.warn('Event was skipped as native SDK is not enabled.');
             return;
         }
         const [EOL] = utf8ToBytes('\n');

@@ -1,13 +1,11 @@
-import { getCurrentHub } from '@sentry/core';
-import { eventFromUnknownInput } from '@sentry/browser/esm/eventbuilder';
-import { EventHint, Integration, SeverityLevel } from '@sentry/types';
-import { NATIVE } from '../wrapper';
-import { addExceptionMechanism, logger } from '@sentry/utils';
+import { Application } from '@nativescript/core';
+import type { Client, EventHint, Integration, SeverityLevel } from '@sentry/core';
+import { addExceptionMechanism, debug, getClient } from '@sentry/core';
+import type { NativescriptClientOptions } from '../options';
+import { attachScreenshotToEventHint } from './screenshot';
+import { eventFromUnknownInput } from '../utils/eventbuilder';
 
-import { NativescriptClient } from '../client';
-
-import { Application, Trace } from '@nativescript/core';
-import { Screenshot } from './screenshot';
+export const INTEGRATION_NAME = 'NativescriptErrorHandlers';
 
 /** NativescriptErrorHandlers Options */
 export interface NativescriptErrorHandlersOptions {
@@ -28,87 +26,54 @@ export interface NativescriptErrorHandlersOptions {
     patchGlobalPromise?: boolean;
 }
 
-interface PromiseRejectionTrackingOptions {
-    onUnhandled: (id: string, error: unknown) => void;
-    onHandled: (id: string) => void;
+export const defaultNativescriptErrorHandlersOptions: NativescriptErrorHandlersOptions = {
+    // uncaughtErrors: false,
+    onerror: false,
+    onunhandledrejection: false,
+    patchGlobalPromise: true
+};
+
+export interface NativescriptErrorHandlersState {
+    handlingFatal: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const global: any;
 
-/** NativescriptErrorHandlers Integration */
-export class NativescriptErrorHandlers implements Integration {
-    /**
-     * @inheritDoc
-     */
-    public static id: string = 'NativescriptErrorHandlers';
+export const nativescriptErrorHandlersIntegration = (
+    options: Partial<NativescriptErrorHandlersOptions> = {}
+): Integration & {
+    options: NativescriptErrorHandlersOptions;
+    state: NativescriptErrorHandlersState;
+} => {
+    const state: NativescriptErrorHandlersState = {
+        handlingFatal: false
+    };
 
-    /**
-     * @inheritDoc
-     */
-    public name: string = NativescriptErrorHandlers.id;
+    const finalOptions = {
+        ...defaultNativescriptErrorHandlersOptions,
+        ...options
+    };
 
-    /** NativescriptOptions */
-    private readonly _options: NativescriptErrorHandlersOptions;
+    const globalHanderEvent = (event: any) => {
+        globalHander(event.error);
+    };
 
-    /** Constructor */
-    public constructor(options?: NativescriptErrorHandlersOptions) {
-        this._options = {
-            // uncaughtErrors: false,
-            onerror: false,
-            onunhandledrejection: false,
-            patchGlobalPromise: true,
-            ...options
-        };
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public setupOnce(): void {
-        this._handleUnhandledRejections();
-        this._handleOnError();
-    }
-
-    /**
-     * Handle Promises
-     */
-    private _handleUnhandledRejections(): void {
-        if (this._options.onunhandledrejection) {
-            // if (this._options.uncaughtErrors) {
-            Application.on(Application.uncaughtErrorEvent, this.globalHanderEvent, this);
-            // }
-            // if (this._options.patchGlobalPromise) {
-            //     this._polyfillPromise();
-            // }
-
-            // this._attachUnhandledRejectionHandler();
-            // this._checkPromiseAndWarn();
-        }
-    }
-
-    private globalHanderEvent(event) {
-        this.globalHander(event.error);
-    }
-    handlingFatal = false;
-
-    private globalHander(error: any, isFatal?: boolean) {
+    const globalHander = (error: any, isFatal?: boolean) => {
         try {
             // We want to handle fatals, but only in production mode.
             const shouldHandleFatal = isFatal && !__DEV__;
             if (shouldHandleFatal) {
-                if (this.handlingFatal) {
-                    logger.log('Encountered multiple fatals in a row. The latest:', error);
+                if (state.handlingFatal) {
+                    debug.log('Encountered multiple fatals in a row. The latest:', error);
                     return;
                 }
-                this.handlingFatal = true;
+                state.handlingFatal = true;
             }
-
-            const currentHub = getCurrentHub();
-            const client = currentHub.getClient<NativescriptClient>();
+            const client = getClient();
 
             if (!client) {
-                logger.error('Sentry client is missing, the error event might be lost.', error);
+                debug.error('Sentry client is missing, the error event might be lost.', error);
 
                 // If there is no client something is fishy, anyway we call the default handler
                 //   defaultHandler(error, isFatal);
@@ -125,8 +90,9 @@ export class NativescriptErrorHandlers implements Integration {
                 originalException: error
             };
             const syntheticException = (hint && hint.syntheticException) || undefined;
-            hint = Screenshot.attachScreenshotToEventHint(hint, client.getOptions());
-            const event = eventFromUnknownInput(client.getOptions().stackParser, error, syntheticException, client.getOptions().attachStacktrace);
+            const clientOptions = client.getOptions() as NativescriptClientOptions;
+            hint = attachScreenshotToEventHint(hint, { attachScreenshot: clientOptions.attachScreenshot });
+            const event = eventFromUnknownInput(clientOptions.stackParser, error, syntheticException, clientOptions.attachStacktrace);
             addExceptionMechanism(event); // defaults to { type: 'generic', handled: true }
             event.level = 'error';
             if (hint && hint.event_id) {
@@ -155,23 +121,62 @@ export class NativescriptErrorHandlers implements Integration {
         //     // Just for a better dev experience
         //     defaultHandler(error, isFatal);
         // }
-    }
+    };
 
-    /**
-     * Handle erros
-     */
-    private _handleOnError(): void {
-        if (this._options.onerror) {
+    const setup = (_client: Client): void => {
+        // Handle Promises
+        if (finalOptions.onunhandledrejection) {
+            // if (finalOptions.uncaughtErrors) {
+            Application.on(Application.uncaughtErrorEvent, globalHanderEvent);
+            // }
+            // if (finalOptions.patchGlobalPromise) {
+            //     polyfillPromise();
+            // }
+
+            // attachUnhandledRejectionHandler();
+            // checkPromiseAndWarn();
+        }
+
+        // Handle errors
+        if (finalOptions.onerror) {
             // let handlingFatal = false;
-            // Application.on(Application.uncaughtErrorEvent, this.globalHanderEvent, this);
-            Application.on(Application.discardedErrorEvent, this.globalHanderEvent, this);
+            // Application.on(Application.uncaughtErrorEvent, globalHanderEvent);
+            Application.on(Application.discardedErrorEvent, globalHanderEvent);
 
             // Trace.setErrorHandler({
-            //     handlerError: this.globalHander
+            //     handlerError: globalHander
             // });
             // const defaultHandler = ErrorUtils.getGlobalHandler && ErrorUtils.getGlobalHandler();
 
             // ErrorUtils.setGlobalHandler);
         }
+    };
+
+    return {
+        name: INTEGRATION_NAME,
+        setup,
+        options: finalOptions,
+        state
+    };
+};
+
+export type NativescriptErrorHandlersIntegration = ReturnType<typeof nativescriptErrorHandlersIntegration>;
+
+/**
+ * Returns the current NativescriptErrorHandlers integration.
+ */
+export function getCurrentNativescriptErrorHandlersIntegration(): NativescriptErrorHandlersIntegration | undefined {
+    const client = getClient();
+    if (!client) {
+        return undefined;
     }
+
+    return getNativescriptErrorHandlersIntegration(client);
+}
+
+/**
+ * Returns NativescriptErrorHandlers integration of given client.
+ */
+export function getNativescriptErrorHandlersIntegration(client: Client): NativescriptErrorHandlersIntegration | undefined {
+    return client.getIntegrationByName(INTEGRATION_NAME);
 }

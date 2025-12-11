@@ -1,21 +1,5 @@
-import {
-    Attachment,
-    AttachmentItem,
-    BaseEnvelopeItemHeaders,
-    Breadcrumb,
-    ClientReportItem,
-    Envelope,
-    Event,
-    EventItem,
-    Package,
-    SessionItem,
-    SeverityLevel,
-    User,
-    UserFeedbackItem
-} from '@sentry/types';
+import { Attachment, Breadcrumb, Envelope, Event, User } from '@sentry/types';
 import { NativescriptOptions } from './options';
-import { SentryError, logger } from '@sentry/utils';
-import { Hub, Scope } from '@sentry/core';
 
 export interface NativeAppStartResponse {
     isColdStart: boolean;
@@ -118,8 +102,6 @@ export namespace NATIVE {
     function clearBreadcrumbs();
 
     function setContext(key: string, context: { [key: string]: any } | null);
-
-    function withScope(callback: (scope: Scope) => void): ReturnType<Hub['withScope']>;
 
     function utf8ToBytes(str: string): Uint8Array;
 

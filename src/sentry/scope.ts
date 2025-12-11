@@ -1,106 +1,83 @@
-import { Scope } from '@sentry/core';
-import type { Attachment, Breadcrumb, User } from '@sentry/types';
+import type { Breadcrumb, Scope } from '@sentry/core';
+import { debug } from '@sentry/core';
 
 import { DEFAULT_BREADCRUMB_LEVEL } from './breadcrumb';
+import { fillTyped } from './utils/fill';
 import { convertToNormalizedObject } from './utils/normalize';
 import { NATIVE } from './wrapper';
 
 /**
- * Extends the scope methods to set scope on the Native SDKs
+ * This WeakMap is used to keep track of which scopes have been synced to the native SDKs.
+ * This ensures that we don't double sync the same scope.
  */
-export class NativescriptScope extends Scope {
-    /**
-     * @inheritDoc
-     */
-    public setUser(user: User | null): this {
+const syncedToNativeMap = new WeakMap<Scope, true>();
+
+/**
+ * Hooks into the scope set methods and sync new data added to the given scope with the native SDKs.
+ */
+export function enableSyncToNative(scope: Scope): void {
+    if (syncedToNativeMap.has(scope)) {
+        return;
+    }
+    syncedToNativeMap.set(scope, true);
+
+    fillTyped(scope, 'setUser', (original) => (user): Scope => {
         NATIVE.setUser(user);
-        return super.setUser(user);
-    }
+        return original.call(scope, user);
+    });
 
-    /**
-     * @inheritDoc
-     */
-    public setTag(key: string, value: string): this {
-        NATIVE.setTag(key, value);
-        return super.setTag(key, value);
-    }
+    fillTyped(scope, 'setTag', (original) => (key, value): Scope => {
+        NATIVE.setTag(key, String(value));
+        return original.call(scope, key, value);
+    });
 
-    /**
-     * @inheritDoc
-     */
-    public setTags(tags: { [key: string]: string }): this {
+    fillTyped(scope, 'setTags', (original) => (tags): Scope => {
         // As native only has setTag, we just loop through each tag key.
         Object.keys(tags).forEach((key) => {
-            NATIVE.setTag(key, tags[key]);
+            NATIVE.setTag(key, String(tags[key]));
         });
-        return super.setTags(tags);
-    }
+        return original.call(scope, tags);
+    });
 
-    /**
-     * @inheritDoc
-     */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public setExtras(extras: { [key: string]: any }): this {
+    fillTyped(scope, 'setExtras', (original) => (extras): Scope => {
         Object.keys(extras).forEach((key) => {
             NATIVE.setExtra(key, extras[key]);
         });
-        return super.setExtras(extras);
-    }
+        return original.call(scope, extras);
+    });
 
-    /**
-     * @inheritDoc
-     */
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-explicit-any
-    public setExtra(key: string, extra: any): this {
-        NATIVE.setExtra(key, extra);
-        return super.setExtra(key, extra);
-    }
+    fillTyped(scope, 'setExtra', (original) => (key, value): Scope => {
+        NATIVE.setExtra(key, value);
+        return original.call(scope, key, value);
+    });
 
-    /**
-     * @inheritDoc
-     */
-    public addBreadcrumb(breadcrumb: Breadcrumb, maxBreadcrumbs?: number): this {
+    fillTyped(scope, 'addBreadcrumb', (original) => (breadcrumb, maxBreadcrumbs): Scope => {
         const mergedBreadcrumb: Breadcrumb = {
             ...breadcrumb,
             level: breadcrumb.level || DEFAULT_BREADCRUMB_LEVEL,
             data: breadcrumb.data ? convertToNormalizedObject(breadcrumb.data) : undefined
         };
 
-        // super.addBreadcrumb(mergedBreadcrumb, maxBreadcrumbs);
+        original.call(scope, mergedBreadcrumb, maxBreadcrumbs);
 
-        // const finalBreadcrumb = this._breadcrumbs[this._breadcrumbs.length - 1];
-        NATIVE.addBreadcrumb(mergedBreadcrumb);
-        return this;
-    }
+        const finalBreadcrumb = typeof (scope as any).getLastBreadcrumb === 'function' ? (scope as any).getLastBreadcrumb() : undefined;
+        if (finalBreadcrumb) {
+            NATIVE.addBreadcrumb(finalBreadcrumb);
+        } else {
+            debug.warn('[ScopeSync] Last created breadcrumb is undefined. Skipping sync to native.');
+        }
 
-    /**
-     * @inheritDoc
-     */
-    public clearBreadcrumbs(): this {
+        return scope;
+    });
+
+    fillTyped(scope, 'clearBreadcrumbs', (original) => (): Scope => {
         NATIVE.clearBreadcrumbs();
-        return super.clearBreadcrumbs();
-    }
+        return original.call(scope);
+    });
 
-    /**
-     * @inheritDoc
-     */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public setContext(key: string, context: { [key: string]: any } | null): this {
+    fillTyped(scope, 'setContext', (original) => (key: string, context: { [key: string]: any } | null): Scope => {
         NATIVE.setContext(key, context);
-        return super.setContext(key, context);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public addAttachment(attachment: Attachment): this {
-        return super.addAttachment(attachment);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public clearAttachments(): this {
-        return super.clearAttachments();
-    }
+        return original.call(scope, key, context);
+    });
 }

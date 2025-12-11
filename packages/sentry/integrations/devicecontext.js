@@ -1,31 +1,19 @@
-import { addEventProcessor, getCurrentHub } from '@sentry/core';
-import { logger, severityLevelFromString } from '@sentry/utils';
-import { NATIVE } from '../wrapper';
-import { breadcrumbFromObject } from '../breadcrumb';
+import { addEventProcessor, debug, severityLevelFromString } from '@sentry/core';
 import { Application } from '@nativescript/core';
+import { breadcrumbFromObject } from '../breadcrumb';
+import { NATIVE } from '../wrapper';
+export const INTEGRATION_NAME = 'DeviceContext';
 /** Load device context from native. */
-export class DeviceContext {
-    constructor() {
-        /**
-         * @inheritDoc
-         */
-        this.name = DeviceContext.id;
-    }
-    /**
-     * @inheritDoc
-     */
-    setupOnce() {
+export const deviceContextIntegration = () => ({
+    name: INTEGRATION_NAME,
+    setup: () => {
         addEventProcessor(async (event) => {
-            const self = getCurrentHub().getIntegration(DeviceContext);
-            if (!self) {
-                return event;
-            }
             let native = null;
             try {
                 native = await NATIVE.fetchNativeDeviceContexts();
             }
             catch (e) {
-                logger.log(`Failed to get device context from native: ${e}`);
+                debug.log(`Failed to get device context from native: ${e}`);
             }
             if (!native) {
                 return event;
@@ -75,9 +63,5 @@ export class DeviceContext {
             return event;
         });
     }
-}
-/**
- * @inheritDoc
- */
-DeviceContext.id = 'DeviceContext';
+});
 //# sourceMappingURL=devicecontext.js.map
