@@ -90,7 +90,7 @@ export function getDefaultIntegrations(options: NativescriptClientOptions & Nati
     //     integrations.push(new DebugSymbolicator());
     // }
 
-    integrations.push(rewriteFrameIntegration as any);
+    integrations.push(rewriteFrameIntegration);
 
     if (options.enableNative) {
         integrations.push(deviceContextIntegration());
