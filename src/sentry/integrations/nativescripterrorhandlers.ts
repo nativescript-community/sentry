@@ -1,9 +1,9 @@
 import { Application } from '@nativescript/core';
-import { eventFromUnknownInput } from '@sentry/browser/build/npm/types/eventbuilder';
 import type { Client, EventHint, Integration, SeverityLevel } from '@sentry/core';
 import { addExceptionMechanism, debug, getClient } from '@sentry/core';
 import type { NativescriptClientOptions } from '../options';
 import { attachScreenshotToEventHint } from './screenshot';
+import { eventFromUnknownInput } from '../utils/eventbuilder';
 
 export const INTEGRATION_NAME = 'NativescriptErrorHandlers';
 

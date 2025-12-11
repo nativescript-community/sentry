@@ -1,6 +1,6 @@
 import type { Integration, StackFrame } from '@sentry/core';
 import type { NativescriptClientOptions, NativescriptOptions } from '../options';
-export declare let rewriteFrameIntegration: {
+export declare let rewriteFrameIntegration: Integration & {
     _iteratee: (frame: StackFrame) => StackFrame;
 };
 /**
