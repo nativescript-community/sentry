@@ -3,11 +3,11 @@ import {
     Scope,
     UserFeedback,
     withScope as coreWithScope,
+    debug,
     getClient,
     getGlobalScope,
     getIntegrationsToSetup,
     initAndBind,
-    logger,
     setExtra,
     stackParserFromStackParserOptions
 } from '@sentry/core';
@@ -264,7 +264,7 @@ export function withScope<T>(callback: (scope: Scope) => T): T | undefined {
         try {
             return callback(scope);
         } catch (e) {
-            logger.error('Error while running withScope callback', e);
+            debug.error('Error while running withScope callback', e);
             return undefined;
         }
     };
