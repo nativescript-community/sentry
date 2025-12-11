@@ -1,30 +1,32 @@
-import { HttpClient, RewriteFrames } from '@sentry/integrations';
+import { httpClientIntegration, rewriteFramesIntegration } from '@sentry/browser';
 // import { Integrations as BrowserReactIntegrations } from '@sentry/react';
-import type { Integration, StackFrame } from '@sentry/types';
+import type { Integration, StackFrame } from '@sentry/core';
 
 import type { NativescriptClientOptions, NativescriptOptions } from '../options';
 // import { HermesProfiling } from '../profiling/integration';
-import { NativescriptTracing } from '../tracing';
+import { nativescriptTracingIntegration } from '../tracing';
 // import { isExpoGo, notWeb } from '../utils/environment';
-import { DeviceContext } from './devicecontext';
-import { EventOrigin } from './eventorigin';
+import { deviceContextIntegration } from './devicecontext';
+import { eventOriginIntegration } from './eventorigin';
 // import { ExpoContext } from './expocontext';
 // import { ModulesLoader } from './modulesloader';
 // import { NativeLinkedErrors } from './nativelinkederrors';
-import { NativescriptErrorHandlers } from './nativescripterrorhandlers';
+import { nativescriptErrorHandlersIntegration } from './nativescripterrorhandlers';
 // import { ReactNativeInfo } from './reactnativeinfo';
-import { Release } from './release';
+import { releaseIntegration } from './release';
 // import { createReactNativeRewriteFrames } from './rewriteframes';
-import { Screenshot } from './screenshot';
-import { SdkInfo } from './sdkinfo';
+import { createNativeFramesIntegrations } from '../tracing/integrations/nativeFrames';
+import { stallTrackingIntegration } from '../tracing/integrations/stalltracking';
+import { screenshotIntegration } from './screenshot';
+import { sdkInfoIntegration } from './sdkinfo';
 // import { Spotlight } from './spotlight';
 // import { ViewHierarchy } from './viewhierarchy';
 
-export let rewriteFrameIntegration: {
+export let rewriteFrameIntegration: Integration & {
     _iteratee: (frame: StackFrame) => StackFrame;
 };
 /**
- * Returns the default ReactNative integrations based on the current environment.
+ * Returns the default Nativescript integrations based on the current environment.
  *
  * Native integrations are only returned when native is enabled.
  *
@@ -57,11 +59,13 @@ export function getDefaultIntegrations(options: NativescriptClientOptions & Nati
         return frame;
     };
 
-    rewriteFrameIntegration = new RewriteFrames({}) as any;
+    rewriteFrameIntegration = rewriteFramesIntegration({
+        iteratee
+    }) as Integration & { _iteratee: (frame: StackFrame) => StackFrame };
     rewriteFrameIntegration._iteratee = iteratee;
 
     // if (notWeb()) {
-    integrations.push(new NativescriptErrorHandlers(options));
+    integrations.push(nativescriptErrorHandlersIntegration(options));
     // integrations.push(new NativeLinkedErrors());
     // } else {
     //     integrations.push(new BrowserReactIntegrations.TryCatch());
@@ -77,9 +81,9 @@ export function getDefaultIntegrations(options: NativescriptClientOptions & Nati
     // integrations.push(new BrowserReactIntegrations.HttpContext());
     // end @sentry/react-native default integrations
 
-    integrations.push(new Release());
-    integrations.push(new EventOrigin());
-    integrations.push(new SdkInfo());
+    integrations.push(releaseIntegration());
+    integrations.push(eventOriginIntegration());
+    integrations.push(sdkInfoIntegration());
     // integrations.push(new ReactNativeInfo());
 
     // if (__DEV__ && notWeb()) {
@@ -89,10 +93,10 @@ export function getDefaultIntegrations(options: NativescriptClientOptions & Nati
     integrations.push(rewriteFrameIntegration as any);
 
     if (options.enableNative) {
-        integrations.push(new DeviceContext());
+        integrations.push(deviceContextIntegration());
         // integrations.push(new ModulesLoader());
         if (options.attachScreenshot) {
-            integrations.push(new Screenshot());
+            integrations.push(screenshotIntegration());
         }
         // if (options.attachViewHierarchy) {
         //     integrations.push(new ViewHierarchy());
@@ -107,10 +111,17 @@ export function getDefaultIntegrations(options: NativescriptClientOptions & Nati
     // `tracesSampleRate: undefined` should not enable tracing
     const hasTracingEnabled = options.enableTracing || typeof options.tracesSampleRate === 'number' || typeof options.tracesSampler === 'function';
     if (hasTracingEnabled && options.enableAutoPerformanceTracing) {
-        integrations.push(new NativescriptTracing());
+        integrations.push(nativescriptTracingIntegration());
+    }
+    const nativeFramesIntegrationInstance = createNativeFramesIntegrations(hasTracingEnabled && options.enableNativeFramesTracking && options.enableNative);
+    if (nativeFramesIntegrationInstance) {
+        integrations.push(nativeFramesIntegrationInstance);
+    }
+    if (hasTracingEnabled && options.enableStallTracking) {
+        integrations.push(stallTrackingIntegration());
     }
     if (options.enableCaptureFailedRequests) {
-        integrations.push(new HttpClient());
+        integrations.push(httpClientIntegration());
     }
 
     // if (isExpoGo()) {

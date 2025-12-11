@@ -1,16 +1,3 @@
-import { EventProcessor, Integration } from '@sentry/types';
+import type { Integration } from '@sentry/core';
 /** Default EventOrigin instrumentation */
-export declare class EventOrigin implements Integration {
-    /**
-   * @inheritDoc
-   */
-    static id: string;
-    /**
-   * @inheritDoc
-   */
-    name: string;
-    /**
-   * @inheritDoc
-   */
-    setupOnce(addGlobalEventProcessor: (e: EventProcessor) => void): void;
-}
+export declare const eventOriginIntegration: () => Integration;

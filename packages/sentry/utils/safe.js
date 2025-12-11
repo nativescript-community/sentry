@@ -1,4 +1,4 @@
-import { logger } from '@sentry/utils';
+import { debug } from '@sentry/core';
 /**
  * Returns callback factory wrapped with try/catch
  * or the original passed value is it's not a function.
@@ -13,9 +13,7 @@ export function safeFactory(danger, options = {}) {
                 return danger(...args);
             }
             catch (error) {
-                logger.error(options.loggerMessage
-                    ? options.loggerMessage
-                    : `The ${danger.name} callback threw an error`, error);
+                debug.error(options.loggerMessage ? options.loggerMessage : `The ${danger.name} callback threw an error`, error);
                 return args[0];
             }
         };
@@ -34,7 +32,7 @@ export function safeTracesSampler(tracesSampler) {
                 return tracesSampler(...args);
             }
             catch (error) {
-                logger.error('The tracesSampler callback threw an error', error);
+                debug.error('The tracesSampler callback threw an error', error);
                 return 0;
             }
         };

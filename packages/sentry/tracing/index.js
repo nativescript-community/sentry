@@ -1,16 +1,4 @@
-export { NativescriptTracing } from './nstracing';
-export { RoutingInstrumentation, } from './routingInstrumentation';
-// export {
-//     ReactNavigationInstrumentation,
-//     // eslint-disable-next-line deprecation/deprecation
-//     ReactNavigationV5Instrumentation,
-// } from './reactnavigation';
-// export { ReactNavigationV4Instrumentation } from './reactnavigationv4';
-// export { NativescriptNavigationInstrumentation } from './reactnativenavigation';
-// export {
-//     ReactNavigationCurrentRoute,
-//     ReactNavigationRoute,
-//     ReactNavigationTransactionContext,
-// } from './types';
-// export { NativescriptProfiler } from './reactnativeprofiler';
+export { nativescriptTracingIntegration, INTEGRATION_NAME as NATIVESCRIPT_TRACING_INTEGRATION_NAME, getCurrentNativescriptTracingIntegration, getNativescriptTracingIntegration } from './nstracing';
+export { startIdleNavigationSpan, startIdleSpan, getDefaultIdleNavigationSpanOptions } from './span';
+export * from './ops';
 //# sourceMappingURL=index.js.map

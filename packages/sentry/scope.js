@@ -1,93 +1,70 @@
-import { Scope } from '@sentry/core';
+import { debug } from '@sentry/core';
 import { DEFAULT_BREADCRUMB_LEVEL } from './breadcrumb';
+import { fillTyped } from './utils/fill';
 import { convertToNormalizedObject } from './utils/normalize';
 import { NATIVE } from './wrapper';
 /**
- * Extends the scope methods to set scope on the Native SDKs
+ * This WeakMap is used to keep track of which scopes have been synced to the native SDKs.
+ * This ensures that we don't double sync the same scope.
  */
-export class NativescriptScope extends Scope {
-    /**
-     * @inheritDoc
-     */
-    setUser(user) {
+const syncedToNativeMap = new WeakMap();
+/**
+ * Hooks into the scope set methods and sync new data added to the given scope with the native SDKs.
+ */
+export function enableSyncToNative(scope) {
+    if (syncedToNativeMap.has(scope)) {
+        return;
+    }
+    syncedToNativeMap.set(scope, true);
+    fillTyped(scope, 'setUser', (original) => (user) => {
         NATIVE.setUser(user);
-        return super.setUser(user);
-    }
-    /**
-     * @inheritDoc
-     */
-    setTag(key, value) {
-        NATIVE.setTag(key, value);
-        return super.setTag(key, value);
-    }
-    /**
-     * @inheritDoc
-     */
-    setTags(tags) {
+        return original.call(scope, user);
+    });
+    fillTyped(scope, 'setTag', (original) => (key, value) => {
+        NATIVE.setTag(key, String(value));
+        return original.call(scope, key, value);
+    });
+    fillTyped(scope, 'setTags', (original) => (tags) => {
         // As native only has setTag, we just loop through each tag key.
         Object.keys(tags).forEach((key) => {
-            NATIVE.setTag(key, tags[key]);
+            NATIVE.setTag(key, String(tags[key]));
         });
-        return super.setTags(tags);
-    }
-    /**
-     * @inheritDoc
-     */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setExtras(extras) {
+        return original.call(scope, tags);
+    });
+    fillTyped(scope, 'setExtras', (original) => (extras) => {
         Object.keys(extras).forEach((key) => {
             NATIVE.setExtra(key, extras[key]);
         });
-        return super.setExtras(extras);
-    }
-    /**
-     * @inheritDoc
-     */
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-explicit-any
-    setExtra(key, extra) {
-        NATIVE.setExtra(key, extra);
-        return super.setExtra(key, extra);
-    }
-    /**
-     * @inheritDoc
-     */
-    addBreadcrumb(breadcrumb, maxBreadcrumbs) {
+        return original.call(scope, extras);
+    });
+    fillTyped(scope, 'setExtra', (original) => (key, value) => {
+        NATIVE.setExtra(key, value);
+        return original.call(scope, key, value);
+    });
+    fillTyped(scope, 'addBreadcrumb', (original) => (breadcrumb, maxBreadcrumbs) => {
         const mergedBreadcrumb = {
             ...breadcrumb,
             level: breadcrumb.level || DEFAULT_BREADCRUMB_LEVEL,
             data: breadcrumb.data ? convertToNormalizedObject(breadcrumb.data) : undefined
         };
-        super.addBreadcrumb(mergedBreadcrumb, maxBreadcrumbs);
-        const finalBreadcrumb = this._breadcrumbs[this._breadcrumbs.length - 1];
-        NATIVE.addBreadcrumb(finalBreadcrumb);
-        return this;
-    }
-    /**
-     * @inheritDoc
-     */
-    clearBreadcrumbs() {
+        original.call(scope, mergedBreadcrumb, maxBreadcrumbs);
+        const finalBreadcrumb = typeof scope.getLastBreadcrumb === 'function' ? scope.getLastBreadcrumb() : undefined;
+        if (finalBreadcrumb) {
+            NATIVE.addBreadcrumb(finalBreadcrumb);
+        }
+        else {
+            debug.warn('[ScopeSync] Last created breadcrumb is undefined. Skipping sync to native.');
+        }
+        return scope;
+    });
+    fillTyped(scope, 'clearBreadcrumbs', (original) => () => {
         NATIVE.clearBreadcrumbs();
-        return super.clearBreadcrumbs();
-    }
-    /**
-     * @inheritDoc
-     */
+        return original.call(scope);
+    });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setContext(key, context) {
+    fillTyped(scope, 'setContext', (original) => (key, context) => {
         NATIVE.setContext(key, context);
-        return super.setContext(key, context);
-    }
-    /**
-     * @inheritDoc
-     */
-    addAttachment(attachment) {
-        return super.addAttachment(attachment);
-    }
-    /**
-     * @inheritDoc
-     */
-    clearAttachments() {
-        return super.clearAttachments();
-    }
+        return original.call(scope, key, context);
+    });
 }
 //# sourceMappingURL=scope.js.map

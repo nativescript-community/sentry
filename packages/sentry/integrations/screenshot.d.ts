@@ -1,22 +1,10 @@
-import { EventHint, Integration } from '@sentry/types';
+import type { EventHint, Integration } from '@sentry/core';
+export declare const INTEGRATION_NAME = "Screenshot";
+/**
+ * If enabled attaches a screenshot to the event hint.
+ */
+export declare function attachScreenshotToEventHint(hint: EventHint, { attachScreenshot }: {
+    attachScreenshot?: boolean;
+}): EventHint;
 /** Adds screenshots to error events */
-export declare class Screenshot implements Integration {
-    /**
-     * @inheritDoc
-     */
-    static id: string;
-    /**
-     * @inheritDoc
-     */
-    name: string;
-    /**
-     * If enabled attaches a screenshot to the event hint.
-     */
-    static attachScreenshotToEventHint(hint: EventHint, { attachScreenshot }: {
-        attachScreenshot?: boolean;
-    }): EventHint;
-    /**
-     * @inheritDoc
-     */
-    setupOnce(): void;
-}
+export declare const screenshotIntegration: () => Integration;

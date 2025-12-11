@@ -1,4 +1,4 @@
-import { logger } from '@sentry/utils';
+import { debug } from '@sentry/core';
 import { SDK_NAME, SDK_PACKAGE_NAME, SDK_VERSION } from '../version';
 import { NATIVE } from '../wrapper';
 export const defaultSdkInfo = {
@@ -11,44 +11,33 @@ export const defaultSdkInfo = {
     ],
     version: SDK_VERSION
 };
+const INTEGRATION_NAME = 'SdkInfo';
 /** Default SdkInfo instrumentation */
-export class SdkInfo {
-    constructor() {
-        /**
-         * @inheritDoc
-         */
-        this.name = SdkInfo.id;
-        this._nativeSdkInfo = null;
-    }
-    /**
-     * @inheritDoc
-     */
-    setupOnce(addGlobalEventProcessor) {
-        addGlobalEventProcessor(async (event) => {
+export const sdkInfoIntegration = () => {
+    let nativeSdkInfo = null;
+    return {
+        name: INTEGRATION_NAME,
+        processEvent: async (event) => {
             // The native SDK info package here is only used on iOS as `beforeSend` is not called on `captureEnvelope`.
-            // this._nativeSdkInfo should be defined a following time so this call won't always be awaited.
-            if (this._nativeSdkInfo === null) {
+            // nativeSdkInfo should be defined a following time so this call won't always be awaited.
+            if (nativeSdkInfo === null) {
                 try {
-                    this._nativeSdkInfo = await NATIVE.fetchNativeSdkInfo();
+                    nativeSdkInfo = await NATIVE.fetchNativeSdkInfo();
                 }
                 catch (e) {
                     // If this fails, go ahead as usual as we would rather have the event be sent with a package missing.
-                    logger.warn('[SdkInfo] Native SDK Info retrieval failed...something could be wrong with your Sentry installation:');
-                    logger.warn(e);
+                    debug.warn('[SdkInfo] Native SDK Info retrieval failed...something could be wrong with your Sentry installation:');
+                    debug.warn(e);
                 }
             }
             event.platform = event.platform || 'javascript';
             event.sdk = {
                 ...(event.sdk ?? {}),
                 ...defaultSdkInfo,
-                packages: [...((event.sdk && event.sdk.packages) || []), ...((this._nativeSdkInfo && [this._nativeSdkInfo]) || []), ...defaultSdkInfo.packages]
+                packages: [...((event.sdk && event.sdk.packages) || []), ...((nativeSdkInfo && [nativeSdkInfo]) || []), ...defaultSdkInfo.packages]
             };
             return event;
-        });
-    }
-}
-/**
- * @inheritDoc
- */
-SdkInfo.id = 'SdkInfo';
+        }
+    };
+};
 //# sourceMappingURL=sdkinfo.js.map

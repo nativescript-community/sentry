@@ -1,10 +1,10 @@
-import { Breadcrumb, Envelope, User } from '@sentry/types';
+import type { Breadcrumb, Envelope, User } from '@sentry/core';
 import { NativescriptOptions } from './options';
 export declare namespace NATIVE {
     function isNativeTransportAvailable(): boolean;
     function sendEnvelope(envelope: Envelope): Promise<void>;
     function prepareEnvelope(envelope: Envelope): number[];
-    function prepareEnvelopeNative(envelope: Envelope): Uint8Array;
+    function prepareEnvelopeNative(envelope: Envelope): Uint8Array<any>;
     function captureEnvelope(envelope: string | Uint8Array | number[], { store }?: {
         store?: boolean;
     }): Promise<boolean>;
@@ -22,7 +22,7 @@ export declare namespace NATIVE {
     function fetchNativeDeviceContexts(): Promise<any>;
     function captureScreenshot(fileName?: string): {
         contentType: string;
-        data: Uint8Array;
+        data: Uint8Array<any>;
         filename: string;
     }[];
     function fetchNativeFrames(): Promise<{
@@ -35,7 +35,7 @@ export declare namespace NATIVE {
         isColdStart: java.lang.Boolean;
         didFetchAppStart: boolean;
     }>;
-    function setUser(user: User | null, otherUserKeys: any): void;
+    function setUser(user: User | null): void;
     function setTag(key: string, value: string): void;
     function setExtra(key: string, extra: any): void;
     function addBreadcrumb(breadcrumb: Breadcrumb, maxBreadcrumbs?: number): void;

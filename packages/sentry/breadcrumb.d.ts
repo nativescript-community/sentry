@@ -1,4 +1,4 @@
-import type { Breadcrumb, SeverityLevel } from '@sentry/types';
+import { type Breadcrumb, type SeverityLevel } from '@sentry/core';
 export declare const DEFAULT_BREADCRUMB_LEVEL: SeverityLevel;
 type BreadcrumbCandidate = {
     [K in keyof Partial<Breadcrumb>]: unknown;

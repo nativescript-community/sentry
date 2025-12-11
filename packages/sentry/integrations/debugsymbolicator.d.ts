@@ -1,4 +1,4 @@
-import { Integration, StackFrame } from '@sentry/types';
+import type { Integration, StackFrame } from '@sentry/core';
 /**
  * React Native Error
  */
@@ -14,29 +14,5 @@ export interface NativescriptStackFrame extends StackFrame {
 }
 export declare function parseErrorStack(e: NativescriptError): StackFrame[];
 /** Tries to symbolicate the JS stack trace on the device. */
-export declare class DebugSymbolicator implements Integration {
-    /**
-     * @inheritDoc
-     */
-    name: string;
-    /**
-     * @inheritDoc
-     */
-    static id: string;
-    /**
-     * @inheritDoc
-     */
-    setupOnce(): void;
-    /**
-     * Symbolicates the stack on the device talking to local dev server.
-     * Mutates the passed event.
-     */
-    private _symbolicate;
-    /**
-     * Replaces the frames in the exception of a error.
-     * @param event Event
-     * @param frames StackFrame[]
-     */
-    private _replaceFramesInEvent;
-}
+export declare const debugSymbolicatorIntegration: () => Integration;
 export {};

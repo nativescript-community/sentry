@@ -1,5 +1,4 @@
-import { BaseTransportOptions, Envelope, Transport } from '@sentry/types';
-import { PromiseBuffer } from '@sentry/utils';
+import { BaseTransportOptions, Envelope, PromiseBuffer, Transport, type TransportMakeRequestResponse } from '@sentry/core';
 export declare const DEFAULT_BUFFER_SIZE = 30;
 export type BaseNativeTransport = BaseTransportOptions;
 export interface BaseNativeTransportOptions {
@@ -11,19 +10,19 @@ export declare class NativeTransport implements Transport {
     protected readonly _buffer: PromiseBuffer<void>;
     constructor(options?: BaseNativeTransportOptions);
     /**
-   * Sends the envelope to the Store endpoint in Sentry.
-   *
-   * @param envelope Envelope that should be sent to Sentry.
-   */
-    send(envelope: Envelope): PromiseLike<void>;
+     * Sends the envelope to the Store endpoint in Sentry.
+     *
+     * @param envelope Envelope that should be sent to Sentry.
+     */
+    send(envelope: Envelope): PromiseLike<TransportMakeRequestResponse>;
     /**
-   * Wait for all envelopes to be sent or the timeout to expire, whichever comes first.
-   *
-   * @param timeout Maximum time in ms the transport should wait for envelopes to be flushed. Omitting this parameter will
-   *   cause the transport to wait until all events are sent before resolving the promise.
-   * @returns A promise that will resolve with `true` if all events are sent before the timeout, or `false` if there are
-   * still events in the queue when the timeout is reached.
-   */
+     * Wait for all envelopes to be sent or the timeout to expire, whichever comes first.
+     *
+     * @param timeout Maximum time in ms the transport should wait for envelopes to be flushed. Omitting this parameter will
+     *   cause the transport to wait until all events are sent before resolving the promise.
+     * @returns A promise that will resolve with `true` if all events are sent before the timeout, or `false` if there are
+     * still events in the queue when the timeout is reached.
+     */
     flush(timeout?: number): PromiseLike<boolean>;
 }
 /**
