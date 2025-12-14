@@ -1,5 +1,5 @@
-import { BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel, User } from '@sentry/types';
-import { SentryError, logger } from '@sentry/utils';
+import type { BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel, User } from '@sentry/core';
+import { SentryError, debug } from '@sentry/core';
 import { parseErrorStack } from './integrations/debugsymbolicator';
 import { isHardCrash } from './misc';
 import { NativescriptOptions } from './options';
@@ -66,7 +66,7 @@ function dataSerialize(data?: any, wrapPrimitives?: boolean) {
 const FATAL_ERROR_REGEXP = /NativeScript encountered a fatal error:([^]*?) at([\t\n\s]*)?([^]*)$/m;
 
 export namespace NATIVE {
-    let enableNative = true;
+    export let enableNative = true;
     const _DisabledNativeError = new SentryError('Native is disabled');
 
     function convertToNativeJavascriptStacktrace(
@@ -242,7 +242,7 @@ export namespace NATIVE {
      */
     export async function sendEnvelope(envelope: Envelope) {
         if (!enableNative) {
-            logger.warn('Event was skipped as native SDK is not enabled.');
+            debug.warn('Event was skipped as native SDK is not enabled.');
             return;
         }
         const [EOL] = utf8ToBytes('\n');
@@ -360,7 +360,7 @@ export namespace NATIVE {
                 }
                 if (count) {
                     for (let index = 0; index < exceptions.count; index++) {
-                        const exception = exceptions.objectAtIndex(index);
+                        const exception = exceptions.objectAtIndex(index) as SentryException;
                         const exceptionvalue = exception.value;
                         if (exceptionvalue) {
                             const matches = exceptionvalue.match(FATAL_ERROR_REGEXP);

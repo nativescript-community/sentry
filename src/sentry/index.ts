@@ -1,14 +1,28 @@
-export { Breadcrumb, Request, SdkInfo, Event, Exception, StackFrame, Stacktrace, Thread, User } from '@sentry/types';
+export type {
+    Breadcrumb,
+    SdkInfo,
+    Event,
+    Exception,
+    SendFeedbackParams,
+    SeverityLevel,
+    Span,
+    StackFrame,
+    Stacktrace,
+    Thread,
+    User,
+    UserFeedback,
+    ErrorEvent,
+    TransactionEvent,
+    Metric
+} from '@sentry/core';
 
 export {
-    addGlobalEventProcessor,
     addBreadcrumb,
+    addIntegration,
     captureException,
     captureEvent,
+    captureFeedback,
     captureMessage,
-    getHubFromCarrier,
-    getCurrentHub,
-    Hub,
     Scope,
     setContext,
     setExtra,
@@ -16,23 +30,28 @@ export {
     setTag,
     setTags,
     setUser,
-    startTransaction
+    startInactiveSpan,
+    startSpan,
+    startSpanManual,
+    getActiveSpan,
+    getRootSpan,
+    withActiveSpan,
+    suppressTracing,
+    spanToJSON,
+    spanIsSampled,
+    setMeasurement,
+    getCurrentScope,
+    getGlobalScope,
+    getIsolationScope,
+    getClient,
+    setCurrentClient,
+    addEventProcessor,
+    lastEventId
 } from '@sentry/core';
 
-import { _addTracingExtensions } from './tracing/addTracingExtensions';
-_addTracingExtensions();
+export { logger, consoleLoggingIntegration, featureFlagsIntegration, type FeatureFlagsIntegration, metrics } from '@sentry/browser';
 
-// export {
-//     Integrations as BrowserIntegrations,
-//     ErrorBoundary,
-//     withErrorBoundary,
-//     createReduxEnhancer,
-//     Profiler,
-//     useProfiler,
-//     withProfiler,
-// } from '@sentry/react';
-
-import * as Integrations from './integrations';
+export * from './integrations/exports';
 import { SDK_NAME, SDK_VERSION } from './version';
 import { Trace } from '@nativescript/core';
 export { NativescriptOptions } from './options';
@@ -41,18 +60,9 @@ export { NativescriptClient } from './client';
 export { init, setDist, setRelease, nativeCrash, flush, close, captureUserFeedback, withScope, crashedLastRun } from './sdk';
 // export { TouchEventBoundary, withTouchEventBoundary } from './touchevents';
 
-export {
-    NativescriptTracing
-    //     ReactNavigationV4Instrumentation,
-    //     // eslint-disable-next-line deprecation/deprecation
-    //     ReactNavigationV5Instrumentation,
-    //     ReactNavigationInstrumentation,
-    //     NativescriptNavigationInstrumentation,
-    //     RoutingInstrumentation,
-    //     ReactNavigationTransactionContext,
-} from './tracing';
+export { nativescriptTracingIntegration, getCurrentNativescriptTracingIntegration, getNativescriptTracingIntegration, startIdleNavigationSpan, startIdleSpan } from './tracing';
 
-export { Integrations, SDK_NAME, SDK_VERSION };
+export { SDK_NAME, SDK_VERSION };
 
 export const SentryTraceCategory = 'Sentry';
 

@@ -36,13 +36,8 @@
     "dependencies": {
         "@nativescript-community/arraybuffers": "^1.1.5",
         "@nativescript-community/plugin-seed-tools": "portal:tools",
-        "@sentry/browser": "7.111.0",
-        "@sentry/core": "7.111.0",
-        "@sentry/hub": "7.111.0",
-        "@sentry/integrations": "7.111.0",
-        "@sentry/tracing": "7.111.0",
-        "@sentry/types": "7.111.0",
-        "@sentry/utils": "8.0.0-beta.3"
+        "@sentry/browser": "^10.30.0",
+        "@sentry/core": "^10.30.0"
     },
     "repository": {
         "type": "git",

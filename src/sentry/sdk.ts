@@ -1,18 +1,23 @@
-import { getCurrentHub } from '@sentry/browser';
-import { Hub, Scope, withScope as coreWithScope, getClient, getIntegrationsToSetup, initAndBind, makeMain, setExtra } from '@sentry/core';
-import { Integration, UserFeedback } from '@sentry/types';
-import { logger, stackParserFromStackParserOptions } from '@sentry/utils';
-
-import { NativescriptClientOptions, NativescriptOptions } from './options';
-
+import {
+    Integration,
+    Scope,
+    UserFeedback,
+    withScope as coreWithScope,
+    debug,
+    getClient,
+    getGlobalScope,
+    getIntegrationsToSetup,
+    initAndBind,
+    setExtra,
+    stackParserFromStackParserOptions
+} from '@sentry/core';
 import { NativescriptClient } from './client';
+import { parseErrorStack } from './integrations/debugsymbolicator';
 import { getDefaultIntegrations } from './integrations/default';
 import { NativescriptErrorHandlersOptions } from './integrations/nativescripterrorhandlers';
-// import { NativescriptScope } from './scope';
-import { parseErrorStack } from './integrations/debugsymbolicator';
-import { NativescriptScope } from './scope';
+import { NativescriptClientOptions, NativescriptOptions } from './options';
+import { enableSyncToNative } from './scope';
 import { DEFAULT_BUFFER_SIZE, makeNativescriptTransport } from './transports/native';
-import { makeUtf8TextEncoder } from './transports/TextEncoder';
 import { getDefaultEnvironment } from './utils/environment';
 import { safeFactory, safeTracesSampler } from './utils/safe';
 import { NATIVE } from './wrapper.ios';
@@ -66,24 +71,24 @@ const DEFAULT_OPTIONS: NativescriptOptions & NativescriptErrorHandlersOptions = 
     enableNativeCrashHandling: true,
     enableNativeNagger: true,
     autoInitializeNativeSdk: true,
-    enableAutoPerformanceTracking: true,
+    enableAutoPerformanceTracing: true,
     enableOutOfMemoryTracking: true,
     patchGlobalPromise: true,
-    transportOptions: {
-        textEncoder: makeUtf8TextEncoder()
-    },
     sendClientReports: true,
     maxQueueSize: DEFAULT_BUFFER_SIZE,
-    attachStacktrace: true
+    attachStacktrace: true,
+    enableStallTracking: true,
+    enableWatchdogTerminationTracking: true,
+    enableCaptureFailedRequests: false,
+    enableNdk: true,
+    enableNativeFramesTracking: true
 };
 
 /**
  * Inits the SDK
  */
 export function init(passedOptions: NativescriptOptions): void {
-    const NativescriptHub = new Hub(undefined, new NativescriptScope());
-    // const NativescriptHub = new Hub(undefined, new NativescriptScope());
-    makeMain(NativescriptHub);
+    enableSyncToNative(getGlobalScope());
 
     const maxQueueSize = passedOptions.maxQueueSize ?? passedOptions.transportOptions?.bufferSize ?? DEFAULT_OPTIONS.maxQueueSize;
     const options: NativescriptClientOptions & NativescriptOptions = {
@@ -259,7 +264,7 @@ export function withScope<T>(callback: (scope: Scope) => T): T | undefined {
         try {
             return callback(scope);
         } catch (e) {
-            logger.error('Error while running withScope callback', e);
+            debug.error('Error while running withScope callback', e);
             return undefined;
         }
     };

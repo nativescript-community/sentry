@@ -1,8 +1,7 @@
-import { BrowserTransportOptions } from '@sentry/browser/types/transports/types';
-// import { ProfilerProps } from '@sentry/react/types/profiler';
-import { ClientOptions, Options } from '@sentry/types';
-import { CaptureContext } from '@sentry/types/types/scope';
+import type { ClientOptions, Options } from '@sentry/core';
 import { NativescriptErrorHandlersOptions } from './integrations/nativescripterrorhandlers';
+import type { makeFetchTransport } from '@sentry/browser';
+type BrowserTransportOptions = Parameters<typeof makeFetchTransport>[0];
 
 /**
  * Configuration options for the Sentry Nativescript SDK.
@@ -79,8 +78,8 @@ export interface BaseNativescriptOptions {
         didCallNativeInit: boolean;
     }) => void;
 
-    /** Enable auto performance tracking by default. */
-    enableAutoPerformanceTracking?: boolean;
+    /** Enable auto performance tracking by default. Renamed from `enableAutoPerformanceTracking` in v5. */
+    enableAutoPerformanceTracing?: boolean;
 
     /**
      * Enables Out of Memory Tracking for iOS and macCatalyst.
@@ -181,18 +180,49 @@ export interface BaseNativescriptOptions {
      * @default "http://localhost:8969/stream"
      */
     spotlightSidecarUrl?: string;
-}
 
-export interface ReactNativeTransportOptions extends BrowserTransportOptions {
     /**
-     * @deprecated use `maxQueueSize` in the root of the SDK options.
+     * Track the app start time by adding measurements to the first route transaction. If there is no routing instrumentation
+     * an app start transaction will be started.
+     *
+     * Requires performance monitoring to be enabled.
+     *
+     * @default true
      */
-    bufferSize?: number;
-}
+    // enableAppStartTracking?: boolean;
 
+    /**
+     * Track the slow and frozen frames in the application. Enabling this options will add
+     * slow and frozen frames measurements to all created root spans (transactions).
+     *
+     * @default true
+     */
+    enableNativeFramesTracking?: boolean;
+
+    /**
+     * Track when and how long the JS event loop stalls for. Adds stalls as measurements to all transactions.
+     *
+     * @default true
+     */
+    enableStallTracking?: boolean;
+
+    /**
+     * Trace User Interaction events like touch and gestures.
+     *
+     * @default false
+     */
+    // enableUserInteractionTracing?: boolean;
+
+    /**
+     * Enable tracing for the application (same as setting tracesSampleRate or tracesSampler).
+     *
+     * @default false
+     */
+    enableTracing?: boolean;
+}
 /**
- * Configuration options for the Sentry ReactNative SDK.
- * @see ReactNativeFrontend for more information.
+ * Configuration options for the Sentry Nativescript SDK.
+ * @see NativescriptFrontend for more information.
  */
 
 export interface NativescriptOptions extends Options<BrowserTransportOptions>, BaseNativescriptOptions, NativescriptErrorHandlersOptions {
