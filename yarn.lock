@@ -2232,7 +2232,6 @@ __metadata:
     "@nativescript-community/arraybuffers": "npm:^1.1.5"
     "@sentry/browser": "npm:10.3.0"
     "@sentry/core": "npm:10.3.0"
-    "@sentry/types": "npm:10.3.0"
     stacktrace-parser: "npm:^0.1.10"
   languageName: unknown
   linkType: soft
@@ -3404,24 +3403,6 @@ __metadata:
   version: 10.30.0
   resolution: "@sentry/core@npm:10.30.0"
   checksum: 10/8f046c8091ace766bd4e265ec7eaae6f630d71709cf6638cd91b23fdcdfaa1a050255a570ce8039e4f42c004943a5ad4edb7dd8c34e05877f38980cf3c14d7ef
-  languageName: node
-  linkType: hard
-
-"@sentry/types@npm:10.3.0":
-  version: 10.3.0
-  resolution: "@sentry/types@npm:10.3.0"
-  dependencies:
-    "@sentry/core": "npm:10.3.0"
-  checksum: 10/cdf9c192e8069b01493e63dadac973c6fad0cf366e0174a272be3b00e475b035285851b4cba0c5e464403e42781601089a87752d948d25cb426ed34c4476d7e2
-  languageName: node
-  linkType: hard
-
-"@sentry/types@npm:^10.30.0":
-  version: 10.30.0
-  resolution: "@sentry/types@npm:10.30.0"
-  dependencies:
-    "@sentry/core": "npm:10.30.0"
-  checksum: 10/1f8ddd1b716b7a386d864daf9f8e63460e3739df13fcdcb5967f2ddb8f8333b54592e2f3e5a3905a817e605aae22ca0d68b942e4858fc26db83d02b408d58159
   languageName: node
   linkType: hard
 
@@ -14206,7 +14187,6 @@ __metadata:
     "@nativescript-community/plugin-seed-tools": "portal:tools"
     "@sentry/browser": "npm:^10.30.0"
     "@sentry/core": "npm:^10.30.0"
-    "@sentry/types": "npm:^10.30.0"
   languageName: unknown
   linkType: soft
 

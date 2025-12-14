@@ -43,7 +43,6 @@
         "@nativescript-community/arraybuffers": "^1.1.5",
         "@sentry/browser": "10.3.0",
         "@sentry/core": "10.3.0",
-        "@sentry/types": "10.3.0",
         "stacktrace-parser": "^0.1.10"
     },
     "gitHead": "1e799d9f3a3eeb19c0fc4188be82a6cded4ea727"
