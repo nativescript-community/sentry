@@ -100,8 +100,11 @@ const androidLineParser: StackLineParser = [50, androidFunc];
 
 const stackParser = stackParserFromStackParserOptions([nativescriptLineParser, androidLineParser]);
 
-export function parseErrorStack(e: NativescriptError): StackFrame[] {
-    const stack = e?.['stackTrace'] || e?.stack;
+export function parseErrorStack(e: Pick<NativescriptError, 'stack'> | Pick<NativescriptError, 'stackTrace'>): StackFrame[] {
+    if (!e) {
+        return [];
+    }
+    const stack = (e as NativescriptError).stackTrace || (e as NativescriptError).stack;
     if (!stack) {
         return [];
     }
@@ -112,7 +115,7 @@ export function parseErrorStack(e: NativescriptError): StackFrame[] {
 export const debugSymbolicatorIntegration = (): Integration => ({
     name: INTEGRATION_NAME,
     // eslint-disable-next-line @typescript-eslint/require-await
-    processEvent: async (event: Event, hint?: EventHint): Promise<Event> => {
+    processEvent: (event: Event, hint?: EventHint) => {
         if (!event.exception?.values?.length) {
             return event;
         }

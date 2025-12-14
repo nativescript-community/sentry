@@ -1,8 +1,57 @@
-export type { Breadcrumb, SdkInfo, Event, Exception, StackFrame, Stacktrace, Thread, User } from '@sentry/core';
+export type {
+    Breadcrumb,
+    SdkInfo,
+    Event,
+    Exception,
+    SendFeedbackParams,
+    SeverityLevel,
+    Span,
+    StackFrame,
+    Stacktrace,
+    Thread,
+    User,
+    UserFeedback,
+    ErrorEvent,
+    TransactionEvent,
+    Metric
+} from '@sentry/core';
 
-export { addBreadcrumb, captureException, captureEvent, captureMessage, Scope, setContext, setExtra, setExtras, setTag, setTags, setUser } from '@sentry/core';
+export {
+    addBreadcrumb,
+    addIntegration,
+    captureException,
+    captureEvent,
+    captureFeedback,
+    captureMessage,
+    Scope,
+    setContext,
+    setExtra,
+    setExtras,
+    setTag,
+    setTags,
+    setUser,
+    startInactiveSpan,
+    startSpan,
+    startSpanManual,
+    getActiveSpan,
+    getRootSpan,
+    withActiveSpan,
+    suppressTracing,
+    spanToJSON,
+    spanIsSampled,
+    setMeasurement,
+    getCurrentScope,
+    getGlobalScope,
+    getIsolationScope,
+    getClient,
+    setCurrentClient,
+    addEventProcessor,
+    lastEventId
+} from '@sentry/core';
 
-import * as Integrations from './integrations';
+export { logger, consoleLoggingIntegration, featureFlagsIntegration, type FeatureFlagsIntegration, metrics } from '@sentry/browser';
+
+export * from './integrations/exports';
 import { SDK_NAME, SDK_VERSION } from './version';
 import { Trace } from '@nativescript/core';
 export { NativescriptOptions } from './options';
@@ -13,7 +62,7 @@ export { init, setDist, setRelease, nativeCrash, flush, close, captureUserFeedba
 
 export { nativescriptTracingIntegration, getCurrentNativescriptTracingIntegration, getNativescriptTracingIntegration, startIdleNavigationSpan, startIdleSpan } from './tracing';
 
-export { Integrations, SDK_NAME, SDK_VERSION };
+export { SDK_NAME, SDK_VERSION };
 
 export const SentryTraceCategory = 'Sentry';
 

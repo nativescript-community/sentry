@@ -360,7 +360,7 @@ export namespace NATIVE {
                 }
                 if (count) {
                     for (let index = 0; index < exceptions.count; index++) {
-                        const exception = exceptions.objectAtIndex(index);
+                        const exception = exceptions.objectAtIndex(index) as SentryException;
                         const exceptionvalue = exception.value;
                         if (exceptionvalue) {
                             const matches = exceptionvalue.match(FATAL_ERROR_REGEXP);

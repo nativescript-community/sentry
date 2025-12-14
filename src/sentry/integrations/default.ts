@@ -19,6 +19,7 @@ import { createNativeFramesIntegrations } from '../tracing/integrations/nativeFr
 import { stallTrackingIntegration } from '../tracing/integrations/stalltracking';
 import { screenshotIntegration } from './screenshot';
 import { sdkInfoIntegration } from './sdkinfo';
+import { breadcrumbsIntegration } from './breadcrumbs';
 // import { Spotlight } from './spotlight';
 // import { ViewHierarchy } from './viewhierarchy';
 
@@ -79,6 +80,7 @@ export function getDefaultIntegrations(options: NativescriptClientOptions & Nati
     // integrations.push(new BrowserReactIntegrations.Breadcrumbs());
     // integrations.push(new BrowserReactIntegrations.Dedupe());
     // integrations.push(new BrowserReactIntegrations.HttpContext());
+    // integrations.push(breadcrumbsIntegration());
     // end @sentry/react-native default integrations
 
     integrations.push(releaseIntegration());

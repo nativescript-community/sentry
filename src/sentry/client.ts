@@ -89,7 +89,7 @@ export class NativescriptClient extends Client<NativescriptClientOptions> {
         const event = await eventFromException(this._options.stackParser, exception, hintWithScreenshot, this._options.attachStacktrace);
         if (exception['nativeException']) {
             try {
-                const stack = parseErrorStack({ stack: 'at ' + exception['stackTrace'] } as any).filter((f) => f.platform !== 'javascript');
+                const stack = parseErrorStack({ stack: 'at ' + exception['stackTrace'] }).filter((f) => f.platform !== 'javascript');
                 stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
                 event.exception.values.unshift({
                     type: 'NativeException',
