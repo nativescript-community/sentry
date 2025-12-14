@@ -66,7 +66,7 @@ function dataSerialize(data?: any, wrapPrimitives?: boolean) {
 const FATAL_ERROR_REGEXP = /NativeScript encountered a fatal error:([^]*?) at([\t\n\s]*)?([^]*)$/m;
 
 export namespace NATIVE {
-    let enableNative = true;
+    export let enableNative = true;
     const _DisabledNativeError = new SentryError('Native is disabled');
 
     function convertToNativeJavascriptStacktrace(

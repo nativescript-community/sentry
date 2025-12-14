@@ -20,8 +20,14 @@ export function attachScreenshotToEventHint(hint: EventHint, { attachScreenshot 
 
 /** Adds screenshots to error events */
 export const screenshotIntegration = (): Integration => ({
-    name: INTEGRATION_NAME,
-    setup: () => {
-        /* noop */
-    }
+    name: INTEGRATION_NAME
+    // TODO: right now we're manually adding screenshots in error handlers. Should we instead just rely on this?
+    // processEvent(event, hint, client: any) {
+    //     const hasException = event.exception?.values && event.exception.values.length > 0;
+    //     if (!hasException || client.getOptions().beforeScreenshot?.(event, hint) === false) {
+    //         return event;
+    //     }
+    //     attachScreenshotToEventHint(hint, { attachScreenshot: true });
+    //     return event;
+    // }
 });

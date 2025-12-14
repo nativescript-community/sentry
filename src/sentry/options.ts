@@ -212,6 +212,13 @@ export interface BaseNativescriptOptions {
      * @default false
      */
     // enableUserInteractionTracing?: boolean;
+
+    /**
+     * Enable tracing for the application (same as setting tracesSampleRate or tracesSampler).
+     *
+     * @default false
+     */
+    enableTracing?: boolean;
 }
 /**
  * Configuration options for the Sentry Nativescript SDK.

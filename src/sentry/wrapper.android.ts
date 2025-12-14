@@ -46,7 +46,7 @@ function concatTypedArrays(a, b) {
 }
 
 export namespace NATIVE {
-    let enableNative = true;
+    export let enableNative = true;
     const _DisabledNativeError = new SentryError('Native is disabled');
     let frameMetricsAggregator: androidx.core.app.FrameMetricsAggregator;
 
