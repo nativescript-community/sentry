@@ -43,7 +43,7 @@ export interface NativescriptStackFrame extends StackFrame {
 
 function createFrame(frame: Partial<NativescriptStackFrame>) {
     frame.in_app = (frame.filename && !frame.filename.includes('node_modules')) || (!!frame.colno && !!frame.lineno);
-    frame.platform = frame.filename.endsWith('.js') ? 'javascript' : 'android';
+    frame.platform = frame.filename ? (/\.(mjs|js)$/.test(frame.filename) ? 'javascript' : 'android') : undefined;
 
     return frame;
 }
