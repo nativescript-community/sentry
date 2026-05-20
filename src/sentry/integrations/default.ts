@@ -57,8 +57,7 @@ export function getDefaultIntegrations(options: NativescriptClientOptions & Nati
         return frame;
     };
 
-    rewriteFrameIntegration = new RewriteFrames({}) as any;
-    rewriteFrameIntegration._iteratee = iteratee;
+    rewriteFrameIntegration = new RewriteFrames({ iteratee }) as any;
 
     // if (notWeb()) {
     integrations.push(new NativescriptErrorHandlers(options));
