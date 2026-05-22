@@ -16,7 +16,7 @@ import { mergeOutcomes } from './utils/outcome';
 import { NATIVE } from './wrapper';
 import { Screenshot } from './integrations/screenshot';
 import { NativescriptTracing } from './tracing';
-import { rewriteFrameIntegration } from './integrations/default';
+import { frameIteratee } from './integrations/default';
 import { parseErrorStack } from './integrations/debugsymbolicator';
 
 function wrapNativeException(ex, errorType = typeof ex) {
@@ -97,7 +97,7 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
         if (exception['nativeException']) {
             try {
                 const stack = parseErrorStack({ stack: 'at ' + exception['stackTrace'] } as any).filter((f) => f.platform !== 'javascript');
-                stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
+                stack.forEach((frame) => frameIteratee(frame));
                 event.exception.values.unshift({
                     type: 'NativeException',
                     value: exception.toString(),
@@ -111,8 +111,8 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
         } else if (__IOS__ && exception['stackTrace']) {
             // try {
             // const stack = parseErrorStack({ stack: 'at ' + exception['stackTrace'] } as any).filter((f) => f.platform !== 'javascript');
-            // stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
-            // event.exception.values[0].stacktrace.frames.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
+            // stack.forEach((frame) => frameIteratee(frame));
+            // event.exception.values[0].stacktrace.frames.forEach((frame) => frameIteratee(frame));
             // event.exception.values[0].stacktrace.frames = event.exception.values[0].stacktrace.frames.reverse();
             // event.exception.values.unshift({
             //     type: 'NativeException',
@@ -140,7 +140,7 @@ export class NativescriptClient extends BaseClient<NativescriptClientOptions> {
             }
             const values = event.exception.values.map((exception: Exception): Thread => {
                 if (exception.stacktrace) {
-                    exception.stacktrace.frames.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
+                    exception.stacktrace.frames.forEach((frame) => frameIteratee(frame));
                 }
                 return {
                     stacktrace: exception.stacktrace

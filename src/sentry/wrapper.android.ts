@@ -9,7 +9,7 @@ import { NativescriptOptions } from './options';
 import { utf8ToBytes } from './vendor';
 import { SDK_NAME } from './version';
 import { CLog, CLogTypes } from '.';
-import { rewriteFrameIntegration } from './integrations/default';
+import { frameIteratee } from './integrations/default';
 import { splitObject } from './utils/object';
 
 enum JavaType {
@@ -578,7 +578,7 @@ export namespace NATIVE {
                                                             const jsStackTrace: string = throwable.getIncomingStackTrace?.();
                                                             if (jsStackTrace) {
                                                                 const stack = parseErrorStack({ stack: 'at ' + jsStackTrace } as any).reverse();
-                                                                stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
+                                                                stack.forEach((frame) => frameIteratee(frame));
                                                                 addJavascriptExceptionInterface(event, 'Error', throwable.getMessage(), stack.reverse());
                                                             }
                                                         }
