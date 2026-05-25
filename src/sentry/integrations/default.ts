@@ -1,4 +1,4 @@
-import { HttpClient, RewriteFrames } from '@sentry/integrations';
+import { httpClientIntegration, rewriteFramesIntegration } from '@sentry/integrations';
 // import { Integrations as BrowserReactIntegrations } from '@sentry/react';
 import type { Integration, StackFrame } from '@sentry/types';
 
@@ -20,9 +20,12 @@ import { SdkInfo } from './sdkinfo';
 // import { Spotlight } from './spotlight';
 // import { ViewHierarchy } from './viewhierarchy';
 
-export let rewriteFrameIntegration: {
-    _iteratee: (frame: StackFrame) => StackFrame;
-};
+/**
+ * The frame iteratee function used to rewrite stack frames.
+ * Exported separately so it can be referenced without going through the integration object.
+ */
+export let frameIteratee: (frame: StackFrame) => StackFrame;
+
 /**
  * Returns the default ReactNative integrations based on the current environment.
  *
@@ -57,7 +60,7 @@ export function getDefaultIntegrations(options: NativescriptClientOptions & Nati
         return frame;
     };
 
-    rewriteFrameIntegration = new RewriteFrames({ iteratee }) as any;
+    frameIteratee = iteratee;
 
     // if (notWeb()) {
     integrations.push(new NativescriptErrorHandlers(options));
@@ -85,7 +88,7 @@ export function getDefaultIntegrations(options: NativescriptClientOptions & Nati
     //     integrations.push(new DebugSymbolicator());
     // }
 
-    integrations.push(rewriteFrameIntegration as any);
+    integrations.push(rewriteFramesIntegration({ iteratee }) as Integration);
 
     if (options.enableNative) {
         integrations.push(new DeviceContext());
@@ -109,7 +112,7 @@ export function getDefaultIntegrations(options: NativescriptClientOptions & Nati
         integrations.push(new NativescriptTracing());
     }
     if (options.enableCaptureFailedRequests) {
-        integrations.push(new HttpClient());
+        integrations.push(httpClientIntegration() as Integration);
     }
 
     // if (isExpoGo()) {
