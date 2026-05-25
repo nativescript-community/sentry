@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.49](https://github.com/nativescript-community/sentry/compare/v4.6.48...v4.6.49) (2026-05-25)
+
+**Note:** Version bump only for package @nativescript-community/sentry
+
 ## [4.6.48](https://github.com/nativescript-community/sentry/compare/v4.6.47...v4.6.48) (2026-05-21)
 
 **Note:** Version bump only for package @nativescript-community/sentry
