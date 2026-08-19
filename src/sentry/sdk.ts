@@ -7,6 +7,7 @@ import {
     getClient,
     getGlobalScope,
     getIntegrationsToSetup,
+    getIsolationScope,
     initAndBind,
     setExtra,
     stackParserFromStackParserOptions
@@ -89,6 +90,7 @@ const DEFAULT_OPTIONS: NativescriptOptions & NativescriptErrorHandlersOptions = 
  */
 export function init(passedOptions: NativescriptOptions): void {
     enableSyncToNative(getGlobalScope());
+    enableSyncToNative(getIsolationScope());
 
     const maxQueueSize = passedOptions.maxQueueSize ?? passedOptions.transportOptions?.bufferSize ?? DEFAULT_OPTIONS.maxQueueSize;
     const options: NativescriptClientOptions & NativescriptOptions = {

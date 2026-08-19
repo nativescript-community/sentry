@@ -2,6 +2,7 @@
 // copied from @sentry/browser
 import type { Event, EventHint, Exception, ParameterizedString, SeverityLevel, StackFrame, StackParser } from '@sentry/core';
 import {
+    _INTERNAL_enhanceErrorWithSentryInfo,
     addExceptionMechanism,
     addExceptionTypeValue,
     extractExceptionKeysForMessage,
@@ -198,10 +199,10 @@ export function extractMessage(ex: Error & { message: { error?: Error } }): stri
     }
 
     if (message.error && typeof message.error.message === 'string') {
-        return message.error.message;
+        return _INTERNAL_enhanceErrorWithSentryInfo(message.error);
     }
 
-    return message;
+    return _INTERNAL_enhanceErrorWithSentryInfo(ex);
 }
 
 /**
@@ -257,6 +258,15 @@ export function eventFromUnknownInput(stackParser: StackParser, exception: unkno
 
         if ('stack' in (exception as Error)) {
             event = eventFromError(stackParser, exception as Error);
+
+            const firstException = event.exception?.values?.[0];
+            if (attachStacktrace && syntheticException && firstException && !firstException.stacktrace) {
+                const frames = parseStackFrames(stackParser, syntheticException);
+                if (frames.length) {
+                    firstException.stacktrace = { frames };
+                    addExceptionMechanism(event, { synthetic: true });
+                }
+            }
         } else {
             const name = domException.name || (isDOMError(domException) ? 'DOMError' : 'DOMException');
             const message = domException.message ? `${name}: ${domException.message}` : name;
@@ -360,14 +370,5 @@ function getObjectClassName(obj: unknown): string | undefined | void {
 
 /** If a plain object has a property that is an `Error`, return this error. */
 function getErrorPropertyFromObject(obj: Record<string, unknown>): Error | undefined {
-    for (const prop in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, prop)) {
-            const value = obj[prop];
-            if (value instanceof Error) {
-                return value;
-            }
-        }
-    }
-
-    return undefined;
+    return Object.values(obj).find(isError);
 }
