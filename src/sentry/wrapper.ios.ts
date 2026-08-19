@@ -4,7 +4,7 @@ import { parseErrorStack } from './integrations/debugsymbolicator';
 import { isHardCrash } from './misc';
 import { NativescriptOptions } from './options';
 import { utf8ToBytes } from './vendor';
-import { rewriteFrameIntegration } from './integrations/default';
+import { frameIteratee } from './integrations/default';
 import { splitObject } from './utils/object';
 
 const numberHasDecimals = function (value: number): boolean {
@@ -368,7 +368,7 @@ export namespace NATIVE {
                                 const errorMessage = matches[1];
                                 const jsStackTrace = exceptionvalue.substring(exceptionvalue.indexOf(matches[2]));
                                 const stack = parseErrorStack({ stack: 'at ' + jsStackTrace } as any).reverse();
-                                stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
+                                stack.forEach((frame) => frameIteratee(frame));
                                 addJavascriptExceptionInterface(event, 'Error', errorMessage, stack.reverse());
                                 exception.type = 'NativeScriptException';
                                 exception.value = errorMessage;

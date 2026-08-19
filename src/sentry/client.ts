@@ -2,7 +2,7 @@ import { alert } from '@nativescript/core';
 import { eventFromException, eventFromMessage, makeFetchTransport } from '@sentry/browser';
 import { Client, ClientReportEnvelope, ClientReportItem, Envelope, Event, EventHint, Exception, Outcome, SeverityLevel, Thread, UserFeedback, dateTimestampInSeconds, debug } from '@sentry/core';
 import { parseErrorStack } from './integrations/debugsymbolicator';
-import { rewriteFrameIntegration } from './integrations/default';
+import { frameIteratee } from './integrations/default';
 import { attachScreenshotToEventHint } from './integrations/screenshot';
 import { defaultSdkInfo } from './integrations/sdkinfo';
 import { NativescriptClientOptions } from './options';
@@ -90,7 +90,7 @@ export class NativescriptClient extends Client<NativescriptClientOptions> {
         if (exception['nativeException']) {
             try {
                 const stack = parseErrorStack({ stack: 'at ' + exception['stackTrace'] }).filter((f) => f.platform !== 'javascript');
-                stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
+                stack.forEach((frame) => frameIteratee(frame));
                 event.exception.values.unshift({
                     type: 'NativeException',
                     value: exception.toString(),
@@ -104,8 +104,8 @@ export class NativescriptClient extends Client<NativescriptClientOptions> {
         } else if (__IOS__ && exception['stackTrace']) {
             // try {
             // const stack = parseErrorStack({ stack: 'at ' + exception['stackTrace'] } as any).filter((f) => f.platform !== 'javascript');
-            // stack.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
-            // event.exception.values[0].stacktrace.frames.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
+            // stack.forEach((frame) => frameIteratee(frame));
+            // event.exception.values[0].stacktrace.frames.forEach((frame) => frameIteratee(frame));
             // event.exception.values[0].stacktrace.frames = event.exception.values[0].stacktrace.frames.reverse();
             // event.exception.values.unshift({
             //     type: 'NativeException',
@@ -133,7 +133,7 @@ export class NativescriptClient extends Client<NativescriptClientOptions> {
             }
             const values = event.exception.values.map((exception: Exception): Thread => {
                 if (exception.stacktrace) {
-                    exception.stacktrace.frames.forEach((frame) => rewriteFrameIntegration._iteratee(frame));
+                    exception.stacktrace.frames.forEach((frame) => frameIteratee(frame));
                 }
                 return {
                     stacktrace: exception.stacktrace

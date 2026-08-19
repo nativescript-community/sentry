@@ -23,9 +23,12 @@ import { breadcrumbsIntegration } from './breadcrumbs';
 // import { Spotlight } from './spotlight';
 // import { ViewHierarchy } from './viewhierarchy';
 
-export let rewriteFrameIntegration: Integration & {
-    _iteratee: (frame: StackFrame) => StackFrame;
-};
+/**
+ * The frame iteratee function used to rewrite stack frames.
+ * Exported separately so it can be referenced without going through the integration object.
+ */
+export let frameIteratee: (frame: StackFrame) => StackFrame;
+
 /**
  * Returns the default Nativescript integrations based on the current environment.
  *
@@ -60,10 +63,7 @@ export function getDefaultIntegrations(options: NativescriptClientOptions & Nati
         return frame;
     };
 
-    rewriteFrameIntegration = rewriteFramesIntegration({
-        iteratee
-    }) as Integration & { _iteratee: (frame: StackFrame) => StackFrame };
-    rewriteFrameIntegration._iteratee = iteratee;
+    frameIteratee = iteratee;
 
     // if (notWeb()) {
     integrations.push(nativescriptErrorHandlersIntegration(options));
@@ -92,7 +92,7 @@ export function getDefaultIntegrations(options: NativescriptClientOptions & Nati
     //     integrations.push(new DebugSymbolicator());
     // }
 
-    integrations.push(rewriteFrameIntegration);
+    integrations.push(rewriteFramesIntegration({ iteratee }));
 
     if (options.enableNative) {
         integrations.push(deviceContextIntegration());

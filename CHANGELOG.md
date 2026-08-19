@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.49](https://github.com/nativescript-community/sentry/compare/v4.6.48...v4.6.49) (2026-05-25)
+
+### Bug Fixes
+
+* expose frameIteratee and update deprecated integrations ([2b2e24f](https://github.com/nativescript-community/sentry/commit/2b2e24f8a00d013d5c1b03a714b64ff29b3c82c2))
+
+## [4.6.48](https://github.com/nativescript-community/sentry/compare/v4.6.47...v4.6.48) (2026-05-21)
+
+**Note:** Version bump only for package sentry
+
+## [4.6.47](https://github.com/nativescript-community/sentry/compare/v4.6.46...v4.6.47) (2026-05-21)
+
+**Note:** Version bump only for package sentry
+
+## [4.6.46](https://github.com/nativescript-community/sentry/compare/v4.6.45...v4.6.46) (2026-05-20)
+
+### Bug Fixes
+
+* surface source snippets for .mjs frames ([3ad7ae3](https://github.com/nativescript-community/sentry/commit/3ad7ae3f468eeea1b73cd90d90ab88c33ef3db96))
+
 ## [4.6.45](https://github.com/nativescript-community/sentry/compare/v4.6.44...v4.6.45) (2025-12-05)
 
 ### Bug Fixes
