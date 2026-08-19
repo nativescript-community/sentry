@@ -128,7 +128,7 @@ export interface BaseNativescriptOptions {
      *
      * @default 2
      */
-    appHangsTimeoutInterval?: number;
+    appHangTimeoutInterval?: number;
 
     /**
      * The max queue size for capping the number of envelopes waiting to be sent by Transport.
