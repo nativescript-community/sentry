@@ -1,7 +1,6 @@
 import { alert } from '@nativescript/core';
 import { eventFromException, eventFromMessage, makeFetchTransport } from '@sentry/browser';
 import { Client, ClientReportEnvelope, ClientReportItem, Envelope, Event, EventHint, Exception, Outcome, SeverityLevel, Thread, UserFeedback, dateTimestampInSeconds, debug } from '@sentry/core';
-import { parseErrorStack } from './integrations/debugsymbolicator';
 import { frameIteratee } from './integrations/default';
 import { attachScreenshotToEventHint } from './integrations/screenshot';
 import { defaultSdkInfo } from './integrations/sdkinfo';
@@ -15,13 +14,10 @@ function wrapNativeException(ex, errorType = typeof ex) {
     if (__ANDROID__ && !(ex instanceof Error) && errorType === 'object') {
         const err = new Error(ex.toString());
         err['nativeException'] = ex;
-        //@ts-ignore
-        err['stackTrace'] = com.tns.NativeScriptException.getStackTraceAsString(ex);
         return err;
     }
     return ex;
 }
-const FATAL_ERROR_REGEXP = /NativeScript encountered a fatal error:([^]*?) at([\t\n\s]*)?([^]*)$/m;
 
 /**
  * The Sentry React Native SDK Client.
@@ -59,54 +55,13 @@ export class NativescriptClient extends Client<NativescriptClientOptions> {
      * @inheritDoc
      */
     public async eventFromException(exception: unknown, hint?: EventHint): Promise<Event> {
+        // JS frames come from the error's own `stack`; the native throw-site
+        // frames are chained from `nativeException` by the NativeException
+        // integration — the runtime's combined `stackTrace` string is legacy
+        // and no longer consumed.
         exception = wrapNativeException(exception);
-        // N put stackTrace in "stackTrace" instead of "stacktrace"
-        if (__ANDROID__ && exception['nativeException']) {
-            // in case of nativeException we have:
-            // - stack with only the JS error stack
-            // stackTrace with a mix of JS/Java error
-            exception['stacktrace'] = exception.toString() + '\n at ' + exception['stack'];
-        } else if (exception['stackTrace']) {
-            if (__IOS__) {
-                exception['stacktrace'] = exception['stack'];
-
-                // const stackTrace = exception['stackTrace'];
-                // const matches = stackTrace.match(FATAL_ERROR_REGEXP);
-                // console.log('matches', stackTrace, matches);
-                // if (matches) {
-                //     const errorMessage = matches[1];
-                //     const jsStackTrace = stackTrace.substring(stackTrace.indexOf(matches[2]));
-                //     // const stack = parseErrorStack({ stack: 'at ' + jsStackTrace } as any).reverse();
-                //     exception['stacktrace'] = errorMessage + '\n at ' + jsStackTrace;
-                // } else {
-                //     exception['stacktrace'] = stackTrace;
-                // }
-            } else {
-                exception['stacktrace'] = exception['stackTrace'];
-            }
-        }
         const hintWithScreenshot = attachScreenshotToEventHint(hint, this._options);
-        const event = await eventFromException(this._options.stackParser, exception, hintWithScreenshot, this._options.attachStacktrace);
-        // On iOS the native throw-site frames come from nativeException.callStackSymbols
-        // instead (see the NativeException integration) — the combined stackTrace
-        // string parse below only yields real native frames on Android.
-        if (__ANDROID__ && exception['nativeException']) {
-            try {
-                const stack = parseErrorStack({ stack: 'at ' + exception['stackTrace'] }).filter((f) => f.platform !== 'javascript');
-                stack.forEach((frame) => frameIteratee(frame));
-                event.exception.values.unshift({
-                    type: 'NativeException',
-                    value: exception.toString(),
-                    stacktrace: {
-                        frames: stack
-                    }
-                });
-            } catch (error) {
-                console.error(error, error.stack);
-            }
-        }
-        return event;
-        // return this._browserClient.eventFromException(exception, hint);
+        return eventFromException(this._options.stackParser, exception, hintWithScreenshot, this._options.attachStacktrace);
     }
 
     /**

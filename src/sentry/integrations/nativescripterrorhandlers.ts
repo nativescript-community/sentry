@@ -37,8 +37,8 @@ declare const global: any;
 /**
  * Runtimes 9.1+ dispatch the WHATWG error events (`error`, `unhandledrejection`,
  * `rejectionhandled`) on the global, carrying the actual thrown value (with
- * `nativeException` / `stackTrace` attached) instead of the legacy Application
- * events' lossy shape.
+ * `nativeException` attached) instead of the legacy Application events'
+ * lossy shape.
  */
 const supportsGlobalErrorEvents = typeof global.ErrorEvent === 'function' && typeof global.addEventListener === 'function';
 
@@ -92,9 +92,6 @@ export const nativescriptErrorHandlersIntegration = (
 
             // We override client.eventFromException because it is async function
             // while not needed and we want to be sync
-            if (error['stackTrace']) {
-                error['stacktrace'] = error['stackTrace'];
-            }
             let hint: EventHint = {
                 originalException: error
             };

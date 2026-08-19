@@ -35,16 +35,6 @@ export function capturedValueOf(error: unknown): unknown {
     return (error as Record<string, unknown> | null | undefined)?.[CAPTURED_VALUE];
 }
 
-function copyRuntimeStackTrace(from: unknown, to: Error): void {
-    // The runtimes populate a combined JS+native `stackTrace` string on
-    // object-valued errors before dispatching them; the event builder reads it
-    // (as `stacktrace`), so the wrapper must not lose it.
-    const stackTrace = (from as Record<string, unknown>).stackTrace;
-    if (typeof stackTrace === 'string') {
-        (to as Error & { stackTrace?: string }).stackTrace = stackTrace;
-    }
-}
-
 /**
  * Normalizes a thrown/rejection value for capture. A directly-thrown wrapped
  * native exception (NSException/Throwable — not an `Error`, no `.stack`) gets
@@ -77,13 +67,9 @@ export function toCapturableError(value: unknown, fallbackMessage: string): unkn
             wrapped.name = String(name);
         }
         (wrapped as Error & { nativeException?: unknown }).nativeException = native;
-        copyRuntimeStackTrace(value, wrapped);
         return wrapped;
     }
     const wrapped = new Error(typeof value === 'object' ? describeValue(value) : String(value));
     Object.defineProperty(wrapped, CAPTURED_VALUE, { value, enumerable: false });
-    if (typeof value === 'object') {
-        copyRuntimeStackTrace(value, wrapped);
-    }
     return wrapped;
 }

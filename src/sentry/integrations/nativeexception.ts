@@ -19,6 +19,15 @@ export interface NativeExceptionLike {
     /** Throwable only */
     getClass?(): { getName(): string };
     getMessage?(): string;
+    getStackTrace?(): {
+        length: number;
+        [index: number]: {
+            getClassName(): string;
+            getMethodName(): string;
+            getFileName(): string | null;
+            getLineNumber(): number;
+        };
+    };
 }
 
 /**
@@ -88,15 +97,42 @@ function enrichWithIosException(event: Event, native: NativeExceptionLike): void
 }
 
 function enrichWithAndroidException(event: Event, native: NativeExceptionLike): void {
-    const context: Record<string, unknown> = {};
-    if (typeof native.getClass === 'function') {
-        context.class = String(native.getClass().getName());
-    }
-    if (typeof native.getMessage === 'function') {
-        const message = native.getMessage();
-        if (message != null) {
-            context.message = String(message);
+    const className = typeof native.getClass === 'function' ? String(native.getClass().getName()) : undefined;
+    const message = typeof native.getMessage === 'function' ? native.getMessage() : undefined;
+
+    const elements = typeof native.getStackTrace === 'function' ? native.getStackTrace() : undefined;
+    if (elements?.length) {
+        const frames: StackFrame[] = [];
+        for (let i = 0; i < elements.length; i++) {
+            const element = elements[i];
+            const fileName = element.getFileName();
+            const lineNumber = element.getLineNumber();
+            frames.push({
+                platform: 'java',
+                module: String(element.getClassName()),
+                function: String(element.getMethodName()),
+                filename: fileName != null ? String(fileName) : undefined,
+                lineno: lineNumber >= 0 ? lineNumber : undefined
+            });
         }
+        // getStackTrace() is newest-frame-first; Sentry wants oldest first.
+        frames.reverse();
+
+        event.exception ??= {};
+        event.exception.values ??= [];
+        event.exception.values.unshift({
+            type: className ?? 'Throwable',
+            value: String(message ?? className ?? 'Throwable'),
+            stacktrace: { frames }
+        });
+    }
+
+    const context: Record<string, unknown> = {};
+    if (className !== undefined) {
+        context.class = className;
+    }
+    if (message != null) {
+        context.message = String(message);
     }
     if (Object.keys(context).length) {
         event.contexts = { ...event.contexts, nativeException: context };
@@ -104,11 +140,10 @@ function enrichWithAndroidException(event: Event, native: NativeExceptionLike): 
 }
 
 /**
- * Enriches events whose original exception carries a `nativeException`: on iOS
- * chains the ObjC throw-site stack (`callStackSymbols`) as a proper exception
- * entry and attaches name/reason/domain/code/userInfo context; on Android
- * attaches class/message context (the native frames are already chained from
- * the runtime's combined `stackTrace` when building the event).
+ * Enriches events whose original exception carries a `nativeException`: chains
+ * the native throw-site stack (`callStackSymbols` on iOS, `getStackTrace()` on
+ * Android) as a proper exception entry and attaches native context
+ * (name/reason/domain/code/userInfo on iOS, class/message on Android).
  */
 export const nativeExceptionIntegration = (): Integration => ({
     name: INTEGRATION_NAME,
