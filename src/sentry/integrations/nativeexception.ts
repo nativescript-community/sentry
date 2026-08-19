@@ -16,6 +16,7 @@ export interface NativeExceptionLike {
     /** NSError only */
     domain?: string;
     code?: number;
+    localizedDescription?: string;
     /** Throwable only */
     getClass?(): { getName(): string };
     getMessage?(): string;
@@ -40,7 +41,7 @@ export function nativeExceptionOf(value: unknown): NativeExceptionLike | undefin
     if (!value) {
         return undefined;
     }
-    if (__IOS__ && typeof NSException !== 'undefined' && value instanceof NSException) {
+    if (__IOS__ && ((typeof NSException !== 'undefined' && value instanceof NSException) || (typeof NSError !== 'undefined' && value instanceof NSError))) {
         return value as NativeExceptionLike;
     }
     // @ts-ignore
@@ -81,6 +82,9 @@ function enrichWithIosException(event: Event, native: NativeExceptionLike): void
     }
     if (native.reason !== undefined) {
         context.reason = String(native.reason);
+    }
+    if (native.reason === undefined && native.localizedDescription !== undefined) {
+        context.description = String(native.localizedDescription);
     }
     if (native.domain !== undefined) {
         context.domain = String(native.domain);

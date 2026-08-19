@@ -6,18 +6,10 @@ import { attachScreenshotToEventHint } from './integrations/screenshot';
 import { defaultSdkInfo } from './integrations/sdkinfo';
 import { NativescriptClientOptions } from './options';
 import { NativeTransport } from './transports/native';
+import { capturedValueOf, toCapturableError } from './utils/capturableError';
 import { createUserFeedbackEnvelope, items } from './utils/envelope';
 import { mergeOutcomes } from './utils/outcome';
 import { NATIVE } from './wrapper';
-
-function wrapNativeException(ex, errorType = typeof ex) {
-    if (__ANDROID__ && !(ex instanceof Error) && errorType === 'object') {
-        const err = new Error(ex.toString());
-        err['nativeException'] = ex;
-        return err;
-    }
-    return ex;
-}
 
 /**
  * The Sentry React Native SDK Client.
@@ -59,9 +51,16 @@ export class NativescriptClient extends Client<NativescriptClientOptions> {
         // frames are chained from `nativeException` by the NativeException
         // integration — the runtime's combined `stackTrace` string is legacy
         // and no longer consumed.
-        exception = wrapNativeException(exception);
+        if (typeof exception === 'object' && exception !== null && !(exception instanceof Error)) {
+            exception = toCapturableError(exception, 'Object captured as exception');
+        }
         const hintWithScreenshot = attachScreenshotToEventHint(hint, this._options);
-        return eventFromException(this._options.stackParser, exception, hintWithScreenshot, this._options.attachStacktrace);
+        const event = await eventFromException(this._options.stackParser, exception, hintWithScreenshot, this._options.attachStacktrace);
+        const capturedValue = capturedValueOf(exception);
+        if (capturedValue !== undefined) {
+            event.extra = { ...event.extra, capturedValue };
+        }
+        return event;
     }
 
     /**
