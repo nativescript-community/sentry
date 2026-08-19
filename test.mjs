@@ -1,4 +1,4 @@
-import { stackParserFromStackParserOptions } from '@sentry/utils';
+import { stackParserFromStackParserOptions } from '@sentry/core';
 
 const UNKNOWN_FUNCTION = undefined;
 

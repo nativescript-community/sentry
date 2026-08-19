@@ -1,13 +1,12 @@
 import { createArrayBuffer, pointsFromBuffer } from '@nativescript-community/arraybuffers';
 import { Application, Trace, Utils } from '@nativescript/core';
 import { dataSerialize } from '@nativescript/core/utils/native-helper';
-import { BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel, User } from '@sentry/types';
-import { SentryError } from '@sentry/utils';
+import type { BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel, User } from '@sentry/core';
+import { SentryError } from '@sentry/core';
 import { parseErrorStack } from './integrations/debugsymbolicator';
 import { isHardCrash } from './misc';
 import { NativescriptOptions } from './options';
 import { utf8ToBytes } from './vendor';
-import { SDK_NAME } from './version';
 import { CLog, CLogTypes } from '.';
 import { frameIteratee } from './integrations/default';
 import { splitObject } from './utils/object';
@@ -20,8 +19,7 @@ enum JavaType {
 
 const OPTIONS_SPECIAL_TYPES = {
     sampleRate: JavaType.Double,
-    tracesSampleRate: JavaType.Double,
-    enableTracing: JavaType.Boolean
+    tracesSampleRate: JavaType.Double
 };
 
 function capitalize(value) {
@@ -46,7 +44,7 @@ function concatTypedArrays(a, b) {
 }
 
 export namespace NATIVE {
-    let enableNative = true;
+    export let enableNative = true;
     const _DisabledNativeError = new SentryError('Native is disabled');
     let frameMetricsAggregator: androidx.core.app.FrameMetricsAggregator;
 
@@ -297,7 +295,11 @@ export namespace NATIVE {
 
     export async function captureEnvelope(envelope: string | Uint8Array | number[], { store }: { store?: boolean } = {}) {
         try {
-            const outboxPath = new java.io.File(nSentryOptions.getOutboxPath(), java.util.UUID.randomUUID().toString());
+            // Sentry.init no longer creates the outbox directory (sentry-java 8.51.0+),
+            // so it must exist before writing envelopes into it directly.
+            const outboxDir = new java.io.File(nSentryOptions.getOutboxPath());
+            outboxDir.mkdirs();
+            const outboxPath = new java.io.File(outboxDir, java.util.UUID.randomUUID().toString());
             const out = new java.io.FileOutputStream(outboxPath);
             if (ArrayBuffer.isView(envelope)) {
                 out.write(pointsFromBuffer(envelope, true, false));
@@ -325,25 +327,6 @@ export namespace NATIVE {
     let logger: io.sentry.android.core.AndroidLogger;
     let buildInfo: io.sentry.android.core.BuildInfoProvider;
 
-    function addPackages(event: io.sentry.SentryEvent, sdk: io.sentry.protocol.SdkVersion) {
-        const eventSdk = event.getSdk();
-        if (eventSdk && sdk && eventSdk.getName() === SDK_NAME) {
-            const sentryPackages = sdk.getPackages();
-            if (sentryPackages != null) {
-                for (let index = 0; index < sentryPackages.size(); index++) {
-                    const sentryPackage = sentryPackages.get(index);
-                    eventSdk.addPackage(sentryPackage.getName(), sentryPackage.getVersion());
-                }
-            }
-            const integrations = sdk.getIntegrations();
-            if (integrations != null) {
-                for (let index = 0; index < integrations.size(); index++) {
-                    eventSdk.addIntegration(integrations.get(index));
-                }
-            }
-            event.setSdk(eventSdk);
-        }
-    }
     export async function initNativeSdk(originalOptions: NativescriptOptions = {}): Promise<boolean> {
         if (initialized) {
             return true;
@@ -590,7 +573,6 @@ export namespace NATIVE {
                                             console.error('Sentry error while processing BeforeSendCallback callback', e, e.stack);
                                         }
                                         setEventOriginTag(event);
-                                        addPackages(event, config.getSdkVersion());
                                         return event;
                                     }
                                 })
@@ -673,7 +655,7 @@ export namespace NATIVE {
     }
 
     export function fetchNativeSdkInfo() {
-        const sdkVersion = io.sentry.HubAdapter.getInstance().getOptions().getSdkVersion();
+        const sdkVersion = io.sentry.ScopesAdapter.getInstance().getOptions().getSdkVersion();
         if (sdkVersion) {
             return {
                 name: sdkVersion.getName(),
@@ -708,7 +690,7 @@ export namespace NATIVE {
         throw new java.lang.RuntimeException('TEST - Sentry Client Crash');
     }
     export async function fetchNativeDeviceContexts() {
-        const options = io.sentry.HubAdapter.getInstance().getOptions();
+        const options = io.sentry.ScopesAdapter.getInstance().getOptions();
         if (!(options instanceof io.sentry.android.core.SentryAndroidOptions)) {
             return null;
         }
@@ -795,25 +777,21 @@ export namespace NATIVE {
     }
     let didFetchAppStart = false;
     export async function fetchNativeAppStart() {
-        const appStartInstance = io.sentry.android.core.AppStartState.getInstance();
-        const appStartTime = appStartInstance.getAppStartTime();
-        const isColdStart = appStartInstance.isColdStart();
+        const metrics = io.sentry.android.core.performance.AppStartMetrics.getInstance();
+        const appStartTimeSpan = metrics.getAppStartTimeSpan();
 
         const wasFetched = didFetchAppStart;
         // This is always set to true, as we would only allow an app start fetch to only
         // happen once in the case of a JS bundle reload, we do not want it to be
         // instrumented again.
         didFetchAppStart = true;
-        if (appStartTime == null) {
+        if (!appStartTimeSpan.hasStarted()) {
             console.warn("App start won't be sent due to missing appStartTime.");
-            return null;
-        } else if (isColdStart == null) {
-            console.warn("App start won't be sent due to missing isColdStart.");
             return null;
         } else {
             return {
-                appStartTime: appStartTime.nanoTimestamp() / 1000000,
-                isColdStart,
+                appStartTime: appStartTimeSpan.getStartTimestampMs(),
+                isColdStart: metrics.getAppStartType() === io.sentry.android.core.performance.AppStartMetrics.AppStartType.COLD,
                 didFetchAppStart: wasFetched
             };
         }
@@ -965,6 +943,47 @@ export namespace NATIVE {
                 scope.setContexts(key, dataSerialize(context, true));
             }
         });
+    }
+
+    export function setAttribute(key: string, value: string | number | boolean) {
+        if (!enableNative) {
+            return;
+        }
+        runOnScope((scope) => {
+            if (value === null || value === undefined) {
+                scope.removeAttribute(key);
+            } else {
+                scope.setAttribute(key, primitiveProcessor(value));
+            }
+        });
+    }
+
+    export function setAttributes(attributes: Record<string, string | number | boolean>) {
+        if (!enableNative) {
+            return;
+        }
+        runOnScope((scope) => {
+            const attributesMap = new java.util.HashMap<string, any>();
+            Object.keys(attributes).forEach((key) => {
+                attributesMap.put(key, primitiveProcessor(attributes[key]));
+            });
+            scope.setAttributes(io.sentry.SentryAttributes.fromMap(attributesMap));
+        });
+    }
+
+    export function removeAttribute(key: string) {
+        if (!enableNative) {
+            return;
+        }
+        runOnScope((scope) => {
+            scope.removeAttribute(key);
+        });
+    }
+
+    export let primitiveProcessor = (value: any): string => value as string;
+
+    export function _setPrimitiveProcessor(processor: (value: any) => string) {
+        primitiveProcessor = processor;
     }
 
     export async function crashedLastRun() {

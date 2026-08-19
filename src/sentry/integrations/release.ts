@@ -1,28 +1,15 @@
-import { addGlobalEventProcessor, getCurrentHub } from '@sentry/core';
-import { Event, Integration } from '@sentry/types';
+import type { Event, Integration } from '@sentry/core';
+import { addEventProcessor, getClient } from '@sentry/core';
 import { NATIVE } from '../wrapper';
 
-/** Release integration responsible to load release from file. */
-export class Release implements Integration {
-    /**
-     * @inheritDoc
-     */
-    public name: string = Release.id;
-    /**
-     * @inheritDoc
-     */
-    public static id: string = 'Release';
+const INTEGRATION_NAME = 'Release';
 
-    /**
-     * @inheritDoc
-     */
-    public setupOnce(): void {
-        addGlobalEventProcessor(async (event: Event) => {
-            const self = getCurrentHub().getIntegration(Release);
-            if (!self) {
-                return event;
-            }
-            const options = getCurrentHub().getClient()?.getOptions();
+/** Release integration responsible to load release from file. */
+export const releaseIntegration = (): Integration => ({
+    name: INTEGRATION_NAME,
+    setup: () => {
+        addEventProcessor(async (event: Event) => {
+            const options = getClient()?.getOptions();
             /*
             __sentry_release and __sentry_dist is set by the user with setRelease and setDist. If this is used then this is the strongest.
             Otherwise we check for the release and dist in the options passed on init, as this is stronger than the release/dist from the native build.
@@ -60,4 +47,4 @@ export class Release implements Integration {
             return event;
         });
     }
-}
+});
