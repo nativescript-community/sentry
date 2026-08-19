@@ -74,7 +74,6 @@ const DEFAULT_OPTIONS: NativescriptOptions & NativescriptErrorHandlersOptions = 
     autoInitializeNativeSdk: true,
     enableAutoPerformanceTracing: true,
     enableOutOfMemoryTracking: true,
-    patchGlobalPromise: true,
     sendClientReports: true,
     maxQueueSize: DEFAULT_BUFFER_SIZE,
     attachStacktrace: true,
