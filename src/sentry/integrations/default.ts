@@ -17,6 +17,7 @@ import { releaseIntegration } from './release';
 // import { createReactNativeRewriteFrames } from './rewriteframes';
 import { createNativeFramesIntegrations } from '../tracing/integrations/nativeFrames';
 import { stallTrackingIntegration } from '../tracing/integrations/stalltracking';
+import { nativeExceptionIntegration } from './nativeexception';
 import { primitiveTagIntegration } from './primitivetag';
 import { screenshotIntegration } from './screenshot';
 import { sdkInfoIntegration } from './sdkinfo';
@@ -88,6 +89,7 @@ export function getDefaultIntegrations(options: NativescriptClientOptions & Nati
     integrations.push(eventOriginIntegration());
     integrations.push(sdkInfoIntegration());
     integrations.push(primitiveTagIntegration());
+    integrations.push(nativeExceptionIntegration());
     // integrations.push(new ReactNativeInfo());
 
     // if (__DEV__ && notWeb()) {

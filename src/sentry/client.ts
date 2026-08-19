@@ -87,7 +87,10 @@ export class NativescriptClient extends Client<NativescriptClientOptions> {
         }
         const hintWithScreenshot = attachScreenshotToEventHint(hint, this._options);
         const event = await eventFromException(this._options.stackParser, exception, hintWithScreenshot, this._options.attachStacktrace);
-        if (exception['nativeException']) {
+        // On iOS the native throw-site frames come from nativeException.callStackSymbols
+        // instead (see the NativeException integration) — the combined stackTrace
+        // string parse below only yields real native frames on Android.
+        if (__ANDROID__ && exception['nativeException']) {
             try {
                 const stack = parseErrorStack({ stack: 'at ' + exception['stackTrace'] }).filter((f) => f.platform !== 'javascript');
                 stack.forEach((frame) => frameIteratee(frame));
@@ -101,22 +104,6 @@ export class NativescriptClient extends Client<NativescriptClientOptions> {
             } catch (error) {
                 console.error(error, error.stack);
             }
-        } else if (__IOS__ && exception['stackTrace']) {
-            // try {
-            // const stack = parseErrorStack({ stack: 'at ' + exception['stackTrace'] } as any).filter((f) => f.platform !== 'javascript');
-            // stack.forEach((frame) => frameIteratee(frame));
-            // event.exception.values[0].stacktrace.frames.forEach((frame) => frameIteratee(frame));
-            // event.exception.values[0].stacktrace.frames = event.exception.values[0].stacktrace.frames.reverse();
-            // event.exception.values.unshift({
-            //     type: 'NativeException',
-            //     value: exception.toString(),
-            //     stacktrace: {
-            //         frames: stack
-            //     }
-            // });
-            // } catch (error) {
-            //     console.error(error, error.stack);
-            // }
         }
         return event;
         // return this._browserClient.eventFromException(exception, hint);

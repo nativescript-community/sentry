@@ -57,6 +57,7 @@ export * from './integrations/exports';
 import { SDK_NAME, SDK_VERSION } from './version';
 import { Trace } from '@nativescript/core';
 export { NativescriptOptions } from './options';
+export { toCapturableError, capturedValueOf } from './utils/capturableError';
 export { NativescriptClient } from './client';
 
 export { init, setDist, setRelease, nativeCrash, flush, close, captureUserFeedback, withScope, crashedLastRun } from './sdk';

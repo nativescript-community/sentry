@@ -3,6 +3,7 @@ import type { Client, EventHint, Integration, SeverityLevel } from '@sentry/core
 import { addBreadcrumb, addExceptionMechanism, debug, getClient } from '@sentry/core';
 import type { NativescriptClientOptions } from '../options';
 import { attachScreenshotToEventHint } from './screenshot';
+import { capturedValueOf, toCapturableError } from '../utils/capturableError';
 import { eventFromUnknownInput } from '../utils/eventbuilder';
 
 export const INTEGRATION_NAME = 'NativescriptErrorHandlers';
@@ -116,7 +117,14 @@ export const nativescriptErrorHandlersIntegration = (
                 event.level = 'fatal' as SeverityLevel;
             }
 
-            client.captureEvent(event);
+            const capturedValue = capturedValueOf(error);
+            if (capturedValue !== undefined) {
+                event.extra = { ...event.extra, capturedValue };
+            }
+
+            // The hint carries the original exception (for event processors like
+            // the NativeException enrichment) and any screenshot attachment.
+            client.captureEvent(event, hint);
         } catch (error) {
             console.error(error);
         }
@@ -133,17 +141,15 @@ export const nativescriptErrorHandlersIntegration = (
             // already reports that crash natively.
             if (finalOptions.onerror) {
                 global.addEventListener('error', (event: any) => {
-                    // The thrown value can be anything; a wrapped native exception
-                    // (NSException/Throwable) is not an Error and has no `error` at all
-                    // in the degenerate case — fall back to the event message.
-                    const error = event.error !== undefined ? event.error : new Error(event.message);
-                    globalHandler(error, 'onerror');
+                    // The thrown value can be anything — a wrapped native exception
+                    // (NSException/Throwable), an arbitrary object, or nothing at
+                    // all — normalize it into a capturable Error.
+                    globalHandler(toCapturableError(event.error, event.message || 'Uncaught error (no error object)'), 'onerror');
                 });
             }
             if (finalOptions.onunhandledrejection) {
                 global.addEventListener('unhandledrejection', (event: any) => {
-                    const reason = event.reason !== undefined ? event.reason : new Error('Unhandled promise rejection (no reason)');
-                    globalHandler(reason, 'onunhandledrejection');
+                    globalHandler(toCapturableError(event.reason, 'Unhandled promise rejection (no reason)'), 'onunhandledrejection');
                 });
                 // Already captured via unhandledrejection; leave a trail that it
                 // was eventually handled so triage can deprioritize it.

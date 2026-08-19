@@ -6,5 +6,6 @@ export { breadcrumbsIntegration } from './breadcrumbs';
 export { debugSymbolicatorIntegration } from './debugsymbolicator';
 export { deviceContextIntegration } from './devicecontext';
 export { eventOriginIntegration } from './eventorigin';
+export { nativeExceptionIntegration, nativeExceptionOf, type NativeExceptionLike } from './nativeexception';
 export { screenshotIntegration } from './screenshot';
 export { sdkInfoIntegration } from './sdkinfo';
