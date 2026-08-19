@@ -1,4 +1,4 @@
-import { Attachment, Breadcrumb, Envelope, Event, User } from '@sentry/types';
+import { Attachment, Breadcrumb, Envelope, Event, User } from '@sentry/core';
 import { NativescriptOptions } from './options';
 
 export interface NativeAppStartResponse {
@@ -102,6 +102,13 @@ export namespace NATIVE {
     function clearBreadcrumbs();
 
     function setContext(key: string, context: { [key: string]: any } | null);
+
+    function setAttribute(key: string, value: string | number | boolean);
+    function setAttributes(attributes: Record<string, string | number | boolean>);
+    function removeAttribute(key: string);
+
+    function primitiveProcessor(value: any): string;
+    function _setPrimitiveProcessor(processor: (value: any) => string);
 
     function utf8ToBytes(str: string): Uint8Array;
 

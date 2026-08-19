@@ -24,6 +24,9 @@ export interface BaseNativescriptOptions {
 
     /**
      * native integrations to disable.
+     *
+     * Android only — sentry-cocoa 9 removed the integrations list, so on iOS
+     * use the dedicated native options instead (e.g. enableWatchdogTerminationTracking).
      */
     disabledNativeIntegrations?: string[];
 
