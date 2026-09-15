@@ -1,5 +1,4 @@
-import { BaseTransportOptions, Envelope, Event, Transport } from '@sentry/types';
-import { PromiseBuffer, makePromiseBuffer } from '@sentry/utils';
+import { BaseTransportOptions, Envelope, PromiseBuffer, Transport, type TransportMakeRequestResponse, makePromiseBuffer } from '@sentry/core';
 
 import { NATIVE } from '../wrapper';
 
@@ -21,22 +20,23 @@ export class NativeTransport implements Transport {
     }
 
     /**
-   * Sends the envelope to the Store endpoint in Sentry.
-   *
-   * @param envelope Envelope that should be sent to Sentry.
-   */
-    public send(envelope: Envelope): PromiseLike<void> {
-        return this._buffer.add(() => NATIVE.sendEnvelope(envelope));
+     * Sends the envelope to the Store endpoint in Sentry.
+     *
+     * @param envelope Envelope that should be sent to Sentry.
+     */
+    public send(envelope: Envelope): PromiseLike<TransportMakeRequestResponse> {
+        // TODO: We currently can't retrieve the response information from native
+        return this._buffer.add(() => NATIVE.sendEnvelope(envelope)).then(() => ({}));
     }
 
     /**
-   * Wait for all envelopes to be sent or the timeout to expire, whichever comes first.
-   *
-   * @param timeout Maximum time in ms the transport should wait for envelopes to be flushed. Omitting this parameter will
-   *   cause the transport to wait until all events are sent before resolving the promise.
-   * @returns A promise that will resolve with `true` if all events are sent before the timeout, or `false` if there are
-   * still events in the queue when the timeout is reached.
-   */
+     * Wait for all envelopes to be sent or the timeout to expire, whichever comes first.
+     *
+     * @param timeout Maximum time in ms the transport should wait for envelopes to be flushed. Omitting this parameter will
+     *   cause the transport to wait until all events are sent before resolving the promise.
+     * @returns A promise that will resolve with `true` if all events are sent before the timeout, or `false` if there are
+     * still events in the queue when the timeout is reached.
+     */
     public flush(timeout?: number): PromiseLike<boolean> {
         return this._buffer.drain(timeout);
     }
@@ -45,4 +45,6 @@ export class NativeTransport implements Transport {
 /**
  * Creates a Native Transport.
  */
-export function makeNativescriptTransport(options: BaseNativeTransportOptions = {}): NativeTransport { return new NativeTransport(options); }
+export function makeNativescriptTransport(options: BaseNativeTransportOptions = {}): NativeTransport {
+    return new NativeTransport(options);
+}

@@ -1,177 +1,200 @@
-import { getCurrentHub } from '@sentry/core';
-import { eventFromUnknownInput } from '@sentry/browser/esm/eventbuilder';
-import { EventHint, Integration, SeverityLevel } from '@sentry/types';
-import { NATIVE } from '../wrapper';
-import { addExceptionMechanism, logger } from '@sentry/utils';
+import { Application } from '@nativescript/core';
+import type { Client, EventHint, Integration, SeverityLevel } from '@sentry/core';
+import { addBreadcrumb, addExceptionMechanism, debug, getClient } from '@sentry/core';
+import type { NativescriptClientOptions } from '../options';
+import { attachScreenshotToEventHint } from './screenshot';
+import { capturedValueOf, toCapturableError } from '../utils/capturableError';
+import { eventFromUnknownInput } from '../utils/eventbuilder';
 
-import { NativescriptClient } from '../client';
-
-import { Application, Trace } from '@nativescript/core';
-import { Screenshot } from './screenshot';
+export const INTEGRATION_NAME = 'NativescriptErrorHandlers';
 
 /** NativescriptErrorHandlers Options */
 export interface NativescriptErrorHandlersOptions {
-    // traceErrorHandler?: boolean;
-    // uncaughtErrors?: boolean;
+    /**
+     * Capture uncaught errors.
+     *
+     * On runtimes dispatching the global WHATWG error events (9.1+) this listens
+     * to `globalThis` `error` events and defaults to `true` — uncaught errors no
+     * longer crash the app there, so nothing else would report them. On older
+     * runtimes it listens to `Application.discardedErrorEvent` and defaults to `false`.
+     */
     onerror?: boolean;
-    onunhandledrejection?: boolean;
 
     /**
-     * When enabled, Sentry will overwrite the global Promise instance to ensure that unhandled rejections are correctly tracked.
-     * If you run into issues with Promise polyfills such as `core-js`, make sure you polyfill after Sentry is initialized.
-     * Read more at https://docs.sentry.io/platforms/react-native/troubleshooting/#unhandled-promise-rejections
+     * Capture unhandled promise rejections.
      *
-     * When disabled, this option will not disable unhandled rejection tracking. Set `onunhandledrejection: false` on the `ReactNativeErrorHandlers` integration instead.
-     *
-     * @default true
+     * On runtimes dispatching the global WHATWG error events (9.1+) this listens
+     * to `globalThis` `unhandledrejection` events (and leaves a breadcrumb on
+     * `rejectionhandled`) and defaults to `true`. On older runtimes it listens to
+     * `Application.uncaughtErrorEvent` and defaults to `false`.
      */
-    patchGlobalPromise?: boolean;
-}
-
-interface PromiseRejectionTrackingOptions {
-    onUnhandled: (id: string, error: unknown) => void;
-    onHandled: (id: string) => void;
+    onunhandledrejection?: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const global: any;
 
-/** NativescriptErrorHandlers Integration */
-export class NativescriptErrorHandlers implements Integration {
-    /**
-     * @inheritDoc
-     */
-    public static id: string = 'NativescriptErrorHandlers';
+/**
+ * Runtimes 9.1+ dispatch the WHATWG error events (`error`, `unhandledrejection`,
+ * `rejectionhandled`) on the global, carrying the actual thrown value (with
+ * `nativeException` attached) instead of the legacy Application events'
+ * lossy shape.
+ */
+const supportsGlobalErrorEvents = typeof global.ErrorEvent === 'function' && typeof global.addEventListener === 'function';
 
-    /**
-     * @inheritDoc
-     */
-    public name: string = NativescriptErrorHandlers.id;
+export const defaultNativescriptErrorHandlersOptions: NativescriptErrorHandlersOptions = {
+    // On event-capable runtimes uncaught errors no longer crash the app, so the
+    // native crash handler never sees them — these must be on or they are lost.
+    onerror: supportsGlobalErrorEvents,
+    onunhandledrejection: supportsGlobalErrorEvents
+};
 
-    /** NativescriptOptions */
-    private readonly _options: NativescriptErrorHandlersOptions;
+export interface NativescriptErrorHandlersState {
+    handlingFatal: boolean;
+}
 
-    /** Constructor */
-    public constructor(options?: NativescriptErrorHandlersOptions) {
-        this._options = {
-            // uncaughtErrors: false,
-            onerror: false,
-            onunhandledrejection: false,
-            patchGlobalPromise: true,
-            ...options
-        };
-    }
+export const nativescriptErrorHandlersIntegration = (
+    options: Partial<NativescriptErrorHandlersOptions> = {}
+): Integration & {
+    options: NativescriptErrorHandlersOptions;
+    state: NativescriptErrorHandlersState;
+} => {
+    const state: NativescriptErrorHandlersState = {
+        handlingFatal: false
+    };
 
-    /**
-     * @inheritDoc
-     */
-    public setupOnce(): void {
-        this._handleUnhandledRejections();
-        this._handleOnError();
-    }
+    const finalOptions = {
+        ...defaultNativescriptErrorHandlersOptions,
+        ...options
+    };
 
-    /**
-     * Handle Promises
-     */
-    private _handleUnhandledRejections(): void {
-        if (this._options.onunhandledrejection) {
-            // if (this._options.uncaughtErrors) {
-            Application.on(Application.uncaughtErrorEvent, this.globalHanderEvent, this);
-            // }
-            // if (this._options.patchGlobalPromise) {
-            //     this._polyfillPromise();
-            // }
+    const globalHandlerEvent = (event: any) => {
+        globalHandler(event.error);
+    };
 
-            // this._attachUnhandledRejectionHandler();
-            // this._checkPromiseAndWarn();
-        }
-    }
-
-    private globalHanderEvent(event) {
-        this.globalHander(event.error);
-    }
-    handlingFatal = false;
-
-    private globalHander(error: any, isFatal?: boolean) {
+    const globalHandler = (error: any, mechanismType?: string, isFatal?: boolean) => {
         try {
             // We want to handle fatals, but only in production mode.
             const shouldHandleFatal = isFatal && !__DEV__;
             if (shouldHandleFatal) {
-                if (this.handlingFatal) {
-                    logger.log('Encountered multiple fatals in a row. The latest:', error);
+                if (state.handlingFatal) {
+                    debug.log('Encountered multiple fatals in a row. The latest:', error);
                     return;
                 }
-                this.handlingFatal = true;
+                state.handlingFatal = true;
             }
-
-            const currentHub = getCurrentHub();
-            const client = currentHub.getClient<NativescriptClient>();
+            const client = getClient();
 
             if (!client) {
-                logger.error('Sentry client is missing, the error event might be lost.', error);
-
-                // If there is no client something is fishy, anyway we call the default handler
-                //   defaultHandler(error, isFatal);
-
+                debug.error('Sentry client is missing, the error event might be lost.', error);
                 return;
             }
 
             // We override client.eventFromException because it is async function
             // while not needed and we want to be sync
-            if (error['stackTrace']) {
-                error['stacktrace'] = error['stackTrace'];
-            }
             let hint: EventHint = {
                 originalException: error
             };
-            const syntheticException = (hint && hint.syntheticException) || undefined;
-            hint = Screenshot.attachScreenshotToEventHint(hint, client.getOptions());
-            const event = eventFromUnknownInput(client.getOptions().stackParser, error, syntheticException, client.getOptions().attachStacktrace);
+            const clientOptions = client.getOptions() as NativescriptClientOptions;
+            hint = attachScreenshotToEventHint(hint, { attachScreenshot: clientOptions.attachScreenshot });
+            const event = eventFromUnknownInput(clientOptions.stackParser, error, hint.syntheticException ?? undefined, clientOptions.attachStacktrace);
             addExceptionMechanism(event); // defaults to { type: 'generic', handled: true }
             event.level = 'error';
-            if (hint && hint.event_id) {
+            if (hint.event_id) {
                 event.event_id = hint.event_id;
             }
 
-            if (isFatal) {
-                event.level = 'fatal' as SeverityLevel;
+            if (mechanismType) {
                 addExceptionMechanism(event, {
                     handled: false,
-                    type: 'onerror'
+                    type: mechanismType
                 });
             }
+            if (isFatal) {
+                event.level = 'fatal' as SeverityLevel;
+            }
 
-            client.captureEvent(event);
+            const capturedValue = capturedValueOf(error);
+            if (capturedValue !== undefined) {
+                event.extra = { ...event.extra, capturedValue };
+            }
+
+            // The hint carries the original exception (for event processors like
+            // the NativeException enrichment) and any screenshot attachment.
+            client.captureEvent(event, hint);
         } catch (error) {
             console.error(error);
         }
+    };
 
-        // if (!__DEV__) {
-        //     void client.flush(options.shutdownTimeout || 2000).then(() => {
-        //         defaultHandler(error, isFatal);
-        //     });
-        // } else {
-        //     // If in dev, we call the default handler anyway and hope the error will be sent
-        //     // Just for a better dev experience
-        //     defaultHandler(error, isFatal);
-        // }
-    }
-
-    /**
-     * Handle erros
-     */
-    private _handleOnError(): void {
-        if (this._options.onerror) {
-            // let handlingFatal = false;
-            // Application.on(Application.uncaughtErrorEvent, this.globalHanderEvent, this);
-            Application.on(Application.discardedErrorEvent, this.globalHanderEvent, this);
-
-            // Trace.setErrorHandler({
-            //     handlerError: this.globalHander
-            // });
-            // const defaultHandler = ErrorUtils.getGlobalHandler && ErrorUtils.getGlobalHandler();
-
-            // ErrorUtils.setGlobalHandler);
+    const setup = (_client: Client): void => {
+        if (supportsGlobalErrorEvents) {
+            // The runtime dispatches these before (and regardless of) the legacy
+            // Application events, with the actual thrown value on the event —
+            // don't also subscribe to the Application events or every error
+            // would be captured twice.
+            // The `nativeuncaughterror` event (Android) is deliberately not
+            // captured here: sentry-android's own UncaughtExceptionHandlerIntegration
+            // already reports that crash natively.
+            if (finalOptions.onerror) {
+                global.addEventListener('error', (event: any) => {
+                    // The thrown value can be anything — a wrapped native exception
+                    // (NSException/Throwable), an arbitrary object, or nothing at
+                    // all — normalize it into a capturable Error.
+                    globalHandler(toCapturableError(event.error, event.message || 'Uncaught error (no error object)'), 'onerror');
+                });
+            }
+            if (finalOptions.onunhandledrejection) {
+                global.addEventListener('unhandledrejection', (event: any) => {
+                    globalHandler(toCapturableError(event.reason, 'Unhandled promise rejection (no reason)'), 'onunhandledrejection');
+                });
+                // Already captured via unhandledrejection; leave a trail that it
+                // was eventually handled so triage can deprioritize it.
+                global.addEventListener('rejectionhandled', (event: any) => {
+                    addBreadcrumb({
+                        category: 'promise',
+                        level: 'info',
+                        message: `Late-handled promise rejection: ${event.reason?.message ?? event.reason}`
+                    });
+                });
+            }
+            return;
         }
+
+        // Legacy runtimes: only the Application events are available.
+        if (finalOptions.onunhandledrejection) {
+            Application.on(Application.uncaughtErrorEvent, globalHandlerEvent);
+        }
+        if (finalOptions.onerror) {
+            Application.on(Application.discardedErrorEvent, globalHandlerEvent);
+        }
+    };
+
+    return {
+        name: INTEGRATION_NAME,
+        setup,
+        options: finalOptions,
+        state
+    };
+};
+
+export type NativescriptErrorHandlersIntegration = ReturnType<typeof nativescriptErrorHandlersIntegration>;
+
+/**
+ * Returns the current NativescriptErrorHandlers integration.
+ */
+export function getCurrentNativescriptErrorHandlersIntegration(): NativescriptErrorHandlersIntegration | undefined {
+    const client = getClient();
+    if (!client) {
+        return undefined;
     }
+
+    return getNativescriptErrorHandlersIntegration(client);
+}
+
+/**
+ * Returns NativescriptErrorHandlers integration of given client.
+ */
+export function getNativescriptErrorHandlersIntegration(client: Client): NativescriptErrorHandlersIntegration | undefined {
+    return client.getIntegrationByName(INTEGRATION_NAME);
 }

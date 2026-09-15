@@ -41,6 +41,10 @@ module.exports.onWebpackConfig = function (config, env, params) {
     });
     config.resolve.symlinks = false;
     config.devtool = 'source-map';
+    if (!process.env.SENTRY_AUTH_TOKEN) {
+        // Local builds without Sentry credentials skip the release/sourcemap upload.
+        return config;
+    }
     config.plugins.push(
         sentryWebpackPlugin({
             org: process.env.SENTRY_ORG,
