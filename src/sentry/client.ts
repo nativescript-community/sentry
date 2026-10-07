@@ -1,7 +1,6 @@
 import { alert } from '@nativescript/core';
 import { eventFromException, eventFromMessage, makeFetchTransport } from '@sentry/browser';
-import { Client, ClientReportEnvelope, ClientReportItem, Envelope, Event, EventHint, Exception, Outcome, SeverityLevel, Thread, UserFeedback, dateTimestampInSeconds, debug } from '@sentry/core';
-import { frameIteratee } from './integrations/default';
+import { Client, ClientReportEnvelope, ClientReportItem, Envelope, Event, EventHint, Outcome, SeverityLevel, UserFeedback, dateTimestampInSeconds, debug } from '@sentry/core';
 import { attachScreenshotToEventHint } from './integrations/screenshot';
 import { defaultSdkInfo } from './integrations/sdkinfo';
 import { NativescriptClientOptions } from './options';
@@ -67,23 +66,7 @@ export class NativescriptClient extends Client<NativescriptClientOptions> {
      * @inheritDoc
      */
     public eventFromMessage(message: string, level?: SeverityLevel, hint?: EventHint): PromiseLike<Event> {
-        return eventFromMessage(this._options.stackParser, message, level, hint, this._options.attachStacktrace).then((event: Event) => {
-            // TMP! Remove this function once JS SDK uses threads for messages
-            if (!event.exception?.values || event.exception.values.length <= 0) {
-                return event;
-            }
-            const values = event.exception.values.map((exception: Exception): Thread => {
-                if (exception.stacktrace) {
-                    exception.stacktrace.frames.forEach((frame) => frameIteratee(frame));
-                }
-                return {
-                    stacktrace: exception.stacktrace
-                };
-            });
-            (event as { threads?: { values: Thread[] } }).threads = { values };
-            delete event.exception;
-            return event;
-        });
+        return eventFromMessage(this._options.stackParser, message, level, hint, this._options.attachStacktrace);
     }
 
     /**
