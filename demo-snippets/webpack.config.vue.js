@@ -1,5 +1,4 @@
 const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
-const nsWebpack = require('@nativescript/webpack');
 const { dirname, join, relative, resolve, sep } = require('path');
 const { readdirSync, readFileSync } = require('fs');
 
@@ -8,12 +7,14 @@ module.exports = (env, webpack) => {
     webpack.chainWebpack((config) => {});
 };
 
-module.exports.onWebpackConfig = function (config, env, params) {
+module.exports.onWebpackConfig = function (config, env, params, nsWebpack, webpack) {
     const platform = env && ((env.android && 'android') || (env.ios && 'ios'));
     const dist = nsWebpack.Utils.platform.getDistPath();
     console.log('test', env, params, dist);
     const projectRoot = nsWebpack.Utils.project.getProjectRootPath();
     const appResourcesPath = env.appResourcesPath;
+    const appId = env.appId;
+    const production = env.production;
     let appVersion;
     let buildNumber;
     if (platform === 'android') {
@@ -45,23 +46,45 @@ module.exports.onWebpackConfig = function (config, env, params) {
         // Local builds without Sentry credentials skip the release/sourcemap upload.
         return config;
     }
+    config.devtool = production ? false : 'source-map';
+    // chains the .map files shipped next to node_modules JS and strips their sourceMappingURL comments, which the Sentry plugin would otherwise pick over the bundle's own
+    config.module.rules.push({
+        test: /\.[cm]?js$/,
+        enforce: 'pre',
+        include: /node_modules/,
+        use: require.resolve('source-map-loader')
+    });
+    // shipped maps reference .ts sources that are not published
+    config.ignoreWarnings = [...(config.ignoreWarnings || []), /Failed to parse source map/];
+    config.plugins.push(
+        new webpack.SourceMapDevToolPlugin({
+            append: `\n//# sourceMappingURL=../../sourcemaps/[name].js.map`,
+            filename: join('../../sourcemaps', '[name].js.map')
+        })
+    );
     config.plugins.push(
         sentryWebpackPlugin({
+            debug: true,
+            telemetry: false,
             org: process.env.SENTRY_ORG,
             url: process.env.SENTRY_URL,
             project: process.env.SENTRY_PROJECT,
             authToken: process.env.SENTRY_AUTH_TOKEN,
             release: {
-                name: `${config.id}@${appVersion}+${buildNumber}`,
+                name: `${appId}@${platform}@${appVersion}+${buildNumber}`,
                 dist: `${buildNumber}.${platform}`,
-                setCommits: false,
+                setCommits: {
+                    auto: true,
+                    ignoreEmpty: true,
+                    ignoreMissing: true
+                },
                 create: true,
-                cleanArtifacts: true
+                cleanArtifacts: false
             },
             sourcemaps: {
-                rewriteSources: (source, map) => source.replace('webpack:///', '~/'),
+                rewriteSources: (source, map) => source.replace('webpack:///', 'webpack://').replace(/^webpack:\/\/(?:\.\.\/)+packages\/core\//, 'webpack://@nativescript/core/'),
                 ignore: ['tns-java-classes', 'hot-update'],
-                assets: [dist + '/**/*.js', join(dist, process.env.SOURCEMAP_REL_DIR) + '/*.map']
+                assets: [join(dist, '**/*.js'), join(dist, '../../sourcemaps', '*.map')]
             }
         })
     );

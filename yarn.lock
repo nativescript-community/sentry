@@ -2078,6 +2078,7 @@ __metadata:
   dependencies:
     "@nativescript-community/sentry": "npm:*"
     "@sentry/webpack-plugin": "npm:4.6.2"
+    source-map-loader: "npm:5.0.0"
   languageName: unknown
   linkType: soft
 
@@ -13307,6 +13308,18 @@ __metadata:
   version: 1.2.2
   resolution: "source-map-js@npm:1.2.2"
   checksum: 10/4807c894bb6280c8b84886159b96080e3996f42c6e8015e647881edfd4f955f6024ceebb8bb40d33ce8b106e24b2e29c133575e1c60c01c8aae57a05fdf17761
+  languageName: node
+  linkType: hard
+
+"source-map-loader@npm:5.0.0":
+  version: 5.0.0
+  resolution: "source-map-loader@npm:5.0.0"
+  dependencies:
+    iconv-lite: "npm:^0.6.3"
+    source-map-js: "npm:^1.0.2"
+  peerDependencies:
+    webpack: ^5.72.1
+  checksum: 10/9bc90a50df1a3570ddc1ea9cd1aeadb241fd6f6ddb03e72a8f45f5d3fcc357e7edcc9fff8d35d2e338d17edf13c38a7b6e530308ac263d1b462a1e6bfacaf1a1
   languageName: node
   linkType: hard
 
