@@ -1,5 +1,4 @@
-import type { Breadcrumb, SeverityLevel } from '@sentry/types';
-import { severityLevelFromString } from '@sentry/utils';
+import { type Breadcrumb, type SeverityLevel, severityLevelFromString } from '@sentry/core';
 
 export const DEFAULT_BREADCRUMB_LEVEL: SeverityLevel = 'info';
 

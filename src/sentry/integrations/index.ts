@@ -1,4 +1,4 @@
-export { DebugSymbolicator } from './debugsymbolicator';
-export { DeviceContext } from './devicecontext';
-export { NativescriptErrorHandlers as NativescriptErrorHandlers } from './nativescripterrorhandlers';
-export { Release } from './release';
+export { debugSymbolicatorIntegration } from './debugsymbolicator';
+export { deviceContextIntegration } from './devicecontext';
+export { nativescriptErrorHandlersIntegration, getCurrentNativescriptErrorHandlersIntegration, getNativescriptErrorHandlersIntegration } from './nativescripterrorhandlers';
+export { releaseIntegration } from './release';

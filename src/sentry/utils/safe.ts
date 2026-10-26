@@ -1,12 +1,9 @@
-import { logger } from '@sentry/utils';
-
+import { debug } from '@sentry/core';
 import { NativescriptOptions } from '../options';
 
 type DangerTypesWithoutCallSignature =
-// eslint-disable-next-line @typescript-eslint/ban-types
-  | Object
-  | null
-  | undefined;
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    Object | null | undefined;
 
 /**
  * Returns callback factory wrapped with try/catch
@@ -19,19 +16,14 @@ export function safeFactory<A extends [R, ...unknown[]], R, T extends DangerType
     danger: ((...args: A) => R) | T,
     options: {
         loggerMessage?: string;
-    } = {},
+    } = {}
 ): ((...args: A) => R) | T {
     if (typeof danger === 'function') {
         return (...args) => {
             try {
                 return danger(...args);
             } catch (error) {
-                logger.error(
-                    options.loggerMessage
-                        ? options.loggerMessage
-                        : `The ${danger.name} callback threw an error`,
-                    error,
-                );
+                debug.error(options.loggerMessage ? options.loggerMessage : `The ${danger.name} callback threw an error`, error);
                 return args[0];
             }
         };
@@ -45,17 +37,13 @@ type TracesSampler = Required<NativescriptOptions>['tracesSampler'];
 /**
  * Returns sage tracesSampler that returns 0 if the original failed.
  */
-export function safeTracesSampler(
-    tracesSampler: NativescriptOptions['tracesSampler'],
-): NativescriptOptions['tracesSampler'] {
+export function safeTracesSampler(tracesSampler: NativescriptOptions['tracesSampler']): NativescriptOptions['tracesSampler'] {
     if (tracesSampler) {
-        return (
-            ...args: Parameters<TracesSampler>
-        ): ReturnType<TracesSampler> => {
+        return (...args: Parameters<TracesSampler>): ReturnType<TracesSampler> => {
             try {
                 return tracesSampler(...args);
             } catch (error) {
-                logger.error('The tracesSampler callback threw an error', error);
+                debug.error('The tracesSampler callback threw an error', error);
                 return 0;
             }
         };

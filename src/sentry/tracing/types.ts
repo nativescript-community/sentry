@@ -1,15 +1,15 @@
-import { TransactionContext } from '@sentry/types';
+import type { Span } from '@sentry/core';
 
-// export interface ReactNavigationRoute {
-//     name: string;
-//     key: string;
-//     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//     params: Record<string, any>;
-// }
+export interface NativescriptNavigationRoute {
+    name: string;
+    key: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    params: Record<string, any>;
+}
 
-// export interface ReactNavigationCurrentRoute extends ReactNavigationRoute {
-//     hasBeenSeen: boolean;
-// }
+export interface NativescriptNavigationCurrentRoute extends NativescriptNavigationRoute {
+    hasBeenSeen: boolean;
+}
 
 export interface RouteChangeContextData {
     previousRoute?: {
@@ -23,14 +23,4 @@ export interface RouteChangeContextData {
     };
 }
 
-// export interface ReactNavigationTransactionContext extends TransactionContext {
-//     tags: {
-//         'routing.instrumentation': string;
-//         'routing.route.name': string;
-//     };
-//     data: RouteChangeContextData;
-// }
-
-export type BeforeNavigate = (
-    context: TransactionContext
-) => TransactionContext;
+export type BeforeNavigate = (context: Span) => void;

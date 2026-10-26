@@ -1,5 +1,5 @@
-import { BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel, User } from '@sentry/types';
-import { SentryError, logger } from '@sentry/utils';
+import type { BaseEnvelopeItemHeaders, Breadcrumb, Envelope, EnvelopeItem, Event, SeverityLevel, User } from '@sentry/core';
+import { SentryError, debug } from '@sentry/core';
 import { parseErrorStack } from './integrations/debugsymbolicator';
 import { isHardCrash } from './misc';
 import { NativescriptOptions } from './options';
@@ -66,7 +66,7 @@ function dataSerialize(data?: any, wrapPrimitives?: boolean) {
 const FATAL_ERROR_REGEXP = /NativeScript encountered a fatal error:([^]*?) at([\t\n\s]*)?([^]*)$/m;
 
 export namespace NATIVE {
-    let enableNative = true;
+    export let enableNative = true;
     const _DisabledNativeError = new SentryError('Native is disabled');
 
     function convertToNativeJavascriptStacktrace(
@@ -149,7 +149,7 @@ export namespace NATIVE {
         return nativeRelease;
     }
     export async function closeNativeSdk() {
-        NSSentrySDK.close();
+        SentrySDK.close();
     }
 
     /**
@@ -242,7 +242,7 @@ export namespace NATIVE {
      */
     export async function sendEnvelope(envelope: Envelope) {
         if (!enableNative) {
-            logger.warn('Event was skipped as native SDK is not enabled.');
+            debug.warn('Event was skipped as native SDK is not enabled.');
             return;
         }
         const [EOL] = utf8ToBytes('\n');
@@ -282,18 +282,18 @@ export namespace NATIVE {
             envelopeBytes.push(EOL);
         }
         const data = NSData.dataWithData(new Uint8Array(envelopeBytes).buffer as any);
-        const nEnvelope = NSSentrySDK.envelopeWithData(data);
+        const nEnvelope = PrivateSentrySDKOnly.envelopeWithData(data);
         if (!envelope) {
             throw new Error('Failed to parse envelope from byte array.');
         }
         if (hardCrashed) {
             // Storing to disk happens asynchronously with captureEnvelope
-            NSSentrySDK.storeEnvelope(nEnvelope);
+            PrivateSentrySDKOnly.storeEnvelope(nEnvelope);
         } else {
-            NSSentrySDK.captureEnvelope(nEnvelope);
+            PrivateSentrySDKOnly.captureEnvelope(nEnvelope);
         }
         if (sentryOptions.flushSendEvent) {
-            NSSentrySDK.flush(0);
+            SentrySDK.flush(0);
         }
     }
     let sentryOptions: NativescriptOptions;
@@ -330,6 +330,7 @@ export namespace NATIVE {
                 enableCrashHandler,
                 enableNativeCrashHandling,
                 enableAutoPerformanceTracking,
+                enableTracing,
                 tracesSampleRate,
                 tracesSampler,
                 beforeSend,
@@ -347,7 +348,12 @@ export namespace NATIVE {
             });
             const mutDict = NSMutableDictionary.alloc().initWithDictionary(dataSerialize(toPassOptions, true));
 
-            nSentryOptions = SentryOptions.alloc().initWithDictDidFailWithError(mutDict as any);
+            nSentryOptions = PrivateSentrySDKOnly.optionsWithDictionaryDidFailWithError(mutDict as any);
+            if (!nSentryOptions) {
+                console.warn('Warning: Sentry options could not be parsed. Native SDK will not be initialized.');
+                enableNative = false;
+                return false;
+            }
 
             // before send right now is never called when we send the envelope. Only on native crash
             nSentryOptions.beforeSend = (event: SentryEvent) => {
@@ -360,7 +366,7 @@ export namespace NATIVE {
                 }
                 if (count) {
                     for (let index = 0; index < exceptions.count; index++) {
-                        const exception = exceptions.objectAtIndex(index);
+                        const exception = exceptions.objectAtIndex(index) as SentryException;
                         const exceptionvalue = exception.value;
                         if (exceptionvalue) {
                             const matches = exceptionvalue.match(FATAL_ERROR_REGEXP);
@@ -400,29 +406,21 @@ export namespace NATIVE {
                 return breadcrumb;
             };
             if (enableNativeCrashHandling === false) {
-                const integrations = nSentryOptions.integrations.mutableCopy();
-                integrations.removeObject('SentryCrashIntegration');
-                nSentryOptions.integrations = integrations;
+                nSentryOptions.enableCrashHandler = false;
             }
             if (disabledNativeIntegrations) {
-                const integrations = nSentryOptions.integrations.mutableCopy() as NSMutableArray<any>;
-                const size = integrations.count;
-                for (let index = size - 1; index >= 0; index--) {
-                    const inte = integrations.objectAtIndex(index);
-                    if (disabledNativeIntegrations.indexOf(inte) !== -1) {
-                        integrations.removeObject(inte);
-                    }
-                }
-                nSentryOptions.integrations = integrations;
+                // sentry-cocoa 9 removed the options.integrations list; each integration
+                // is now gated by its own dedicated option and cannot be disabled by name.
+                console.warn('disabledNativeIntegrations is not supported on iOS anymore, use the dedicated native options instead (e.g. enableWatchdogTerminationTracking).');
             }
 
             if (enableAutoPerformanceTracking !== undefined) {
-                NSSentrySDK.appStartMeasurementHybridSDKMode = enableAutoPerformanceTracking;
-                NSSentrySDK.framesTrackingMeasurementHybridSDKMode = enableAutoPerformanceTracking;
+                PrivateSentrySDKOnly.appStartMeasurementHybridSDKMode = enableAutoPerformanceTracking;
+                PrivateSentrySDKOnly.framesTrackingMeasurementHybridSDKMode = enableAutoPerformanceTracking;
             }
             const sdkVersion = PrivateSentrySDKOnly.getSdkVersionString();
             PrivateSentrySDKOnly.setSdkNameAndVersionString('sentry.cocoa.nativescript', sdkVersion);
-            NSSentrySDK.startWithOptions(nSentryOptions);
+            SentrySDK.startWithOptions(nSentryOptions);
 
             return true;
         } catch (error) {
@@ -433,10 +431,10 @@ export namespace NATIVE {
     }
 
     export function nativeCrash() {
-        NSSentrySDK.crash();
+        SentrySDK.crash();
     }
     export function flush(timeout: number) {
-        NSSentrySDK.flush(timeout);
+        SentrySDK.flush(timeout);
     }
 
     function dictToJSON(dict) {
@@ -447,10 +445,10 @@ export namespace NATIVE {
             throw _DisabledNativeError;
         }
         let serializedScope: any = {};
-        NSSentrySDK.configureScope((scope) => {
+        SentrySDK.configureScope((scope) => {
             try {
                 const result = dictToJSON(scope.serialize());
-                result['user'] = result['user'] || { id: NSSentrySDK.installationID };
+                result['user'] = result['user'] || { id: PrivateSentrySDKOnly.installationID };
                 serializedScope = result;
             } catch (error) {
                 console.error('fetchNativeDeviceContexts', error, error.stack);
@@ -474,22 +472,6 @@ export namespace NATIVE {
         return serializedScope;
     }
 
-    // export function captureUserFeedback(feedback: UserFeedback) {
-    //     if (!enableNative) {
-    //         return;
-    //     }
-    //     const userFeedback = SentryUserFeedback.alloc().initWithEventId(SentryId.alloc().initWithUUIDString(feedback.eventId));
-    //     if (feedback.comments) {
-    //         userFeedback.comments = feedback.comments;
-    //     }
-    //     if (feedback.email) {
-    //         userFeedback.email = feedback.email;
-    //     }
-    //     if (feedback.name) {
-    //         userFeedback.name = feedback.name;
-    //     }
-    //     NSSentrySDK.captureUserFeedback(userFeedback);
-    // }
     function eventLevel(level) {
         switch (level) {
             case 'fatal':
@@ -510,7 +492,7 @@ export namespace NATIVE {
         if (!enableNative) {
             return;
         }
-        NSSentrySDK.configureScope((scope: SentryScope) => {
+        SentrySDK.configureScope((scope: SentryScope) => {
             const [filteredUser, otherUserKeys] = splitObject(user, ['id', 'email', 'username', 'ip_address']);
 
             if (!filteredUser && !otherUserKeys) {
@@ -544,9 +526,9 @@ export namespace NATIVE {
         if (!enableNative) {
             return;
         }
-        NSSentrySDK.configureScope((scope: SentryScope) => {
+        SentrySDK.configureScope((scope: SentryScope) => {
             if (value) {
-                scope.setTagValueForKey(key, value);
+                scope.setTagValueForKey(value, key);
             } else {
                 scope.removeTagForKey(key);
             }
@@ -557,9 +539,9 @@ export namespace NATIVE {
         if (!enableNative) {
             return;
         }
-        NSSentrySDK.configureScope((scope: SentryScope) => {
+        SentrySDK.configureScope((scope: SentryScope) => {
             if (extra) {
-                scope.setExtraValueForKey(key, extra);
+                scope.setExtraValueForKey(extra, key);
             } else {
                 scope.removeContextForKey(key);
             }
@@ -570,7 +552,7 @@ export namespace NATIVE {
         if (!enableNative) {
             return;
         }
-        NSSentrySDK.configureScope((scope: SentryScope) => {
+        SentrySDK.configureScope((scope: SentryScope) => {
             const breadcrumbInstance = SentryBreadcrumb.alloc().init();
 
             if (breadcrumb.level) {
@@ -621,13 +603,13 @@ export namespace NATIVE {
         if (!enableNative) {
             return;
         }
-        NSSentrySDK.configureScope((scope: SentryScope) => scope.clearBreadcrumbs());
+        SentrySDK.configureScope((scope: SentryScope) => scope.clearBreadcrumbs());
     }
     export function setContext(key: string, context: { [key: string]: any } | null) {
         if (!enableNative) {
             return;
         }
-        NSSentrySDK.configureScope((scope: SentryScope) => {
+        SentrySDK.configureScope((scope: SentryScope) => {
             if (!context) {
                 scope.setContextValueForKey(null, key);
             } else {
@@ -650,7 +632,7 @@ export namespace NATIVE {
     }
     let didFetchAppStart = false;
     export async function fetchNativeAppStart() {
-        const appStartMeasurement = NSSentrySDK.appStartMeasurement;
+        const appStartMeasurement = PrivateSentrySDKOnly.appStartMeasurement;
         const wasFetched = didFetchAppStart;
         didFetchAppStart = true;
         if (!appStartMeasurement) {
@@ -660,21 +642,21 @@ export namespace NATIVE {
 
             return {
                 isColdStart,
-                appStartTime: appStartMeasurement.appStartTimestamp.getTime() * 1000,
+                appStartTime: appStartMeasurement.appStartTimestamp.getTime(),
                 didFetchAppStart: wasFetched
             };
         }
     }
     export async function fetchNativeFrames() {
-        if (NSSentrySDK.isFramesTrackingRunning) {
-            const frames = NSSentrySDK.currentScreenFrames;
+        if (PrivateSentrySDKOnly.isFramesTrackingRunning) {
+            const frames = PrivateSentrySDKOnly.currentScreenFrames;
 
             if (frames) {
                 const totalFrames = frames.total;
                 const slowFrames = frames.slow;
                 const frozenFrames = frames.frozen;
 
-                if (totalFrames !== 0 || slowFrames !== 0 || frozenFrames !== 0) {
+                if (totalFrames === 0 && slowFrames === 0 && frozenFrames === 0) {
                     return null;
                 }
 
@@ -690,6 +672,9 @@ export namespace NATIVE {
 
     export function captureScreenshot(fileName = 'screenshot') {
         const rawScreenshots = PrivateSentrySDKOnly.captureScreenshots();
+        if (!rawScreenshots) {
+            return [];
+        }
         const res = [];
         for (let index = 0; index < rawScreenshots.count; index++) {
             res.push({
@@ -700,6 +685,45 @@ export namespace NATIVE {
         }
         return res;
     }
+    export function setAttribute(key: string, value: string | number | boolean) {
+        if (!enableNative) {
+            return;
+        }
+        SentrySDK.configureScope((scope: SentryScope) => {
+            if (value === null || value === undefined) {
+                scope.removeAttributeForKey(key);
+            } else {
+                scope.setAttributeValueForKey(primitiveProcessor(value), key);
+            }
+        });
+    }
+
+    export function setAttributes(attributes: Record<string, string | number | boolean>) {
+        if (!enableNative) {
+            return;
+        }
+        SentrySDK.configureScope((scope: SentryScope) => {
+            Object.keys(attributes).forEach((key) => {
+                scope.setAttributeValueForKey(primitiveProcessor(attributes[key]), key);
+            });
+        });
+    }
+
+    export function removeAttribute(key: string) {
+        if (!enableNative) {
+            return;
+        }
+        SentrySDK.configureScope((scope: SentryScope) => {
+            scope.removeAttributeForKey(key);
+        });
+    }
+
+    export let primitiveProcessor = (value: any): string => value as string;
+
+    export function _setPrimitiveProcessor(processor: (value: any) => string) {
+        primitiveProcessor = processor;
+    }
+
     export async function crashedLastRun() {
         return SentrySDK.crashedLastRun;
     }

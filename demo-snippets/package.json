@@ -6,6 +6,7 @@
         "@nativescript-community/sentry": "*"
     },
     "devDependencies": {
-        "@sentry/webpack-plugin": "2.14.2"
+        "@sentry/webpack-plugin": "4.6.2",
+        "source-map-loader": "5.0.0"
     }
 }

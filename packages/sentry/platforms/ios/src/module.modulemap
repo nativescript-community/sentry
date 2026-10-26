@@ -1,4 +1,0 @@
-module NSSentry {
-    header "NSSentry.h"
-    export *
-}
