@@ -301,12 +301,18 @@ export namespace NATIVE {
             outboxDir.mkdirs();
             const outboxPath = new java.io.File(outboxDir, java.util.UUID.randomUUID().toString());
             const out = new java.io.FileOutputStream(outboxPath);
-            if (ArrayBuffer.isView(envelope)) {
-                out.write(pointsFromBuffer(envelope, true, false));
-            } else if (Array.isArray(envelope)) {
-                out.write(envelope);
-            } else {
-                out.write(new java.lang.String(envelope).getBytes(java.nio.charset.Charset.forName('UTF-8')));
+            try {
+                if (ArrayBuffer.isView(envelope)) {
+                    out.write(pointsFromBuffer(envelope, true, false));
+                } else if (Array.isArray(envelope)) {
+                    out.write(envelope);
+                } else {
+                    out.write(new java.lang.String(envelope).getBytes(java.nio.charset.Charset.forName('UTF-8')));
+                }
+            } finally {
+                // The outbox observer only picks up an envelope once its file is closed (CLOSE_WRITE).
+                // Without this, the envelope waits until the stream is garbage collected or the app restarts.
+                out.close();
             }
             return true;
         } catch (err) {
