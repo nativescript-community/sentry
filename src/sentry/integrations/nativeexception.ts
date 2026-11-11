@@ -1,4 +1,4 @@
-import type { Event, EventHint, Integration, StackFrame } from '@sentry/core';
+import type { DebugImage, Event, EventHint, Integration, StackFrame, Stacktrace } from '@sentry/core';
 
 export const INTEGRATION_NAME = 'NativeException';
 
@@ -13,6 +13,8 @@ export interface NativeExceptionLike {
     userInfo?: unknown;
     /** NSException only — symbolicated frames captured at the native @throw site. */
     callStackSymbols?: { count: number; objectAtIndex(index: number): string };
+    /** NSException only — the same frames as raw return addresses, index-aligned with `callStackSymbols`. */
+    callStackReturnAddresses?: { count: number; objectAtIndex(index: number): number };
     /** NSError only */
     domain?: string;
     code?: number;
@@ -55,25 +57,108 @@ export function nativeExceptionOf(value: unknown): NativeExceptionLike | undefin
 // callStackSymbols line shape: "3   CoreFoundation   0x00000001804ae0f8 __exceptionPreprocess + 172"
 const NATIVE_STACK_FRAME_RE = /^\s*\d+\s+(\S+)\s+(0x[0-9a-fA-F]+)\s+(.+)$/;
 
-function enrichWithIosException(event: Event, native: NativeExceptionLike): void {
+/** Frame fields Sentry's native symbolication reads that `StackFrame` does not declare. */
+interface CocoaStackFrame extends StackFrame {
+    package?: string;
+    image_addr?: string;
+}
+
+function formatAddress(address: number): string {
+    return `0x${address.toString(16).padStart(16, '0')}`;
+}
+
+function binaryImageCache(): SentryBinaryImageCache | undefined {
+    try {
+        return typeof SentryDependencies !== 'undefined' ? SentryDependencies.binaryImageCache : undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+/**
+ * Builds the throw-site frames plus a debug image for every binary they touch.
+ * Names from `callStackSymbols` come from the device's symbol table, which is
+ * wrong or missing for stripped binaries (release app executables, the
+ * NativeScript runtime's internal functions). With the image list, Sentry
+ * symbolicates the addresses against the uploaded dSYMs instead; the device
+ * names stay as the fallback when no image or dSYM is found.
+ */
+function iosThrowSiteStack(native: NativeExceptionLike): { frames: CocoaStackFrame[]; images: DebugImage[] } | undefined {
     const symbols = native.callStackSymbols;
-    if (symbols) {
-        const frames: StackFrame[] = [];
-        for (let i = 0; i < symbols.count; i++) {
+    const addresses = native.callStackReturnAddresses;
+    const count = Math.max(symbols?.count ?? 0, addresses?.count ?? 0);
+    if (!count) {
+        return undefined;
+    }
+    // Empty until the native SDK has started; frames then fall back to device names.
+    const cache = binaryImageCache();
+    const images = new Map<number, DebugImage>();
+    const frames: CocoaStackFrame[] = [];
+    for (let i = 0; i < count; i++) {
+        const frame: CocoaStackFrame = { platform: 'cocoa' };
+        if (symbols && i < symbols.count) {
             const line = String(symbols.objectAtIndex(i));
             const match = NATIVE_STACK_FRAME_RE.exec(line);
-            frames.push(match ? { platform: 'cocoa', module: match[1], instruction_addr: match[2], function: match[3] } : { platform: 'cocoa', function: line });
+            if (match) {
+                frame.module = match[1];
+                frame.instruction_addr = match[2];
+                frame.function = match[3];
+            } else {
+                frame.function = line;
+            }
         }
-        // callStackSymbols is newest-frame-first; Sentry wants oldest first.
-        frames.reverse();
+        const address = addresses && i < addresses.count ? Number(addresses.objectAtIndex(i)) : 0;
+        if (address > 0) {
+            frame.instruction_addr = formatAddress(address);
+            const image = cache?.imageByAddress(address);
+            if (image) {
+                frame.package = String(image.name);
+                frame.image_addr = formatAddress(image.address);
+                if (!images.has(image.address) && image.uuid) {
+                    images.set(image.address, {
+                        type: 'macho',
+                        debug_id: String(image.uuid),
+                        image_addr: frame.image_addr,
+                        image_size: Number(image.size),
+                        code_file: frame.package
+                    });
+                }
+            }
+        }
+        frames.push(frame);
+    }
+    // Both arrays are newest-frame-first; Sentry wants oldest first.
+    frames.reverse();
+    return { frames, images: [...images.values()] };
+}
 
+function addDebugImages(event: Event, images: DebugImage[]): void {
+    if (!images.length) {
+        return;
+    }
+    event.debug_meta ??= {};
+    event.debug_meta.images ??= [];
+    const known = new Set(event.debug_meta.images.map((image) => ('image_addr' in image ? image.image_addr : undefined)));
+    for (const image of images) {
+        if (!('image_addr' in image) || !known.has(image.image_addr)) {
+            event.debug_meta.images.push(image);
+        }
+    }
+}
+
+function enrichWithIosException(event: Event, native: NativeExceptionLike): void {
+    const stack = iosThrowSiteStack(native);
+    if (stack) {
         event.exception ??= {};
         event.exception.values ??= [];
         event.exception.values.unshift({
             type: native.name !== undefined ? String(native.name) : 'NSException',
             value: String(native.reason ?? native.name ?? 'NSException'),
-            stacktrace: { frames }
+            // Every address is a return address, including the newest frame, so the
+            // symbolicator must step each one back into its call instruction.
+            stacktrace: { frames: stack.frames, instruction_addr_adjustment: 'all' } as Stacktrace
         });
+        addDebugImages(event, stack.images);
     }
 
     const context: Record<string, unknown> = {};
