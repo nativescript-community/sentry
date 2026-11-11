@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.0](https://github.com/nativescript-community/sentry/compare/v4.6.49...v5.0.0) (2026-11-11)
+
+### ⚠ BREAKING CHANGES
+
+* update native SDKs (sentry-cocoa 9.19.1, sentry-android 8.52.0) and add scope attributes sync
+
+### Features
+
+* update native SDKs (sentry-cocoa 9.19.1, sentry-android 8.52.0) and add scope attributes sync ([184008f](https://github.com/nativescript-community/sentry/commit/184008f3948e1220cdebf4a35e9636bd46b742b6))
+* update sentry JS SDK to 10.70.0 and sync isolation scope to native ([913248e](https://github.com/nativescript-community/sentry/commit/913248e8e0466b051d08be72613ebb91ed22bbb8))
+* update sentry JS SDK to 10.x ([b177d04](https://github.com/nativescript-community/sentry/commit/b177d0491274852b16c5a90016d944c4d736473d))
+
+### Bug Fixes
+
+* copy eventbuilder from sentry browser ([0040f13](https://github.com/nativescript-community/sentry/commit/0040f13929a5d5cb7527544fe83d2cc24b6c7c0f))
+
 ## [4.6.49](https://github.com/nativescript-community/sentry/compare/v4.6.48...v4.6.49) (2026-05-25)
 
 **Note:** Version bump only for package @nativescript-community/sentry

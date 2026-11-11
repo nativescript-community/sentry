@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.0](https://github.com/nativescript-community/sentry/compare/v4.6.49...v5.0.0) (2026-11-11)
+
+### ⚠ BREAKING CHANGES
+
+* update native SDKs (sentry-cocoa 9.19.1, sentry-android 8.52.0) and add scope attributes sync
+
+### Features
+
+* add enableTracing option and export enableNative in wrapper files ([9f6984d](https://github.com/nativescript-community/sentry/commit/9f6984d9c3b2736406d33bb0be083bec0d5a65b1))
+* capture uncaught errors via the runtime's global error events ([794307c](https://github.com/nativescript-community/sentry/commit/794307cc84c234edb4a9c6fe33e40645cba62a6f))
+* enrich events with native exception data and normalize captured values ([af4d1c3](https://github.com/nativescript-community/sentry/commit/af4d1c3fa3b2af1791e830ee38650c2232e0d6e3))
+* improve capture of non-Error and native-object values ([49c7656](https://github.com/nativescript-community/sentry/commit/49c7656094066c92c8505bffd58edd67cfa330da))
+* update native SDKs (sentry-cocoa 9.19.1, sentry-android 8.52.0) and add scope attributes sync ([184008f](https://github.com/nativescript-community/sentry/commit/184008f3948e1220cdebf4a35e9636bd46b742b6))
+* update Sentry integration with new breadcrumbs and error handling improvements ([283226f](https://github.com/nativescript-community/sentry/commit/283226ffff04a4e13b42356bd2a5353f80a230c0))
+* update sentry JS SDK to 10.70.0 and sync isolation scope to native ([913248e](https://github.com/nativescript-community/sentry/commit/913248e8e0466b051d08be72613ebb91ed22bbb8))
+* update sentry JS SDK to 10.x ([b177d04](https://github.com/nativescript-community/sentry/commit/b177d0491274852b16c5a90016d944c4d736473d))
+
+### Bug Fixes
+
+* **android:** close the outbox envelope file so events are sent right away ([06e9c58](https://github.com/nativescript-community/sentry/commit/06e9c58c7ecdef12b82005359696ce4d527624df))
+* copy eventbuilder from sentry browser ([0040f13](https://github.com/nativescript-community/sentry/commit/0040f13929a5d5cb7527544fe83d2cc24b6c7c0f))
+* keep the captureMessage stack in exception so it symbolicates ([3287949](https://github.com/nativescript-community/sentry/commit/328794905c8cecb47b0ae160c02b9ad36b6af2c5)), closes [#2694](https://github.com/nativescript-community/sentry/issues/2694) [#3635](https://github.com/nativescript-community/sentry/issues/3635)
+* remove unnecessary type assertion for rewriteFrameIntegration ([6591865](https://github.com/nativescript-community/sentry/commit/65918658565378bd834359f53a3a9c0799f80a2a))
+* rename appHangsTimeoutInterval option to appHangTimeoutInterval ([3a4640c](https://github.com/nativescript-community/sentry/commit/3a4640c2643f41b292515d57443f047f5999ffe6))
+* replace logger with debug for error handling in withScope ([5e579cd](https://github.com/nativescript-community/sentry/commit/5e579cdffa70ce9c794decbbf9cc6c1e3b7e1830))
+
 ## [4.6.49](https://github.com/nativescript-community/sentry/compare/v4.6.48...v4.6.49) (2026-05-25)
 
 ### Bug Fixes
