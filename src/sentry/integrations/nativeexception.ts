@@ -57,10 +57,15 @@ export function nativeExceptionOf(value: unknown): NativeExceptionLike | undefin
 // callStackSymbols line shape: "3   CoreFoundation   0x00000001804ae0f8 __exceptionPreprocess + 172"
 const NATIVE_STACK_FRAME_RE = /^\s*\d+\s+(\S+)\s+(0x[0-9a-fA-F]+)\s+(.+)$/;
 
+// "__exceptionPreprocess + 172". Sentry trims `function` down to a bare symbol
+// name, so sending the combined string shows only the offset ("172").
+const SYMBOL_OFFSET_RE = /^(.*\S)\s+\+\s+(\d+)$/;
+
 /** Frame fields Sentry's native symbolication reads that `StackFrame` does not declare. */
 interface CocoaStackFrame extends StackFrame {
     package?: string;
     image_addr?: string;
+    symbol_addr?: string;
 }
 
 function formatAddress(address: number): string {
@@ -102,7 +107,15 @@ function iosThrowSiteStack(native: NativeExceptionLike): { frames: CocoaStackFra
             if (match) {
                 frame.module = match[1];
                 frame.instruction_addr = match[2];
-                frame.function = match[3];
+                const symbol = SYMBOL_OFFSET_RE.exec(match[3]);
+                if (symbol) {
+                    frame.function = symbol[1];
+                    // The offset is relative to this line's own address, which can
+                    // differ from the matching `callStackReturnAddresses` entry.
+                    frame.symbol_addr = formatAddress(parseInt(match[2], 16) - Number(symbol[2]));
+                } else {
+                    frame.function = match[3];
+                }
             } else {
                 frame.function = line;
             }
