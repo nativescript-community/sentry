@@ -31,6 +31,9 @@ import { breadcrumbsIntegration } from './breadcrumbs';
  */
 export let frameIteratee: (frame: StackFrame) => StackFrame;
 
+// The runtime's own modules report an "internal/<name>.js" origin; they ship with no source.
+const RUNTIME_BUILTIN_RE = /^internal\//;
+
 /**
  * Returns the default Nativescript integrations based on the current environment.
  *
@@ -41,6 +44,12 @@ export let frameIteratee: (frame: StackFrame) => StackFrame;
 export function getDefaultIntegrations(options: NativescriptClientOptions & NativescriptOptions): Integration[] {
     const integrations: Integration[] = [];
     const iteratee = (frame: StackFrame) => {
+        if (frame.platform === 'javascript' && frame.filename && RUNTIME_BUILTIN_RE.test(frame.filename)) {
+            frame.in_app = false;
+            // Sentry skips the source lookup for an `abs_path` of "native".
+            frame.abs_path = 'native';
+            return frame;
+        }
         if (frame.platform === 'javascript' && frame.filename) {
             let filename = frame.filename
                 .replace(/^file\:\/\//, '')
